@@ -584,18 +584,18 @@ class CarData : Serializable {
             if (dataParts.size >= 8) {
                 Log.v(TAG, "S MSG Validated")
                 car_soc_raw = dataParts[0].toFloat()
-                car_soc = String.format("%.1f%%", car_soc_raw)
+                car_soc = String.format("%.0f%%", car_soc_raw)
                 car_distance_units_raw = dataParts[1]
                 car_distance_units = if (car_distance_units_raw.startsWith("M")) "mi" else "km"
                 car_speed_units =
                     if (car_distance_units_raw.startsWith("M")) context!!.getText(R.string.mph)
                         .toString() else context!!.getText(R.string.kph).toString()
                 car_charge_linevoltage_raw = dataParts[2].toFloat()
-                car_charge_linevoltage = String.format("%.1f%s", car_charge_linevoltage_raw, "V")
+                car_charge_linevoltage = String.format("%.0f%s", car_charge_linevoltage_raw, "V")
                 car_charge_current_raw = dataParts[3].toFloat()
-                car_charge_current = String.format("%.1f%s", car_charge_current_raw, "A")
+                car_charge_current = String.format("%.0f%s", car_charge_current_raw, "A")
                 car_charge_voltagecurrent = String.format(
-                    "%.1f%s %.1f%s",
+                    "%.0f%s %.0f%s",
                     car_charge_linevoltage_raw, "V",
                     car_charge_current_raw, "A"
                 )
@@ -604,15 +604,15 @@ class CarData : Serializable {
                 car_mode_s_raw = dataParts[5]
                 car_charge_mode = car_mode_s_raw
                 car_range_ideal_raw = dataParts[6].toFloat()
-                car_range_ideal = String.format("%.1f%s", car_range_ideal_raw, car_distance_units)
+                car_range_ideal = String.format("%.0f%s", car_range_ideal_raw, car_distance_units)
                 car_range_estimated_raw = dataParts[7].toFloat()
                 car_range_estimated =
-                    String.format("%.1f%s", car_range_estimated_raw, car_distance_units)
+                    String.format("%.0f%s", car_range_estimated_raw, car_distance_units)
                 stale_status = DataStale.Good
             }
             if (dataParts.size >= 15) {
                 car_charge_currentlimit_raw = dataParts[8].toFloat()
-                car_charge_currentlimit = String.format("%.1f%s", car_charge_currentlimit_raw, "A")
+                car_charge_currentlimit = String.format("%.0f%s", car_charge_currentlimit_raw, "A")
                 car_charge_duration_raw = dataParts[9].toInt()
                 car_charge_b4byte_raw = dataParts[10].toInt()
                 car_charge_kwhconsumed = dataParts[11].toFloat() / 10f
