@@ -37,9 +37,10 @@ class ChargingQuickAction(apiServiceGetter: () -> ApiService?, context: Context?
         return getCarData()?.car_charging == true
     }
 
-
-
     override fun commandsAvailable(): Boolean {
-        return true
+        return when (getCarData()?.car_type) {
+            "SQ" -> false
+            else -> true
+        }
     }
 }

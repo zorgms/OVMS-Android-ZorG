@@ -804,6 +804,13 @@
     <string name="lb_communications">Communications</string>
     <string name="ideal_range_abbreviation">I: %s</string>
     <string name="estimated_range_abbreviation">E: %s</string>
+    <string name="select_an_action">smart EQ option</string>
+    <string name="lb_indicator_on">Indicator on</string>
+    <string name="lb_open_trunk">open trunk</string>
+    <string name="execute">execute</string>
+    <string name="lb_5min">5 Minutes</string>
+    <string name="lb_10min">10 Minutes</string>
+    <string name="lb_15min">15 Minutes</string>
     <string-array name="home_range_display_mode_labels" translatable="false">
         <item>@string/IdealShort</item>
         <item>@string/EstimatedShort</item>
