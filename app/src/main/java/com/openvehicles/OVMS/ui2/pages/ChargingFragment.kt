@@ -215,6 +215,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
                 Bitmap.createBitmap(limitIcon, 0, 0, limitIcon.width, limitIconWidth.roundToInt(), matrix, true)
             val layer1Drawable = BitmapDrawable(resources, mBitmap)
             layer1Drawable.gravity = Gravity.BOTTOM
+            layer1Drawable.setTint(Color.CYAN)
 
             socBattLayers += layer1Drawable
         }
