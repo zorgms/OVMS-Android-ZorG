@@ -92,6 +92,22 @@ class AppUISettingsFragment: PreferenceFragmentCompat() {
                 true
             }
 
+        val pressurePreference = findPreference<SwitchPreferenceCompat>("pressure_psi_bar")
+        pressurePreference?.isChecked = appPrefs.getData("showtpmsbar", "off") == "on"
+        pressurePreference?.onPreferenceChangeListener =
+            OnPreferenceChangeListener { preference, newValue ->
+                appPrefs.saveData("showtpmsbar", if (newValue as Boolean) "on" else "off")
+                true
+            }
+
+        val temperaturesPreference = findPreference<SwitchPreferenceCompat>("temperatures_f")
+        temperaturesPreference?.isChecked = appPrefs.getData("showfahrenheit", "off") == "on"
+        temperaturesPreference?.onPreferenceChangeListener =
+            OnPreferenceChangeListener { preference, newValue ->
+                appPrefs.saveData("showfahrenheit", if (newValue as Boolean) "on" else "off")
+                true
+            }
+
         val oldUIPreference = findPreference<SwitchPreferenceCompat>("other_oldui")
         oldUIPreference?.isChecked = appPrefs.getData("option_oldui_enabled", "0") == "1"
         oldUIPreference?.onPreferenceChangeListener =

@@ -55,6 +55,18 @@
             android:defaultValue="false"
             android:title="@string/lb_options_commands_cb"
             app:key="communication_commands" />
+        <SwitchPreferenceCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="false"
+            android:title="@string/mi_car_details_tpms"
+            app:key="pressure_psi_bar" />
+        <SwitchPreferenceCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="false"
+            android:title="@string/mi_car_details_temp"
+            app:key="temperatures_f" />
         <Preference
             android:title="@string/lb_options_apikey"
             app:summary=""

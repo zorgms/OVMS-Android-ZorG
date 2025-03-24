@@ -1,6 +1,8 @@
 package com.openvehicles.OVMS.ui2.components.quickactions
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.api.ApiService
 
@@ -17,10 +19,39 @@ class ClimateQuickAction(apiServiceGetter: () -> ApiService?, context: Context? 
     }
 
     override fun onAction() {
-        if (getCarData()?.car_hvac_on == true)
-            sendCommand("26,0")
-        else
-            sendCommand("26,1")
+        if (getCarData()?.car_type != "SQ") {
+            if (getCarData()?.car_hvac_on == true)
+                sendCommand("26,0")
+            else
+                sendCommand("26,1")
+        } else {
+            val context = context
+                ?: return
+            val items = arrayOf(
+                context.getString(R.string.lb_5min),
+                context.getString(R.string.lb_10min),
+                context.getString(R.string.lb_15min),
+            )
+
+            val builder = AlertDialog.Builder(context)
+            var checkedItem = 0
+            builder.setTitle(context.getString(R.string.climate_control_short))
+            builder.setSingleChoiceItems(items, checkedItem) { _: DialogInterface, item: Int ->
+                checkedItem = item // Update the selected item index
+            }
+            builder.setNegativeButton(R.string.Close, null)
+            builder.setPositiveButton(R.string.execute) { _, _ ->
+                val cmd: String
+                cmd = when (checkedItem) {
+                    0 -> "24,0"
+                    1 -> "24,1"
+                    2 -> "24,2"
+                    else -> ""
+                }
+                sendCommand(cmd)
+            }
+            builder.show()
+        }
     }
 
 
@@ -32,11 +63,6 @@ class ClimateQuickAction(apiServiceGetter: () -> ApiService?, context: Context? 
 
     override fun commandsAvailable(): Boolean {
         return this.getCarData()?.hasCommand(26) == true
-                || getCarData()?.car_type == "NL"
-                || getCarData()?.car_type == "SE"
-                || getCarData()?.car_type == "SQ"
-                || getCarData()?.car_type == "VWUP"
-                || getCarData()?.car_type == "VWUP.T26"
-                || getCarData()?.car_type == "RZ2"
+                || getCarData()?.car_type in listOf("NL","SE","SQ","VWUP","VWUP.T26","RZ2")
     }
 }

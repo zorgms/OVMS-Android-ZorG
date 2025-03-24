@@ -879,6 +879,13 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 // Get default config and save most optimised version for the vehicle
                 val defaultIdConfig: Array<String> = when (carData?.sel_vehicleid) {
                     "RT" -> arrayOf("charging", "valet", "rt_profile_0", "rt_profile_1", "rt_profile_2", "rt_profile_3")
+                    "SQ" -> arrayOf(
+                        LockQuickAction({null}),
+                        ClimateQuickAction({null}),
+                        Homelink1QuickAction({null}),
+                        Homelink2QuickAction({null}),
+                        Homelink3QuickAction({null})
+                    ).filter { it.commandsAvailable() }.map { it.id }.take(6).toTypedArray()
                     else -> arrayOf(
                         LockQuickAction({null}),
                         ChargingQuickAction({null}),

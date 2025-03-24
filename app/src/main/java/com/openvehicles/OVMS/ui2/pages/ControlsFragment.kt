@@ -274,9 +274,9 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         centerActionsAdapter.mData.clear()
         centerActionsAdapter.setCarData(carData)
         centerActionsAdapter.mData += LockQuickAction({getService()})
-        centerActionsAdapter.mData += ValetQuickAction({getService()})
+        if (carData?.car_type != "SQ") centerActionsAdapter.mData += ValetQuickAction({getService()})
         centerActionsAdapter.mData += WakeupQuickAction({getService()})
-        centerActionsAdapter.mData += ChargingQuickAction({getService()})
+        if (carData?.car_type != "SQ") centerActionsAdapter.mData += ChargingQuickAction({getService()})
         centerActionsAdapter.notifyDataSetChanged()
     }
 

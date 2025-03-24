@@ -724,5 +724,12 @@
 
     <string name="controls_tab_label">Steuerung</string>
     <string name="charging_tab_label">Laden</string>
+    <string name="select_an_action">smart EQ Option</string>
+    <string name="lb_indicator_on">Blinker an</string>
+    <string name="lb_open_trunk">Heckklappe auf</string>
+    <string name="execute">ausführen</string>
+    <string name="lb_5min">5 Minuten</string>
+    <string name="lb_10min">10 Minuten</string>
+    <string name="lb_15min">15 Minuten</string>
 
 </resources>

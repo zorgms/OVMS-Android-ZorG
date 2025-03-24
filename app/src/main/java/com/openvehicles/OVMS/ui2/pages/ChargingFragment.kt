@@ -32,6 +32,7 @@ import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.ui.BaseFragment
 import com.openvehicles.OVMS.utils.AppPrefs
 import com.openvehicles.OVMS.utils.CarsStorage
+import kotlin.collections.listOf
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -66,7 +67,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         initialiseBatteryStats(carData)
         initialiseBatteryControls(carData)
 
-        if (carData?.car_type == "RT" || carData?.car_type == "VWUP" || carData?.car_type == "NL") {
+        if (carData?.car_type in listOf("RT","VWUP","NL")) {
             // Request info about limits
             sendCommand(if (carData?.car_type == "VWUP") "204" else "203", this)
         }
@@ -346,8 +347,8 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         val action1 = findViewById(R.id.startCharging) as Button
         val action2 = findViewById(R.id.stopCharging) as Button
 
-        action1.isEnabled = carData?.car_charging == false && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115
-        action2.isEnabled = carData?.car_charging == true && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115
+        action1.isEnabled = carData?.car_charging == false && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115 && carData.car_type !in listOf("SQ")
+        action2.isEnabled = carData?.car_charging == true && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115 && carData.car_type !in listOf("SQ")
 
         action1.setOnClickListener {
             MaterialAlertDialogBuilder(requireActivity())
@@ -370,15 +371,13 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         val ampLimitSlider = findViewById(R.id.ampSeekbar) as RangeSlider
         val ampLimit = findViewById(R.id.ampLimit2) as TextView
 
-
         ampLimit.text = carData?.car_charge_currentlimit
         if ((carData?.car_charge_currentlimit_raw ?: 0f) > 31f) {
             // increase limit of seekbar
             ampLimitSlider.valueTo = carData?.car_charge_currentlimit_raw?.plus(12f) ?: 32f
         }
         ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw)
-        ampLimitSlider.isEnabled = (carData?.car_chargeport_open != false || carData.car_charge_substate_i_raw != 0x07)
-
+        ampLimitSlider.isEnabled = (carData?.car_chargeport_open != false || carData.car_charge_substate_i_raw != 0x07) && carData?.car_type !in listOf("SQ")
 
         if (ampLimitSlider.values.first() < 1.0f)
             ampLimitSlider.values = listOf(1.0f)
@@ -414,8 +413,8 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         // Charge mode
         val modeSwitcher = findViewById(R.id.standard_modeswitch) as MaterialButtonToggleGroup
         val chargingInfo = findViewById(R.id.chargeModeNote) as TextView
-        modeSwitcher.isEnabled = carData?.car_type != "RT" && carData?.car_type != "VWUP"
-
+        // deactivate mode switcher for listed cars
+        modeSwitcher.isEnabled = carData?.car_type !in listOf("RT", "VWUP", "SQ")
         modeSwitcher.clearOnButtonCheckedListeners()
         when (carData?.car_charge_mode_i_raw) {
             0 -> modeSwitcher.check(R.id.standardChargeMode)
@@ -456,10 +455,10 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
 
         val sufficientSocLimitSwitch = findViewById(R.id.sufficientSocLimitSwitch) as MaterialSwitch
         val sufficientSocSeekbar = findViewById(R.id.seekBar4) as RangeSlider
-        sufficientSocLimitSwitch.isEnabled = carData?.car_type == "RT" || carData?.car_type == "VWUP" || carData?.car_type == "NL"
-        sufficientSocSeekbar.isEnabled = carData?.car_type == "RT" || carData?.car_type == "VWUP" || carData?.car_type == "NL"
+        sufficientSocLimitSwitch.isEnabled = carData?.car_type in listOf("RT","VWUP","NL")
+        sufficientSocSeekbar.isEnabled = carData?.car_type in listOf("RT","VWUP","NL")
         sufficientSocLimitSwitch.isChecked = chargeSuffSOC > 0
-        sufficientSocSeekbar.isEnabled = sufficientSocLimitSwitch.isChecked && sufficientSocLimitSwitch.isEnabled
+        sufficientSocSeekbar.isEnabled = sufficientSocLimitSwitch.isChecked && sufficientSocLimitSwitch.isEnabled && carData?.car_type !in listOf("SQ")
         // Sanitise value
         if (chargeSuffSOC > 100)
             chargeSuffSOC = 100
@@ -470,7 +469,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         socLimit.text = "${sufficientSocSeekbar.values.first().toInt()}%"
 
         sufficientSocLimitSwitch.setOnCheckedChangeListener { compoundButton, b ->
-            sufficientSocSeekbar.isEnabled = sufficientSocLimitSwitch.isChecked
+            sufficientSocSeekbar.isEnabled = sufficientSocLimitSwitch.isChecked && carData?.car_type !in listOf("SQ")
             if (!sufficientSocLimitSwitch.isChecked) {
                 if (carData?.car_type == "VWUP") {
                     sendCommandWithProgress(
@@ -550,12 +549,12 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
 
         val sufficientRangeLimitSwitch = findViewById(R.id.sufficientRangeLimitSwitch) as MaterialSwitch
         val sufficientRangeSeekbar = findViewById(R.id.seekBar5) as RangeSlider
-        sufficientRangeLimitSwitch.isEnabled = carData?.car_type == "RT" || carData?.car_type == "NL"
-        sufficientRangeSeekbar.isEnabled = carData?.car_type == "RT" || carData?.car_type == "NL"
+        sufficientRangeLimitSwitch.isEnabled = carData?.car_type in listOf("RT","NL")
+        sufficientRangeSeekbar.isEnabled = carData?.car_type in listOf("RT","NL")
 
         sufficientRangeLimitSwitch.text = getString(R.string.lb_sufficient_range, carData?.car_distance_units)
         sufficientRangeLimitSwitch.isChecked = chargeSuffRange > 0
-        sufficientRangeSeekbar.isEnabled = sufficientRangeLimitSwitch.isChecked && sufficientRangeLimitSwitch.isEnabled
+        sufficientRangeSeekbar.isEnabled = sufficientRangeLimitSwitch.isChecked && sufficientRangeLimitSwitch.isEnabled && carData?.car_type !in listOf("SQ")
         sufficientRangeSeekbar.values =
             if ((chargeSuffRange) > 0) listOf(chargeSuffRange.toFloat())
             else listOf(1.0f)
@@ -563,7 +562,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         rangeLimit.text = "${sufficientRangeSeekbar.values.first().toInt()} ${carData?.car_distance_units}"
 
         sufficientRangeLimitSwitch.setOnCheckedChangeListener { compoundButton, b ->
-            sufficientRangeSeekbar.isEnabled = sufficientRangeLimitSwitch.isChecked
+            sufficientRangeSeekbar.isEnabled = sufficientRangeLimitSwitch.isChecked && carData.car_type !in listOf("SQ")
             if (!sufficientRangeLimitSwitch.isChecked) {
                 if (carData.car_type == "NL") {
                     sendCommandWithProgress(
@@ -613,7 +612,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
 
         // Charge notification mode
         val limitActionSwitcher = findViewById(R.id.limit_actionswitch) as MaterialButtonToggleGroup
-        limitActionSwitcher.isEnabled = (carData?.car_type == "RT" || carData?.car_type == "VWUP" || carData?.car_type == "NL") && chargeLimitAction != -1
+        limitActionSwitcher.isEnabled = (carData.car_type in listOf("RT","VWUP","NL")) && chargeLimitAction != -1
         limitActionSwitcher.clearOnButtonCheckedListeners()
         when (chargeLimitAction) {
             0 -> limitActionSwitcher.check(R.id.cl_action_notify)
