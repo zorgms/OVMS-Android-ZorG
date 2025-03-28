@@ -149,6 +149,17 @@
     <string name="lb_ft_rt_capacity">#%d: Battery measured capacity (CAP%%)</string>
     <string name="lb_ft_rt_capacity_nom_ah">#%d: Battery nominal capacity (Ah)</string>
 
+    <string name="lb_ft_sq_led_state">#%d: LED Online State</string>
+    <string name="lb_ft_sq_ios_tpms_fix">#%d: iOS TPMS fix</string>
+    <string name="lb_ft_sq_reset_trip_charge">#%d: reset trip at charge = 1, at start = 0</string>
+    <string name="lb_ft_sq_reset_kwh100">#%d: reset kWh/100km at start = 1</string>
+    <string name="lb_ft_sq_boost_timer_on">#%d: Climate timer on = 1, off = 2</string>
+    <string name="lb_ft_sq_boost_time">#%d: Climate time 05:15 = 515, 11:35 = 1135</string>
+    <string name="lb_ft_sq_boost_double">#%d: Climate  0 = 5 min., 1 = 10 min., 2 = 15 min.</string>
+    <string name="lb_ft_sq_bc_kwh100">#%d: OCS kWh/100km value = 1</string>
+    <string name="lb_ft_sq_full_km">#%d: charged ideal full range (km)</string>
+    <string name="lb_ft_sq_ddt4all">#%d: DDT4all allowed</string>
+
     <string name="lb_cp_registered_telephone">#%d: Registered Telephone</string>
     <string name="lb_cp_module_password">#%d: Module Password</string>
     <string name="lb_cp_miles_km">#%d: Miles/Km</string>
