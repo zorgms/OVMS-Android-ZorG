@@ -231,6 +231,7 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
         private const val FEATURE_BC_KWH100 = 0x0C // # 12 OCS kWh/100km value
         private const val FEATURE_FULL_KM = 0x0D // # 13 OCS kWh/100km value
         private const val FEATURE_DDT4ALL = 0x10 // # 16 activate DDT4all functionality
+
     }
 
     private inner class FeaturesAdapter : BaseAdapter() {
