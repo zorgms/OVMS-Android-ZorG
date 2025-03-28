@@ -226,11 +226,11 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
         private const val FEATURE_RESET_TRIP_CHARGE = 0x03 // reset trip at charge
         private const val FEATURE_BOOSTER_TIMER_ON = 0x04 // scheduled timer on/off
         private const val FEATURE_BOOSTER_TIME = 0x05 // scheduled time
-        private const val FEATURE_BOOSTER_DOUBLE = 0x06 // twice boost
+        private const val FEATURE_BOOSTER_DOUBLE = 0x06 // booster 5/10/15 Minutes = set 0/1/2
         private const val FEATURE_RESET_KWH100 = 0x07 // reset kWh/100km at start
         private const val FEATURE_BC_KWH100 = 0x0C // # 12 OCS kWh/100km value
         private const val FEATURE_FULL_KM = 0x0D // # 13 OCS kWh/100km value
-        private const val FEATURE_DDT4ALL = 0x10 // # 16 Network restart timer in min. when v2 isn't connected
+        private const val FEATURE_DDT4ALL = 0x10 // # 16 activate DDT4all functionality
     }
 
     private inner class FeaturesAdapter : BaseAdapter() {
