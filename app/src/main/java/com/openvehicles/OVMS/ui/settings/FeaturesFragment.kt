@@ -285,7 +285,10 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
                         R.string.lb_ft_rt_chargemode,
                         position
                     )
-                    FEATURE_CHARGEPOWER -> return context.getString(R.string.lb_ft_rt_chargepower, position)
+                    FEATURE_CHARGEPOWER -> return context.getString(
+                        R.string.lb_ft_rt_chargepower,
+                        position
+                    )
                     FEATURE_SUFFSOC -> return context.getString(
                         R.string.lb_ft_rt_suffsoc,
                         position
