@@ -822,6 +822,14 @@
     <string name="lb_5min">5 Minutes</string>
     <string name="lb_10min">10 Minutes</string>
     <string name="lb_15min">15 Minutes</string>
+    <string name="mi_car_show_tpms">TPMS at Main Menu</string>
+    <string name="fl_tpms">FL</string>
+    <string name="fr_tpms">FR</string>
+    <string name="rl_tpms">RL</string>
+    <string name="rr_tpms">RR</string>
+    <string name="textLASTCHARGING">Last Charging</string>
+    <string name="GSM_icon">show GSM icon</string>
+    <string name="GPS_icon">show GPS icon</string>
     <string-array name="home_range_display_mode_labels" translatable="false">
         <item>@string/IdealShort</item>
         <item>@string/EstimatedShort</item>

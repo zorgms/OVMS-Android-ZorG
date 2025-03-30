@@ -109,6 +109,35 @@
 
             </ImageView>
 
+            <ImageView
+                android:id="@+id/gsmView"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:cropToPadding="false"
+                android:scaleType="fitCenter"
+                android:scaleX="0.8"
+                android:scaleY="0.8"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/signal_strength_0"
+                android:visibility="invisible" >
+            </ImageView>
+
+            <ImageView
+                android:id="@+id/gpsView"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:cropToPadding="false"
+                android:scaleType="fitCenter"
+                android:scaleX="0.8"
+                android:scaleY="0.8"
+                app:srcCompat="@drawable/gps"
+                app:layout_constraintBottom_toBottomOf="@+id/gsmView"
+                app:layout_constraintEnd_toStartOf="@+id/gsmView"
+                app:layout_constraintTop_toTopOf="@+id/gsmView"
+                android:visibility="invisible" >
+            </ImageView>
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/chargingCard"
                 android:layout_width="match_parent"

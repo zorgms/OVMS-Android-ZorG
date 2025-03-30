@@ -1,14 +1,19 @@
 package com.openvehicles.OVMS.entities
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.openvehicles.OVMS.BaseApp
 import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.utils.AppPrefs
 import java.io.Serializable
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 
 class CarData : Serializable {
@@ -156,6 +161,7 @@ class CarData : Serializable {
     var car_speed_units = ""
     var car_chargelimit_rangelimit = ""
     var car_max_idealrange = ""
+    var car_charge_timestamp = ""
     var stale_chargetimer = DataStale.NoValue
     var stale_status = DataStale.NoValue
 
@@ -276,6 +282,9 @@ class CarData : Serializable {
     var car_charge_plugtype = 0
     var car_charge_power_kw_raw = 0.0
     var car_charge_power_kw = ""
+    var car_charge_kwh_grid = 0f
+    var car_charge_kwh_grid_total = 0f
+    var car_battery_capacity = 0f
     @JvmField
     var car_battery_voltage = 0.0
     var car_battery_current_raw = 0.0
@@ -575,6 +584,7 @@ class CarData : Serializable {
     /**
      * Process status message ("S")
      */
+    @RequiresApi(Build.VERSION_CODES.O)
     fun processStatus(msgdata: String): Boolean {
         init()
         Log.d(TAG, "processStatus: $msgdata")
@@ -693,6 +703,19 @@ class CarData : Serializable {
                 } else {
                     ""
                 }
+                car_charge_kwh_grid = dataParts[38].toFloat()
+                car_charge_kwh_grid_total = dataParts[39].toFloat()
+                car_battery_capacity = dataParts[40].toFloat()
+            }
+            if (dataParts.size >= 42) {
+                val dateFormat = appPrefs!!.getData("showfahrenheit", "off") == "on"
+                val charge_timestamp_raw = dataParts[41].toInt()
+                val timestamp_formater = if(!dateFormat) {
+                    DateTimeFormatter.ofPattern("dd.MM.yy  HH:mm").withZone(ZoneId.systemDefault())
+                } else {
+                    DateTimeFormatter.ofPattern("MM/dd yy  hh:mm").withZone(ZoneId.systemDefault())
+                }
+                car_charge_timestamp = timestamp_formater.format(Instant.ofEpochSecond(charge_timestamp_raw.toLong()))
             }
         } catch (e: Exception) {
             Log.e(TAG, "processStatus: ERROR", e)
@@ -1080,7 +1103,10 @@ class CarData : Serializable {
             b.putInt("car_chargelimit_minsremaining_range", car_chargelimit_minsremaining_range)
             b.putInt("car_chargelimit_soclimit", car_chargelimit_soclimit)
             b.putInt("car_chargelimit_minsremaining_soc", car_chargelimit_minsremaining_soc)
-
+            b.putFloat("car_charge_kwh_grid", car_charge_kwh_grid)
+            b.putFloat("car_charge_kwh_grid_total", car_charge_kwh_grid_total)
+            b.putFloat("car_battery_capacity", car_battery_capacity)
+            b.putString("car_charge_timestamp", car_charge_timestamp)
 
             //
             // Location (msgCode 'L')

@@ -55,6 +55,7 @@ import com.google.gson.Gson
 import com.maltaisn.icondialog.IconDialog
 import com.maltaisn.icondialog.IconDialogSettings
 import com.maltaisn.icondialog.data.Icon
+import com.maltaisn.icondialog.pack.IconDrawableLoader
 import com.maltaisn.icondialog.pack.IconPack
 import com.openvehicles.OVMS.BaseApp
 import com.openvehicles.OVMS.R
@@ -64,6 +65,7 @@ import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.entities.StoredCommand
 import com.openvehicles.OVMS.ui.BaseFragment
 import com.openvehicles.OVMS.ui.utils.Ui
+import com.openvehicles.OVMS.ui.utils.Ui.getDrawableIdentifier
 import com.openvehicles.OVMS.ui2.MainActivityUI2
 import com.openvehicles.OVMS.ui2.components.hometabs.HomeTab
 import com.openvehicles.OVMS.ui2.components.hometabs.HomeTabsAdapter
@@ -172,9 +174,6 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         appPrefs = AppPrefs(requireContext(), "ovms")
 
         val menuHost: MenuHost = requireActivity()
-
-
-
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.home_menu, menu)
@@ -306,7 +305,6 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         initialiseTabs(carData)
         initialiseBottomInfo(carData)
         initialiseCarDropDown()
-
     }
 
     private fun initialiseCarDropDown() {
@@ -1029,7 +1027,28 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
     private fun initialiseTabs(carData: CarData?) {
         tabsAdapter.mData = emptyList()
 
-        tabsAdapter.mData += HomeTab(TAB_CONTROLS, R.drawable.ic_controls_tab, getString(R.string.controls_tab_label), null)
+        var tpms = ""
+        if(appPrefs.getData("showtpmscontrol", "off") == "on"){
+            var pressure = arrayOf(
+                carData?.car_tpms_fl_p,
+                carData?.car_tpms_fr_p,
+                carData?.car_tpms_rl_p,
+                carData?.car_tpms_rr_p
+            )
+            tpms = String.format(
+                "%s %s | %s %s | %s %s | %s %s",
+                getString(R.string.fl_tpms),
+                pressure?.get(0) ?: "",
+                getString(R.string.fr_tpms),
+                pressure?.get(1) ?: "",
+                getString(R.string.rl_tpms),
+                pressure?.get(2) ?: "",
+                getString(R.string.rr_tpms),
+                pressure?.get(3) ?: ""
+            )
+        }
+
+        tabsAdapter.mData += HomeTab(TAB_CONTROLS, R.drawable.ic_controls_tab, getString(R.string.controls_tab_label), tpms)
 
         var climateData = ""
         if (carData?.car_temp_cabin != null && carData.car_temp_cabin.isNotEmpty()) {
@@ -1049,11 +1068,12 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         if (consumption?.isNaN() == true)
             consumption = 0f
         val st = String.format(
-            "%.1f Wh/%s, Regen %.1f kWh, Trip %s",
+            "%.1f Wh/%s, Regen %.1f kWh, Trip %s\n12V Batt %sV",
             consumption,
             carData?.car_distance_units,
             carData?.car_energyrecd?.times(10)?.let { floor(it.toDouble()) }?.div(10) ?: 0,
-            carData?.car_tripmeter
+            carData?.car_tripmeter,
+            carData?.car_12vline_voltage
         )
 
 
@@ -1148,6 +1168,28 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         quickActionsAdapter.notifyDataSetChanged()
     }
 
+    private fun gsmicon(carData: CarData?) {
+        // GSM Bar
+        if (appPrefs.getData("gsm_icon", "off") == "on") {
+            val gsmimg = findViewById(R.id.gsmView) as ImageView
+            gsmimg.visibility = View.VISIBLE
+            gsmimg.setImageResource(
+                getDrawableIdentifier(
+                    activity,
+                    "signal_strength_" + carData?.car_gsm_bars
+                )
+            )
+        }
+    }
+
+    private fun gpsicon(carData: CarData?) {
+        // GPS Bar
+        if (appPrefs.getData("gps_icon", "off") == "on") {
+            val gpsimg = findViewById(R.id.gpsView) as ImageView
+            gpsimg.visibility = if(carData?.car_gpslock == true) View.VISIBLE else View.INVISIBLE
+        }
+    }
+
     override fun update(carData: CarData?) {
         this.carData = carData
         setupVisualisation(carData)
@@ -1156,6 +1198,8 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         initialiseTabs(carData)
         initialiseBottomInfo(carData)
         initialiseCarDropDown()
+        gsmicon(carData)
+        gpsicon(carData)
     }
 
     override fun onServiceLoggedIn(service: ApiService?, isLoggedIn: Boolean) {

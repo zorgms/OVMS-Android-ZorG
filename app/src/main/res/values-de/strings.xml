@@ -731,5 +731,12 @@
     <string name="lb_5min">5 Minuten</string>
     <string name="lb_10min">10 Minuten</string>
     <string name="lb_15min">15 Minuten</string>
-
+    <string name="mi_car_show_tpms">TPMS im Hauptmenü</string>
+    <string name="fl_tpms">VL</string>
+    <string name="fr_tpms">VR</string>
+    <string name="rl_tpms">HL</string>
+    <string name="rr_tpms">HR</string>
+    <string name="textLASTCHARGING">Letzte Ladung</string>
+    <string name="GSM_icon">GSM icon anzeigen</string>
+    <string name="GPS_icon">GPS icon anzeigen</string>
 </resources>
