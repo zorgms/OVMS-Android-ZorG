@@ -219,6 +219,19 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
         //private static final int FEATURE_CB_2008		= 0x01; // Set to 1 to mark the car as 2008/2009
         //private static final int FEATURE_CB_SAD_SMS		= 0x02; // Set to 1 to suppress "Access Denied" SMS
         //private static final int FEATURE_CB_SOUT_SMS	= 0x04; // Set to 1 to suppress all outbound SMS
+
+        // smart EQ
+        private const val FEATURE_LED_STATE = 0x01 // LED Online State
+        private const val FEATURE_IOS_TPMS_FIX = 0x02 // iOS TPMS fix
+        private const val FEATURE_RESET_TRIP_CHARGE = 0x03 // reset trip at charge
+        private const val FEATURE_BOOSTER_TIMER_ON = 0x04 // scheduled timer on/off
+        private const val FEATURE_BOOSTER_TIME = 0x05 // scheduled time
+        private const val FEATURE_BOOSTER_DOUBLE = 0x06 // booster 5/10/15 Minutes = set 0/1/2
+        private const val FEATURE_RESET_KWH100 = 0x07 // reset kWh/100km at start
+        private const val FEATURE_BC_KWH100 = 0x0C // # 12 OCS kWh/100km value
+        private const val FEATURE_FULL_KM = 0x0D // # 13 OCS kWh/100km value
+        private const val FEATURE_DDT4ALL = 0x10 // # 16 activate DDT4all functionality
+
     }
 
     private inner class FeaturesAdapter : BaseAdapter() {
@@ -334,6 +347,61 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
                     )
                     FEATURE_REMOTE_AC_ON_BAT -> return context.getString(
                         R.string.lb_ft_remote_ac_on_bat,
+                        position
+                    )
+                    else -> {}
+                }
+            }
+
+            // Smart EQ:
+            if (carData!!.car_type == "SQ") {
+                when (position) {
+                    FEATURE_LED_STATE -> return context.getString(
+                        R.string.lb_ft_sq_led_state,
+                        position
+                    )
+                    FEATURE_IOS_TPMS_FIX -> return context.getString(
+                        R.string.lb_ft_sq_ios_tpms_fix,
+                        position
+                    )
+                    FEATURE_RESET_TRIP_CHARGE -> return context.getString(
+                        R.string.lb_ft_sq_reset_trip_charge,
+                        position
+                    )
+                    FEATURE_BOOSTER_TIMER_ON -> return context.getString(
+                        R.string.lb_ft_sq_boost_timer_on,
+                        position
+                    )
+                    FEATURE_BOOSTER_TIME -> return context.getString(
+                        R.string.lb_ft_sq_boost_time,
+                        position
+                    )
+                    FEATURE_BOOSTER_DOUBLE -> return context.getString(
+                        R.string.lb_ft_sq_boost_double,
+                        position
+                    )
+                    FEATURE_SUFFSOC -> return context.getString(
+                        R.string.lb_ft_rt_suffsoc,
+                        position
+                    )
+                    FEATURE_SUFFRANGE -> return context.getString(
+                        R.string.lb_ft_rt_suffrange,
+                        position
+                    )
+                    FEATURE_RESET_KWH100 -> return context.getString(
+                        R.string.lb_ft_sq_reset_kwh100,
+                        position
+                    )
+                    FEATURE_BC_KWH100 -> return context.getString(
+                        R.string.lb_ft_sq_bc_kwh100,
+                        position
+                    )
+                    FEATURE_FULL_KM -> return context.getString(
+                        R.string.lb_ft_sq_full_km,
+                        position
+                    )
+                    FEATURE_DDT4ALL -> return context.getString(
+                        R.string.lb_ft_sq_ddt4all,
                         position
                     )
                     else -> {}
