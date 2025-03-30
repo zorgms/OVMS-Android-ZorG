@@ -92,6 +92,8 @@ import com.openvehicles.OVMS.utils.CarsStorage.getStoredCars
 import java.io.IOException
 import java.util.Locale
 import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates
 
@@ -731,6 +733,11 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         chargingCard.visibility = if (chargePortOpen == true) View.VISIBLE else View.GONE
 
         val ampLimitSlider = findViewById(R.id.seekBar) as RangeSlider
+
+        if ((carData?.car_charge_currentlimit_raw ?: 0f) > 31f) {
+            // increase limit of seekbar
+            ampLimitSlider.valueTo = carData?.car_charge_currentlimit_raw?.plus(12f) ?: 32f
+        }
 
         //ampLimitSlider.valueFrom = 1.0f
         ampLimitSlider.setValues(1.0f)
