@@ -1073,15 +1073,25 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         var consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(100)?.div(carData.car_tripmeter_raw.div(10))
         if (consumption?.isNaN() == true)
             consumption = 0f
-        val st = String.format(
-            "%.1f Wh/%s, Regen %.1f kWh, Trip %s\n12V Batt %sV",
-            consumption,
-            carData?.car_distance_units,
-            carData?.car_energyrecd?.times(10)?.let { floor(it.toDouble()) }?.div(10) ?: 0,
-            carData?.car_tripmeter,
-            carData?.car_12vline_voltage
-        )
-
+        val st = if(carData?.car_type in listOf("SQ")) {
+            String.format(
+                "%.1f kWh/%s, Con %.1f kWh, Regen %.1f kWh\nTrip %s, 12V Batt %sV",
+                consumption,
+                carData?.car_distance_units,
+                carData?.car_energyused,
+                carData?.car_energyrecd,
+                carData?.car_tripmeter,
+                carData?.car_12vline_voltage
+            )
+        } else {
+            String.format(
+                "%.1f Wh/%s, Regen %.1f kWh, Trip %s",
+                consumption,
+                carData?.car_distance_units,
+                carData?.car_energyrecd?.times(10)?.let { floor(it.toDouble()) }?.div(10) ?: 0,
+                carData?.car_tripmeter
+            )
+        }
 
         var geocodedLocation = ""
         if (context != null) {

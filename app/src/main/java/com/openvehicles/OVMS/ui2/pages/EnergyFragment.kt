@@ -63,13 +63,13 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
     private fun initialiseEnergyStats(carData: CarData?) {
         energyMetricsAdapter.mData = emptyList()
         // Battery content
-
+        val battSohTitle = findViewById(R.id.textView19) as TextView
         val battSoh = findViewById(R.id.battSoh) as TextView
-
-        battSoh.text = String.format("%2.2f", carData?.car_soh)
-
+        battSohTitle.text = getString(R.string.battery_data_soh_2)
+        battSoh.text = String.format("%2.0f %%", carData?.car_soh)
 
         // SOC icon and label
+        val socTextTitle = findViewById(R.id.textView18) as TextView
         val socText: TextView = findViewById(R.id.battSoc) as TextView
         val socBattIcon = findViewById(R.id.battIndicatorImg) as ImageView
 
@@ -111,11 +111,13 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
 
         val socBattLayer = LayerDrawable(socBattLayers.toTypedArray())
         socBattIcon.setImageDrawable(socBattLayer)
-        socText.text = String.format("%2.2f", carData?.car_soc_raw)
+        socTextTitle.text = getString(R.string.battery_data_soc_2)
+        socText.text = carData?.car_soc
         var showSoc = true
         socText.setOnClickListener {
             showSoc = !showSoc
             socText.text = if (!showSoc) carData?.car_range_estimated else carData?.car_soc
+            socTextTitle.text = if (!showSoc) getString(R.string.EstimatedShort) else getString(R.string.battery_data_soc_2)
         }
 
         // Battery temp
@@ -128,7 +130,7 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
         val battVolt = findViewById(R.id.battVolt) as TextView
         val battAmp = findViewById(R.id.battAmp) as TextView
         val battkW = findViewById(R.id.battkW) as TextView
-        battVolt.text = String.format("%2.1f V", carData?.car_battery_voltage)
+        battVolt.text = String.format("%2.0f V", carData?.car_battery_voltage)
         battAmp.text = if(carData?.car_type != "SQ") String.format("%2.1f A", carData?.car_battery_current_raw) else String.format("%2.0f Ah", carData?.car_CAC)
         battkW.text = if(carData?.car_type != "SQ") String.format("%2.2f kW", carData?.car_power) else String.format("%2.1f kWh", carData?.car_battery_capacity)
 
@@ -180,8 +182,17 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
         var consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(100)?.div(carData.car_tripmeter_raw.div(10))
         if (consumption?.isNaN() == true)
             consumption = 0f
-        energyMetricsAdapter.mData += EnergyMetric(getString(R.string.consumption),
-            String.format("%.1f Wh/%s", consumption, carData?.car_distance_units))
+        if(carData?.car_type in listOf("SQ")) {
+            energyMetricsAdapter.mData += EnergyMetric(
+                getString(R.string.consumption),
+                String.format("%.1f kWh/%s", consumption, carData?.car_distance_units)
+            )
+        } else {
+            energyMetricsAdapter.mData += EnergyMetric(
+                getString(R.string.consumption),
+                String.format("%.1f Wh/%s", consumption, carData?.car_distance_units)
+            )
+        }
 
         energyMetricsAdapter.mData += EnergyMetric(getString(R.string.consumed_amount_label),
             String.format("%2.2f kWh", carData?.car_energyused))

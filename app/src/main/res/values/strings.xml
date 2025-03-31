@@ -461,6 +461,8 @@
     <string name="battery_cell_description">Cell status</string>
     <string name="battery_data_soc">SOC (%)</string>
     <string name="battery_data_soh">SOH (%)</string>
+    <string name="battery_data_soc_2">SOC</string>
+    <string name="battery_data_soh_2">SOH</string>
     <string name="battery_data_volt">Volt (V)</string>
     <string name="battery_data_volt_min">Volt min (V)</string>
     <string name="battery_data_temp">Temp (°C)</string>
