@@ -55,7 +55,6 @@ import com.google.gson.Gson
 import com.maltaisn.icondialog.IconDialog
 import com.maltaisn.icondialog.IconDialogSettings
 import com.maltaisn.icondialog.data.Icon
-import com.maltaisn.icondialog.pack.IconDrawableLoader
 import com.maltaisn.icondialog.pack.IconPack
 import com.openvehicles.OVMS.BaseApp
 import com.openvehicles.OVMS.R
