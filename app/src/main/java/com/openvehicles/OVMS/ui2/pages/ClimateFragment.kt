@@ -19,6 +19,8 @@ import com.openvehicles.OVMS.api.OnResultCommandListener
 import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.ui.BaseFragment
 import com.openvehicles.OVMS.ui2.components.quickactions.ClimateQuickAction
+import com.openvehicles.OVMS.ui2.components.quickactions.ClimateTimerQuickAction
+import com.openvehicles.OVMS.ui2.components.quickactions.ClimateDaysQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.adapters.QuickActionsAdapter
 import com.openvehicles.OVMS.ui2.rendering.CarRenderingUtils
 import com.openvehicles.OVMS.utils.CarsStorage
@@ -159,6 +161,8 @@ class ClimateFragment : BaseFragment(), OnResultCommandListener {
         climateActionsAdapter.mData.clear()
         climateActionsAdapter.setCarData(carData)
         climateActionsAdapter.mData += ClimateQuickAction({getService()})
+        climateActionsAdapter.mData += ClimateTimerQuickAction({getService()})
+        climateActionsAdapter.mData += ClimateDaysQuickAction({getService()})
         climateActionsAdapter.notifyDataSetChanged()
     }
 

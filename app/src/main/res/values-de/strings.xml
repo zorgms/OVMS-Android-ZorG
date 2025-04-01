@@ -739,4 +739,30 @@
     <string name="textLASTCHARGING">Letzte Ladung</string>
     <string name="GSM_icon">GSM icon anzeigen</string>
     <string name="GPS_icon">GPS icon anzeigen</string>
+    <string name="lb_booster_hour">Stunde</string>
+    <string name="lb_booster_min">Minute</string>
+    <string name="lb_booster_doubler">Klima laufzeit?</string>
+    <string name="lb_booster_time">Klima Timer</string>
+    <string name="lb_booster_time_off">Klima Timer aus</string>
+    <string name="climate_control">Klimatisierung Zeitgesteuert</string>
+    <string name="lb_booster_weekly">Klima wöchentlich ein/aus</string>
+    <string name="lb_booster_weekly_on">Klima wöchentlich ein</string>
+    <string name="lb_booster_weekly_off">Klima wöchentlich aus</string>
+    <string name="lb_booster_day_sel">Klima von/bis Tag Auswahl</string>
+    <string name="lb_booster_day_start">erster Tag</string>
+    <string name="lb_booster_day_end">letzter Tag</string>
+    <string-array name="lb_booster_mode" translatable="false">
+        <item>@string/lb_5min</item>
+        <item>@string/lb_10min</item>
+        <item>@string/lb_15min</item>
+    </string-array>
+    <string-array name="lb_booster_days">
+        <item>&#160;Son&#160;</item>
+        <item>&#160;Mon&#160;</item>
+        <item>&#160;Die&#160;</item>
+        <item>&#160;Mit&#160;</item>
+        <item>&#160;Don&#160;</item>
+        <item>&#160;Fre&#160;</item>
+        <item>&#160;Sam&#160;</item>
+    </string-array>
 </resources>

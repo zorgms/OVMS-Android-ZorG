@@ -800,8 +800,8 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         val action1 = findViewById(R.id.charging_action1) as Button
         val action2 = findViewById(R.id.charging_action2) as Button
 
-        action1.isEnabled = carData?.car_charging == false && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115
-        action2.isEnabled = carData?.car_charging == true && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115
+        action1.isEnabled = carData?.car_charging == false && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115 && carData.car_type !in listOf("SQ")
+        action2.isEnabled = carData?.car_charging == true && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115 && carData.car_type !in listOf("SQ")
 
         action1.setOnClickListener {
             MaterialAlertDialogBuilder(requireActivity())
@@ -1155,9 +1155,15 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         if (carData?.car_odometer?.isNotEmpty() == true) {
             carInfo += carData.car_odometer
         }
+
         if (carData?.car_vin?.isNotEmpty() == true) {
             carInfo += "\nVIN: ${carData.car_vin}"
         }
+
+        if (carData?.car_gsmlock?.isNotEmpty() == true) {
+            carInfo += "\nGSM: ${carData.car_gsmlock} ${carData.car_mdm_mode}\n"
+        }
+
         if (carData?.car_firmware?.isNotEmpty() == true) {
             carInfo += "\n${getString(R.string.lb_ovms_firmware)} ${carData.car_firmware}"
         }

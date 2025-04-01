@@ -832,6 +832,33 @@
     <string name="textLASTCHARGING">Last Charging</string>
     <string name="GSM_icon">show GSM icon</string>
     <string name="GPS_icon">show GPS icon</string>
+    <string name="lb_booster_hour">Hour</string>
+    <string name="lb_booster_min">Minutes</string>
+    <string name="lb_booster_doubler">how long activated?</string>
+    <string name="lb_booster_time">Climate Timer</string>
+    <string name="lb_booster_time_off">Climate Timer off</string>
+    <string name="climate_control">Timebased Climate Control</string>
+    <string name="lb_booster_activate">activate</string>
+    <string name="lb_booster_weekly">Climate weekly on/off</string>
+    <string name="lb_booster_weekly_on">Climate weekly on</string>
+    <string name="lb_booster_weekly_off">Climate weekly off</string>
+    <string name="lb_booster_day_sel">Climate from/to day selection</string>
+    <string name="lb_booster_day_start">first Day</string>
+    <string name="lb_booster_day_end">last Day</string>
+    <string-array name="lb_booster_mode" translatable="false">
+        <item>@string/lb_5min</item>
+        <item>@string/lb_10min</item>
+        <item>@string/lb_15min</item>
+    </string-array>
+    <string-array name="lb_booster_days">
+        <item>&#160;Son&#160;</item>
+        <item>&#160;Mon&#160;</item>
+        <item>&#160;Tue&#160;</item>
+        <item>&#160;Wed&#160;</item>
+        <item>&#160;Thu&#160;</item>
+        <item>&#160;Fri&#160;</item>
+        <item>&#160;Sat&#160;</item>
+    </string-array>
     <string-array name="home_range_display_mode_labels" translatable="false">
         <item>@string/IdealShort</item>
         <item>@string/EstimatedShort</item>
