@@ -836,6 +836,7 @@
     <string name="lb_booster_min">Minutes</string>
     <string name="lb_booster_doubler">how long activated?</string>
     <string name="lb_booster_time">Climate Timer</string>
+    <string name="lb_booster_time_weekly">Weekly Timer</string>
     <string name="lb_booster_time_off">Climate Timer off</string>
     <string name="climate_control">Timebased Climate Control</string>
     <string name="lb_booster_activate">activate</string>

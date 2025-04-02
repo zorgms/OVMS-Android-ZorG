@@ -15,10 +15,10 @@ import com.openvehicles.OVMS.ui.witdet.SwitcherView
  */
 class ClimateTimerQuickAction(apiServiceGetter: () -> ApiService?, context: Context? = null) :
 
-    QuickAction(ACTION_ID, R.drawable.ic_ac_off, apiServiceGetter,
+    QuickAction(ACTION_ID, R.drawable.heat_cool_w, apiServiceGetter,
         actionOnTint = R.attr.colorSecondaryContainer,
         actionOffTint = R.color.cardview_dark_background,
-        label = context?.getString(R.string.service_notification_title)) {
+        label = context?.getString(R.string.lb_booster_time)) {
     companion object {
         const val ACTION_ID = "climatetimer"
     }

@@ -743,6 +743,7 @@
     <string name="lb_booster_min">Minute</string>
     <string name="lb_booster_doubler">Klima laufzeit?</string>
     <string name="lb_booster_time">Klima Timer</string>
+    <string name="lb_booster_time_weekly">Wöchentlicher Timer</string>
     <string name="lb_booster_time_off">Klima Timer aus</string>
     <string name="climate_control">Klimatisierung Zeitgesteuert</string>
     <string name="lb_booster_weekly">Klima wöchentlich ein/aus</string>
