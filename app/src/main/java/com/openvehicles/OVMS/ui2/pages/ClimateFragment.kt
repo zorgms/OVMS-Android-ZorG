@@ -94,7 +94,7 @@ class ClimateFragment : BaseFragment(), OnResultCommandListener {
             val climatetxth = findViewById(R.id.ClimateTxtH) as TextView
             val climatetxtd = findViewById(R.id.ClimateTxtD) as TextView
 
-            val timeraw = carData?.car_booster_time?.split("")
+            val timeraw = carData?.car_ac_booster_time?.split("")
             val time_h = String.format("%s%s", timeraw?.get(1), timeraw?.get(2))
             val time_m = String.format("%s%s", timeraw?.get(3), timeraw?.get(4))
             val daysArray = resources.getStringArray(R.array.lb_booster_days)
@@ -105,11 +105,11 @@ class ClimateFragment : BaseFragment(), OnResultCommandListener {
             )
 
             climatetxtd.text = String.format(
-                "%s - %s", daysArray.getOrNull(carData!!.car_booster_ds), daysArray.getOrNull(carData.car_booster_de.minus(1))
+                "%s - %s", daysArray.getOrNull(carData!!.car_ac_booster_ds), daysArray.getOrNull(carData.car_ac_booster_de.minus(1))
             )
 
-            climatetxth.visibility = if(carData.car_booster_on == "yes") View.VISIBLE else View.INVISIBLE
-            climatetxtd.visibility = if(carData.car_booster_weekly == "yes") View.VISIBLE else View.INVISIBLE
+            climatetxth.visibility = if(carData.car_ac_booster_on == "yes") View.VISIBLE else View.INVISIBLE
+            climatetxtd.visibility = if(carData.car_ac_booster_weekly == "yes") View.VISIBLE else View.INVISIBLE
         }
 
         outsideTempText.alpha = 1f

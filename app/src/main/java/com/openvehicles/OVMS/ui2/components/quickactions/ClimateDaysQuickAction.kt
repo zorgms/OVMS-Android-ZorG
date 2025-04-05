@@ -29,8 +29,8 @@ class ClimateDaysQuickAction(apiServiceGetter: () -> ApiService?, context: Conte
         val booster_ds = dialogView.findViewById<View>(R.id.booster_ds) as SwitcherView?
         val booster_de = dialogView.findViewById<View>(R.id.booster_de) as SwitcherView?
 
-        val booster_start = String.format("%s",getCarData()?.car_booster_ds)
-        val booster_end = String.format("%s", getCarData()?.car_booster_de?.minus(1))
+        val booster_start = String.format("%s",getCarData()?.car_ac_booster_ds)
+        val booster_end = String.format("%s", getCarData()?.car_ac_booster_de?.minus(1))
 
         booster_ds!!.selected = booster_start.toInt()
         booster_de!!.selected = booster_end.toInt()
@@ -47,14 +47,14 @@ class ClimateDaysQuickAction(apiServiceGetter: () -> ApiService?, context: Conte
                 val booster_nds = booster_start.selected
                 val booster_nde = booster_end.selected
 
-                val cmd = "7,me set xsq.booster.data 1,1,1,-1,$booster_nds,$booster_nde,-1"
+                val cmd = "7,metrics set xsq.booster.data 1,1,1,-1,$booster_nds,$booster_nde,-1"
                 sendCommand(cmd)
             }
             .show()
     }
 
     override fun getStateFromCarData(): Boolean {
-        return getCarData()?.car_booster_weekly == "yes"
+        return getCarData()?.car_ac_booster_weekly == "yes"
     }
 
     override fun commandsAvailable(): Boolean {

@@ -66,7 +66,7 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
         val battSohTitle = findViewById(R.id.textView19) as TextView
         val battSoh = findViewById(R.id.battSoh) as TextView
         battSohTitle.text = getString(R.string.battery_data_soh_2)
-        battSoh.text = String.format("%2.0f %%", carData?.car_soh)
+        battSoh.text = String.format("%2.1f %%", carData?.car_soh)
 
         // SOC icon and label
         val socTextTitle = findViewById(R.id.textView18) as TextView
@@ -130,7 +130,7 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
         val battVolt = findViewById(R.id.battVolt) as TextView
         val battAmp = findViewById(R.id.battAmp) as TextView
         val battkW = findViewById(R.id.battkW) as TextView
-        battVolt.text = String.format("%2.0f V", carData?.car_battery_voltage)
+        battVolt.text = String.format("%2.1f V", carData?.car_battery_voltage)
         battAmp.text = if(carData?.car_type != "SQ") String.format("%2.1f A", carData?.car_battery_current_raw) else String.format("%2.0f Ah", carData?.car_CAC)
         battkW.text = if(carData?.car_type != "SQ") String.format("%2.2f kW", carData?.car_power) else String.format("%2.1f kWh", carData?.car_battery_capacity)
 

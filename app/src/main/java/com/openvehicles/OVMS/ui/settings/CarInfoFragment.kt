@@ -70,7 +70,7 @@ class CarInfoFragment : BaseFragment() {
                 carData!!.car_battery_capacity
             ) else String.format("%.1f Ah", carData!!.car_CAC)
         )
-        setValue(rootView, R.id.txt_soh, String.format("%.0f%%", carData!!.car_soh))
+        setValue(rootView, R.id.txt_soh, String.format("%.1f%%", carData!!.car_soh))
         setValue(
             rootView, R.id.txt_12v_info, String.format(
                 "%.1fV (%s) %.1fA",

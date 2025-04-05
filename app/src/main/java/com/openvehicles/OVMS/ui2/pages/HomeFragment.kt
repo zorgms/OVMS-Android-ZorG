@@ -1043,12 +1043,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
         var tpms = ""
         if(appPrefs.getData("showtpmscontrol", "off") == "on"){
-            var pressure = arrayOf(
-                carData?.car_tpms_fl_p,
-                carData?.car_tpms_fr_p,
-                carData?.car_tpms_rl_p,
-                carData?.car_tpms_rr_p
-            )
+            var pressure = carData?.car_tpms_pressure
             tpms = String.format(
                 "%s %s | %s %s | %s %s | %s %s",
                 getString(R.string.fl_tpms),
@@ -1074,16 +1069,16 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             climateData += String.format("%s: %s", getString(R.string.textAMBIENT), carData.car_temp_ambient)
         }
         if (carData?.car_type in listOf("SQ") ) {
-            if (carData?.car_booster_on == "yes" && climateData != "") {
-                val timeraw = carData.car_booster_time.split("")
+            if (carData?.car_ac_booster_on == "yes" && climateData != "") {
+                val timeraw = carData.car_ac_booster_time.split("")
                 val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
                 val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
                 climateData += ", "
                 climateData += String.format(
                     "A/C: $time_h:$time_m h"
                 )
-            } else if (carData?.car_booster_on == "yes") {
-                val timeraw = carData.car_booster_time.split("")
+            } else if (carData?.car_ac_booster_on == "yes") {
+                val timeraw = carData.car_ac_booster_time.split("")
                 val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
                 val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
                 climateData += String.format(

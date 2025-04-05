@@ -31,13 +31,13 @@ class ClimateTimerQuickAction(apiServiceGetter: () -> ApiService?, context: Cont
         val booster_m = dialogView.findViewById<View>(R.id.booster_time_min) as SlideNumericView?
         val booster_sel = dialogView.findViewById<View>(R.id.booster_SwitcherView) as SwitcherView?
 
-        val booster_weekly = getCarData()?.car_booster_weekly
-        val timeraw = getCarData()?.car_booster_time?.split("")
+        val booster_weekly = getCarData()?.car_ac_booster_weekly
+        val timeraw = getCarData()?.car_ac_booster_time?.split("")
         val time_h = String.format("%s%s", timeraw?.get(1), timeraw?.get(2))
         val time_m = String.format("%s%s", timeraw?.get(3), timeraw?.get(4))
-        val booster_start = String.format("%s",getCarData()?.car_booster_ds)
-        val booster_end = String.format("%s", getCarData()?.car_booster_de?.minus(1))
-        val bdt = getCarData()?.car_booster_bdt
+        val booster_start = String.format("%s",getCarData()?.car_ac_booster_ds)
+        val booster_end = String.format("%s", getCarData()?.car_ac_booster_de?.minus(1))
+        val bdt = getCarData()?.car_ac_booster_bdt
 
         booster_h!!.value = time_h.toInt()
         booster_m!!.value = time_m.toInt()
@@ -61,7 +61,7 @@ class ClimateTimerQuickAction(apiServiceGetter: () -> ApiService?, context: Cont
                             val booster_h_val = if (booster_hd.value < 10) String.format("0%d", booster_hd.value) else booster_hd.value
                             val booster_m_val = if (booster_md.value < 10) String.format("0%d", booster_md.value) else booster_md.value
                             val booster_btdsel_val = booster_sel_d.selected
-                            val cmd = "7,me set xsq.booster.data 1,1,$state_weekly,$booster_h_val$booster_m_val,$booster_start,$booster_end,$booster_btdsel_val"
+                            val cmd = "7,metrics set xsq.booster.data 1,1,$state_weekly,$booster_h_val$booster_m_val,$booster_start,$booster_end,$booster_btdsel_val"
                             sendCommand(cmd)
                         }
                     }
@@ -71,7 +71,7 @@ class ClimateTimerQuickAction(apiServiceGetter: () -> ApiService?, context: Cont
     }
 
     override fun getStateFromCarData(): Boolean {
-        return getCarData()?.car_booster_on == "yes"
+        return getCarData()?.car_ac_booster_on == "yes"
     }
 
     override fun commandsAvailable(): Boolean {

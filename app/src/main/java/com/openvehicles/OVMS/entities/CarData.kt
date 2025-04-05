@@ -216,13 +216,13 @@ class CarData : Serializable {
     var car_temp_charger_raw = 0f
     var car_temp_ambient_raw = 0f
     var car_temp_cabin_raw = 0f
-    var car_booster_metrics = false
-    var car_booster_on = "no"
-    var car_booster_weekly = "no"
-    var car_booster_time = "0515"
-    var car_booster_ds = 0
-    var car_booster_de = 0
-    var car_booster_bdt = 0
+    var car_ac_booster_metrics = false
+    var car_ac_booster_on = "no"
+    var car_ac_booster_weekly = "no"
+    var car_ac_booster_time = "0515"
+    var car_ac_booster_ds = 0
+    var car_ac_booster_de = 0
+    var car_ac_booster_bdt = 0
     @JvmField
     var car_tripmeter_raw = 0f
     @JvmField
@@ -739,11 +739,12 @@ class CarData : Serializable {
                 } else {
                     ""
                 }
+            }
+            if (dataParts.size >= 42) {
                 car_charge_kwh_grid = dataParts[38].toFloat()
                 car_charge_kwh_grid_total = dataParts[39].toFloat()
                 car_battery_capacity = dataParts[40].toFloat()
-            }
-            if (dataParts.size >= 42) {
+
                 val dateFormat = appPrefs!!.getData("showfahrenheit", "off") == "on"
                 val charge_timestamp_raw = dataParts[41].toInt()
                 val timestamp_formater = if(!dateFormat) {
@@ -1097,13 +1098,13 @@ class CarData : Serializable {
                 car_gen_substate = dataParts[8]
                 car_gen_mode = dataParts[9]
                 if (dataParts[9] == "booster" && car_type in listOf("SQ") ) {
-                    car_booster_metrics = true
-                    car_booster_on = dataParts[10]
-                    car_booster_weekly = dataParts[11]
-                    car_booster_time = dataParts[12]
-                    car_booster_ds = dataParts[13].toInt()
-                    car_booster_de = dataParts[14].toInt()
-                    car_booster_bdt = dataParts[15].toInt()
+                    car_ac_booster_metrics = true
+                    car_ac_booster_on = dataParts[10]
+                    car_ac_booster_weekly = dataParts[11]
+                    car_ac_booster_time = dataParts[12]
+                    car_ac_booster_ds = dataParts[13].toInt()
+                    car_ac_booster_de = dataParts[14].toInt()
+                    car_ac_booster_bdt = dataParts[15].toInt()
                     car_gen_climit = dataParts[16].toFloat()
                     car_gen_limit_range = dataParts[17].toFloat()
                     car_gen_limit_soc = dataParts[18].toInt()  // << v.e.gear
@@ -1279,13 +1280,13 @@ class CarData : Serializable {
             b.putDouble("car_12vline_ref", car_12vline_ref)
             b.putDouble("car_12v_current", car_12v_current)
 
-            b.putBoolean("car_booster_metrics", car_booster_metrics)
-            b.putString("car_booster_on", car_booster_on)
-            b.putString("car_booster_weekly", car_booster_weekly)
-            b.putString("car_booster_time", car_booster_time)
-            b.putInt("car_booster_ds", car_booster_ds)
-            b.putInt("car_booster_de", car_booster_de)
-            b.putInt("car_booster_bdt", car_booster_bdt)
+            b.putBoolean("car_ac_booster_metrics", car_ac_booster_metrics)
+            b.putString("car_ac_booster_on", car_ac_booster_on)
+            b.putString("car_ac_booster_weekly", car_ac_booster_weekly)
+            b.putString("car_ac_booster_time", car_ac_booster_time)
+            b.putInt("car_ac_booster_ds", car_ac_booster_ds)
+            b.putInt("car_ac_booster_de", car_ac_booster_de)
+            b.putInt("car_ac_booster_bdt", car_ac_booster_bdt)
 
 
             //
