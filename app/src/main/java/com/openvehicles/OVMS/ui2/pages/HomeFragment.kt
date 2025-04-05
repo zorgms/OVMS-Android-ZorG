@@ -1044,6 +1044,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         var tpms = ""
         if(appPrefs.getData("showtpmscontrol", "off") == "on"){
             var pressure = carData?.car_tpms_pressure
+            if (pressure != null && pressure.size == 4)
             tpms = String.format(
                 "%s %s | %s %s | %s %s | %s %s",
                 getString(R.string.fl_tpms),
@@ -1055,6 +1056,14 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 getString(R.string.rr_tpms),
                 pressure?.get(3) ?: ""
             )
+            if (pressure != null && pressure.size == 2)
+                tpms = String.format(
+                    "%s %s | %s %s",
+                    getString(R.string.front_tpms),
+                    pressure?.get(0) ?: "",
+                    getString(R.string.rear_tpms),
+                    pressure?.get(1) ?: ""
+                )
         }
 
         tabsAdapter.mData += HomeTab(TAB_CONTROLS, R.drawable.ic_controls_tab, getString(R.string.controls_tab_label), tpms)

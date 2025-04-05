@@ -752,6 +752,8 @@
     <string name="lb_booster_day_sel">Klima von/bis Tag Auswahl</string>
     <string name="lb_booster_day_start">erster Tag</string>
     <string name="lb_booster_day_end">letzter Tag</string>
+    <string name="front_tpms">Vorne</string>
+    <string name="rear_tpms">Hinten"</string>
     <string-array name="lb_booster_mode" translatable="false">
         <item>@string/lb_5min</item>
         <item>@string/lb_10min</item>
