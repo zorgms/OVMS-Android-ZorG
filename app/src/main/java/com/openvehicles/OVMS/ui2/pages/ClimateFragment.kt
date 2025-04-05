@@ -183,8 +183,8 @@ class ClimateFragment : BaseFragment(), OnResultCommandListener {
         climateActionsAdapter.mData.clear()
         climateActionsAdapter.setCarData(carData)
         climateActionsAdapter.mData += ClimateQuickAction({getService()})
-        climateActionsAdapter.mData += ClimateTimerQuickAction({getService()})
-        climateActionsAdapter.mData += ClimateDaysQuickAction({getService()})
+        if (carData?.car_type in listOf("SQ")) climateActionsAdapter.mData += ClimateTimerQuickAction({getService()})
+        if (carData?.car_type in listOf("SQ")) climateActionsAdapter.mData += ClimateDaysQuickAction({getService()})
         climateActionsAdapter.notifyDataSetChanged()
     }
 
