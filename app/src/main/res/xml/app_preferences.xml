@@ -60,6 +60,32 @@
             app:summary=""
             app:key="api_key" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/tpms_settings">
+        <SwitchPreferenceCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="false"
+            android:title="@string/mi_car_details_tpms"
+            app:key="pressure_psi_bar" />
+        <SwitchPreferenceCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="false"
+            android:title="@string/mi_car_show_tpms"
+            app:key="show_tpms_at_button" />
+        <SwitchPreferenceCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="false"
+            android:title="@string/mi_car_tpms_wheelname"
+            app:key="tpms_wheelname_app" />
+        <SwitchPreferenceCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="false"
+            android:title="@string/mi_car_sort_tpms"
+            app:key="sort_tpms_by_firmware" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/other_settings">
         <SwitchPreferenceCompat
             android:layout_width="wrap_content"
@@ -73,18 +99,6 @@
             android:defaultValue="false"
             android:title="@string/GPS_icon"
             app:key="gps_icon" />
-        <SwitchPreferenceCompat
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:defaultValue="false"
-            android:title="@string/mi_car_details_tpms"
-            app:key="pressure_psi_bar" />
-        <SwitchPreferenceCompat
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:defaultValue="false"
-            android:title="@string/mi_car_show_tpms"
-            app:key="show_tpms_at_button" />
         <SwitchPreferenceCompat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -12,6 +12,7 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.GridLayoutManager.VERTICAL
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,6 +23,7 @@ import com.openvehicles.OVMS.api.OnResultCommandListener
 import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.entities.CarData.DataStale
 import com.openvehicles.OVMS.ui.BaseFragment
+import com.openvehicles.OVMS.utils.AppPrefs
 import com.openvehicles.OVMS.ui2.components.quickactions.ChargingQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.CarInfoQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.Homelink1QuickAction
@@ -37,6 +39,7 @@ import com.openvehicles.OVMS.ui2.components.quickactions.WakeupQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.adapters.QuickActionsAdapter
 import com.openvehicles.OVMS.ui2.rendering.CarRenderingUtils
 import com.openvehicles.OVMS.utils.CarsStorage
+import com.openvehicles.OVMS.utils.CarsStorage.getLastSelectedCarId
 
 
 class ControlsFragment : BaseFragment(), OnResultCommandListener {
@@ -46,8 +49,7 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
     private lateinit var sideActionsAdapter: QuickActionsAdapter
     private lateinit var bottomActionsAdapter: QuickActionsAdapter
     private lateinit var centerActionsAdapter: QuickActionsAdapter
-
-
+    private lateinit var appPrefs: AppPrefs
 
 
     override fun onCreateView(
@@ -60,6 +62,8 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         carData = CarsStorage.getSelectedCarData()
+        appPrefs = AppPrefs(requireContext(), "ovms")
+
         val sideActionsRecyclerView = findViewById(R.id.sideActions) as RecyclerView
         val bottomActionsRecyclerView = findViewById(R.id.bottomActions) as RecyclerView
         val mainActionsRecyclerView = findViewById(R.id.mainActions) as RecyclerView
@@ -102,6 +106,110 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                 if (rlTPMS.visibility == View.VISIBLE) View.INVISIBLE else View.VISIBLE
             staleTPMS.visibility =
                 if (staleTPMS.visibility == View.VISIBLE) View.INVISIBLE else View.VISIBLE
+        }
+
+        frTPMS.setOnClickListener {
+            val carType = carData?.car_type?.lowercase() // config xsq = defined smart EQ config path in the Firmware
+            val pressure = carData?.car_tpms_pressure
+            val tpms_fl = getString(R.string.tpms_fl) + " " + pressure?.get(0)
+            val tpms_fr = getString(R.string.tpms_fr) + " " + pressure?.get(1)
+            val tpms_rl = getString(R.string.tpms_rl) + " " + pressure?.get(2)
+            val tpms_rr = getString(R.string.tpms_rr) + " " + pressure?.get(3)
+            val options = arrayOf(tpms_fl,tpms_fr,tpms_rl,tpms_rr)
+            var checkedItem = 1
+            AlertDialog.Builder(requireActivity())
+                .setTitle(R.string.fr_get_tpms)
+                .setSingleChoiceItems(options, checkedItem) { _, which ->
+                    checkedItem = which // Update the selected item index
+                }
+                .setNegativeButton(R.string.Close, null)
+                .setPositiveButton(R.string.fr_set_tpms) { _, _ ->
+                    val vehicleId = getLastSelectedCarId()
+                    if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
+                        sendCommand(R.string.fr_set_tpms, "7,config set x$carType TPMS_FR $checkedItem", this@ControlsFragment)
+                    } else {
+                        appPrefs.saveData("tpms_fr_$vehicleId", "$checkedItem")
+                    }
+                }
+                .show()
+        }
+
+        flTPMS.setOnClickListener {
+            val carType = carData?.car_type?.lowercase() // config xsq = defined smart EQ config path in the Firmware
+            val pressure = carData?.car_tpms_pressure
+            val tpms_fl = getString(R.string.tpms_fl) + " " + pressure?.get(0)
+            val tpms_fr = getString(R.string.tpms_fr) + " " + pressure?.get(1)
+            val tpms_rl = getString(R.string.tpms_rl) + " " + pressure?.get(2)
+            val tpms_rr = getString(R.string.tpms_rr) + " " + pressure?.get(3)
+            val options = arrayOf(tpms_fl,tpms_fr,tpms_rl,tpms_rr)
+            var checkedItem = 0
+            AlertDialog.Builder(requireActivity())
+                .setTitle(R.string.fl_get_tpms)
+                .setSingleChoiceItems(options, checkedItem) { _, which ->
+                    checkedItem = which // Update the selected item index
+                }
+                .setNegativeButton(R.string.Close, null)
+                .setPositiveButton(R.string.fl_set_tpms) { _, _ ->
+                    val vehicleId = getLastSelectedCarId()
+                    if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
+                        sendCommand(R.string.fl_set_tpms, "7,config set x$carType TPMS_FL $checkedItem", this@ControlsFragment)
+                    } else {
+                        appPrefs.saveData("tpms_fl_$vehicleId", "$checkedItem")
+                    }
+                }
+                .show()
+        }
+
+        rrTPMS.setOnClickListener {
+            val carType = carData?.car_type?.lowercase() // config xsq = defined smart EQ config path in the Firmware
+            val pressure = carData?.car_tpms_pressure
+            val tpms_fl = getString(R.string.tpms_fl) + " " + pressure?.get(0)
+            val tpms_fr = getString(R.string.tpms_fr) + " " + pressure?.get(1)
+            val tpms_rl = getString(R.string.tpms_rl) + " " + pressure?.get(2)
+            val tpms_rr = getString(R.string.tpms_rr) + " " + pressure?.get(3)
+            val options = arrayOf(tpms_fl,tpms_fr,tpms_rl,tpms_rr)
+            var checkedItem = 3
+            AlertDialog.Builder(requireActivity())
+                .setTitle(R.string.rr_get_tpms)
+                .setSingleChoiceItems(options, checkedItem) { _, which ->
+                    checkedItem = which // Update the selected item index
+                }
+                .setNegativeButton(R.string.Close, null)
+                .setPositiveButton(R.string.rr_set_tpms) { _, _ ->
+                    val vehicleId = getLastSelectedCarId()
+                    if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
+                        sendCommand(R.string.rr_set_tpms, "7,config set x$carType TPMS_RR $checkedItem", this@ControlsFragment)
+                    } else {
+                        appPrefs.saveData("tpms_rr_$vehicleId", "$checkedItem")
+                    }
+                }
+                .show()
+        }
+
+        rlTPMS.setOnClickListener {
+            val carType = carData?.car_type?.lowercase() // config xsq = defined smart EQ config path in the Firmware
+            val pressure = carData?.car_tpms_pressure
+            val tpms_fl = getString(R.string.tpms_fl) + " " + pressure?.get(0)
+            val tpms_fr = getString(R.string.tpms_fr) + " " + pressure?.get(1)
+            val tpms_rl = getString(R.string.tpms_rl) + " " + pressure?.get(2)
+            val tpms_rr = getString(R.string.tpms_rr) + " " + pressure?.get(3)
+            val options = arrayOf(tpms_fl,tpms_fr,tpms_rl,tpms_rr)
+            var checkedItem = 2
+            AlertDialog.Builder(requireActivity())
+                .setTitle(R.string.rl_get_tpms)
+                .setSingleChoiceItems(options, checkedItem) { _, which ->
+                    checkedItem = which // Update the selected item index
+                }
+                .setNegativeButton(R.string.Close, null)
+                .setPositiveButton(R.string.rl_set_tpms) { _, _ ->
+                    val vehicleId = getLastSelectedCarId()
+                    if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
+                        sendCommand(R.string.rl_set_tpms, "7,config set x$carType TPMS_RL $checkedItem", this@ControlsFragment)
+                    } else {
+                        appPrefs.saveData("tpms_rl_$vehicleId", "$checkedItem")
+                    }
+                }
+                .show()
         }
 
         // Disable TPMS for motorcycles, etc?
@@ -164,10 +272,59 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
             alert = intArrayOf(0, 0, 0, 0)
         }
 
-        flTPMS.text = String.format("%s\n%s", val1?.get(0) ?: "---", val2?.get(0) ?:  "---")
-        frTPMS.text = String.format("%s\n%s", val1?.get(1) ?: "---", val2?.get(1) ?:  "---")
-        rlTPMS.text = String.format("%s\n%s", val1?.get(2) ?: "---", val2?.get(2) ?:  "---")
-        rrTPMS.text = String.format("%s\n%s", val1?.get(3) ?: "---", val2?.get(3) ?:  "---")
+        val vehicleId = getLastSelectedCarId()
+        val appwheelname = if (appPrefs.getData("tpms_wheelname_app", "off") == "on") {
+            arrayOf(getString(R.string.fl_tpms),getString(R.string.fr_tpms),getString(R.string.rl_tpms),getString(R.string.rr_tpms))
+        } else {
+            carData?.car_tpms_wheelname ?: arrayOf(getString(R.string.fl_tpms),getString(R.string.fr_tpms),getString(R.string.rl_tpms),getString(R.string.rr_tpms))
+        }
+        if (carData?.stale_tpms_temp == CarData.DataStale.NoValue) {
+            flTPMS.text = String.format(
+                "%s\n%s",
+                appwheelname.get(0),
+                val2?.get((appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())) ?: "---"
+            )
+            frTPMS.text = String.format(
+                "%s\n%s",
+                appwheelname.get(1),
+                val2?.get((appPrefs.getData("tpms_fr_$vehicleId", "1")!!.toInt())) ?: "---"
+            )
+            rlTPMS.text = String.format(
+                "%s\n%s",
+                appwheelname.get(2),
+                val2?.get((appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())) ?: "---"
+            )
+            rrTPMS.text = String.format(
+                "%s\n%s",
+                appwheelname.get(3),
+                val2?.get((appPrefs.getData("tpms_rr_$vehicleId", "3")!!.toInt())) ?: "---"
+            )
+        } else {
+            flTPMS.text = String.format(
+                "%s\n%s\n%s",
+                appwheelname.get(0),
+                val1?.get((appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())) ?: "---",
+                val2?.get((appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())) ?: "---"
+            )
+            frTPMS.text = String.format(
+                "%s\n%s\n%s",
+                appwheelname.get(1),
+                val1?.get((appPrefs.getData("tpms_fr_$vehicleId", "1")!!.toInt())) ?: "---",
+                val2?.get((appPrefs.getData("tpms_fr_$vehicleId", "1")!!.toInt())) ?: "---"
+            )
+            rlTPMS.text = String.format(
+                "%s\n%s\n%s",
+                appwheelname.get(2),
+                val1?.get((appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())) ?: "---",
+                val2?.get((appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())) ?: "---"
+            )
+            rrTPMS.text = String.format(
+                "%s\n%s\n%s",
+                appwheelname.get(3),
+                val1?.get((appPrefs.getData("tpms_rr_$vehicleId", "3")!!.toInt())) ?: "---",
+                val2?.get((appPrefs.getData("tpms_rr_$vehicleId", "3")!!.toInt())) ?: "---"
+            )
+        }
 
         val alertcol = intArrayOf(0xFFFFFF, Color.YELLOW, Color.RED)
         if ((alert?.get(0) ?: 0) != 0)

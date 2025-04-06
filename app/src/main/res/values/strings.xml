@@ -829,6 +829,23 @@
     <string name="fr_tpms">FR</string>
     <string name="rl_tpms">RL</string>
     <string name="rr_tpms">RR</string>
+    <string name="front_tpms">Front</string>
+    <string name="rear_tpms">Rear</string>
+    <string name="fl_get_tpms">set FL from TPMS value:</string>
+    <string name="fr_get_tpms">set FR from TPMS value:</string>
+    <string name="rl_get_tpms">set RL from TPMS value:</string>
+    <string name="rr_get_tpms">set RR from TPMS value:</string>
+    <string name="fl_set_tpms">set FL value</string>
+    <string name="fr_set_tpms">set FR value</string>
+    <string name="rl_set_tpms">set RL value</string>
+    <string name="rr_set_tpms">set RR value</string>
+    <string name="tpms_fl">front left</string>
+    <string name="tpms_fr">front right</string>
+    <string name="tpms_rl">rear left</string>
+    <string name="tpms_rr">rear right</string>
+    <string name="mi_car_sort_tpms">sort TPMS value by Firmware</string>
+    <string name="tpms_settings">TPMS Settings</string>
+    <string name="mi_car_tpms_wheelname">TPMS Wheel name by App</string>
     <string name="textLASTCHARGING">Last Charging</string>
     <string name="GSM_icon">show GSM icon</string>
     <string name="GPS_icon">show GPS icon</string>
@@ -846,8 +863,6 @@
     <string name="lb_booster_day_sel">Climate from/to day selection</string>
     <string name="lb_booster_day_start">first Day</string>
     <string name="lb_booster_day_end">last Day</string>
-    <string name="front_tpms">Front</string>
-    <string name="rear_tpms">Rear</string>
     <string-array name="lb_booster_mode" translatable="false">
         <item>@string/lb_5min</item>
         <item>@string/lb_10min</item>
