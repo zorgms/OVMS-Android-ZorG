@@ -131,12 +131,11 @@
                 android:scaleType="fitCenter"
                 android:scaleX="0.8"
                 android:scaleY="0.8"
-                app:srcCompat="@drawable/gps"
+                android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="@+id/gsmView"
                 app:layout_constraintEnd_toStartOf="@+id/gsmView"
                 app:layout_constraintTop_toTopOf="@+id/gsmView"
-                android:visibility="invisible" >
-            </ImageView>
+                app:srcCompat="@drawable/ic_satellite"></ImageView>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/chargingCard"
