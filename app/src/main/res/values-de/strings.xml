@@ -691,6 +691,9 @@
     ]]></string>
     <string name="mi_app_about">Über OVMS</string>
     <string name="parked">Geparkt</string>
+    <string name="charging_estimation_soc">~%s bis SoC limit</string>
+    <string name="charging_estimation_range">~%s bis Reichweiten limit</string>
+    <string name="charging_estimation_full">~%s bis voll</string>
     <string name="start_charging_label">Ladung starten</string>
     <string name="stop_charging_label">Ladung stoppen</string>
     <string name="charge_limit_action">Aktion bei Ladegrenze</string>

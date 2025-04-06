@@ -81,10 +81,49 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         mainActionsRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2, VERTICAL, false)
         mainActionsRecyclerView.adapter = centerActionsAdapter
 
+        updateServiceInfo(carData)
         updateTPMSData(carData)
         initialiseSideActions(carData)
         initialiseMainActions(carData)
         initialiseCarRendering(carData)
+    }
+
+    private fun updateServiceInfo(carData: CarData?) {
+        // Show known car service interval info:
+        val serviceBtn= findViewById(R.id.serviceToggle) as ExtendedFloatingActionButton
+        val serviceTextView = findViewById(R.id.serviceinfo) as TextView
+
+        var serviceInfo = ""
+        if (carData!!.car_servicerange >= 0) {
+            serviceInfo += String.format("%d km", carData.car_servicerange)
+        }
+        if (carData.car_servicetime >= 0) {
+            if (serviceInfo != "") {
+                serviceInfo += "\n"
+            }
+            val now = System.currentTimeMillis() / 1000
+            val serviceDays = (carData.car_servicetime - now) / 86400
+            var daystring = getString(R.string.ndays)
+            serviceInfo += String.format(daystring, serviceDays)
+        }
+        if (carData.car_gen_substate != "" && carData.car_type == "SQ") {
+            var servicelvl = carData.car_gen_substate
+            serviceInfo += "\n"
+            serviceInfo += String.format(" %s", servicelvl)
+        }
+        if (serviceInfo == "") {
+            serviceBtn.visibility = View.INVISIBLE
+            serviceBtn.isEnabled = false
+            serviceTextView.visibility = View.INVISIBLE
+        } else {
+            serviceBtn.visibility = View.VISIBLE
+            serviceTextView.text = serviceInfo
+        }
+
+        serviceBtn.setOnClickListener {
+            serviceTextView.visibility =
+                if (serviceTextView.visibility == View.VISIBLE) View.INVISIBLE else View.VISIBLE
+        }
     }
 
     private fun updateTPMSData(carData: CarData?) {
