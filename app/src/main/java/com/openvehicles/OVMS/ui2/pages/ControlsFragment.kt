@@ -20,8 +20,10 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.api.OnResultCommandListener
 import com.openvehicles.OVMS.entities.CarData
+import com.openvehicles.OVMS.entities.CarData.DataStale
 import com.openvehicles.OVMS.ui.BaseFragment
 import com.openvehicles.OVMS.ui2.components.quickactions.ChargingQuickAction
+import com.openvehicles.OVMS.ui2.components.quickactions.CarInfoQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.Homelink1QuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.Homelink2QuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.Homelink3QuickAction
@@ -103,12 +105,13 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         }
 
         // Disable TPMS for motorcycles, etc?
-        if (arrayOf("EN", "NRJK").contains(carData?.car_type)) {
+        if (carData?.car_type in listOf("EN", "NRJK")) {
             tpmsFAB.isEnabled = false
             return
         }
 
-        var stale1 = CarData.DataStale.NoValue
+        var stale1 = DataStale.NoValue
+        var stale2 = DataStale.NoValue
         var val1 = carData?.car_tpms_wheelname
         var val2: Array<String?>? = null
         var alert: IntArray? = intArrayOf(0, 0, 0, 0)
@@ -138,11 +141,11 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                 alert = intArrayOf(0, 0, 0, 0)
             }
             // TODO display single value in the bottom field:
-            /*if (stale2 == CarData.DataStale.NoValue && stale1 != CarData.DataStale.NoValue) {
+            if (stale2 == DataStale.NoValue && stale1 != DataStale.NoValue && carData.car_type in listOf("SQ")) {
                 stale2 = stale1
                 val2 = val1
                 val1 = carData.car_tpms_wheelname
-            }*/
+            }
         } else if (carData != null) {
             // Legacy data (msg code 'W'): only pressures & temperatures available
             val1 = arrayOf(
@@ -277,6 +280,7 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         if (carData?.car_type != "SQ") centerActionsAdapter.mData += ValetQuickAction({getService()})
         centerActionsAdapter.mData += WakeupQuickAction({getService()})
         if (carData?.car_type != "SQ") centerActionsAdapter.mData += ChargingQuickAction({getService()})
+        if (carData?.car_type in listOf("SQ")) centerActionsAdapter.mData += CarInfoQuickAction({getService()})
         centerActionsAdapter.notifyDataSetChanged()
     }
 

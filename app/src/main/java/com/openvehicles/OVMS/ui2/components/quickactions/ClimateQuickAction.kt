@@ -31,6 +31,7 @@ class ClimateQuickAction(apiServiceGetter: () -> ApiService?, context: Context? 
                 context.getString(R.string.lb_5min),
                 context.getString(R.string.lb_10min),
                 context.getString(R.string.lb_15min),
+                context.getString(R.string.lb_booster_time_off),
             )
 
             val builder = AlertDialog.Builder(context)
@@ -46,6 +47,7 @@ class ClimateQuickAction(apiServiceGetter: () -> ApiService?, context: Context? 
                     0 -> "24,0"
                     1 -> "24,1"
                     2 -> "24,2"
+                    3 -> "7,metrics set xsq.booster.data 1,2,2,-1,-1,-1,-1"
                     else -> ""
                 }
                 sendCommand(cmd)

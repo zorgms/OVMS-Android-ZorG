@@ -100,11 +100,35 @@ class AppUISettingsFragment: PreferenceFragmentCompat() {
                 true
             }
 
+        val tpmsPreference = findPreference<SwitchPreferenceCompat>("show_tpms_at_button")
+        tpmsPreference?.isChecked = appPrefs.getData("showtpmscontrol", "off") == "on"
+        tpmsPreference?.onPreferenceChangeListener =
+            OnPreferenceChangeListener { preference, newValue ->
+                appPrefs.saveData("showtpmscontrol", if (newValue as Boolean) "on" else "off")
+                true
+            }
+
         val temperaturesPreference = findPreference<SwitchPreferenceCompat>("temperatures_f")
         temperaturesPreference?.isChecked = appPrefs.getData("showfahrenheit", "off") == "on"
         temperaturesPreference?.onPreferenceChangeListener =
             OnPreferenceChangeListener { preference, newValue ->
                 appPrefs.saveData("showfahrenheit", if (newValue as Boolean) "on" else "off")
+                true
+            }
+
+        val gsmiconPreference = findPreference<SwitchPreferenceCompat>("gsm_icon")
+        gsmiconPreference?.isChecked = appPrefs.getData("gsm_icon", "off") == "on"
+        gsmiconPreference?.onPreferenceChangeListener =
+            OnPreferenceChangeListener { preference, newValue ->
+                appPrefs.saveData("gsm_icon", if (newValue as Boolean) "on" else "off")
+                true
+            }
+
+        val gpsiconPreference = findPreference<SwitchPreferenceCompat>("gps_icon")
+        gpsiconPreference?.isChecked = appPrefs.getData("gps_icon", "off") == "on"
+        gpsiconPreference?.onPreferenceChangeListener =
+            OnPreferenceChangeListener { preference, newValue ->
+                appPrefs.saveData("gps_icon", if (newValue as Boolean) "on" else "off")
                 true
             }
 

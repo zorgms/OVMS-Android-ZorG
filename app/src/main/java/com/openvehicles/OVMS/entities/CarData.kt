@@ -1,15 +1,21 @@
 package com.openvehicles.OVMS.entities
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.openvehicles.OVMS.BaseApp
 import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.utils.AppPrefs
 import java.io.Serializable
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
+import kotlin.collections.contains
 
 class CarData : Serializable {
 
@@ -111,6 +117,7 @@ class CarData : Serializable {
     var car_canwrite_raw = 0
     var car_canwrite = false
     var car_gsmlock = ""
+    var car_mdm_mode = ""
     @JvmField
     var car_gsm_signal = ""
     var car_gsm_dbm = 0
@@ -156,6 +163,7 @@ class CarData : Serializable {
     var car_speed_units = ""
     var car_chargelimit_rangelimit = ""
     var car_max_idealrange = ""
+    var car_charge_timestamp = ""
     var stale_chargetimer = DataStale.NoValue
     var stale_status = DataStale.NoValue
 
@@ -208,6 +216,13 @@ class CarData : Serializable {
     var car_temp_charger_raw = 0f
     var car_temp_ambient_raw = 0f
     var car_temp_cabin_raw = 0f
+    var car_ac_booster_metrics = false
+    var car_ac_booster_on = "no"
+    var car_ac_booster_weekly = "no"
+    var car_ac_booster_time = "0515"
+    var car_ac_booster_ds = 0
+    var car_ac_booster_de = 0
+    var car_ac_booster_bdt = 0
     @JvmField
     var car_tripmeter_raw = 0f
     @JvmField
@@ -276,6 +291,9 @@ class CarData : Serializable {
     var car_charge_plugtype = 0
     var car_charge_power_kw_raw = 0.0
     var car_charge_power_kw = ""
+    var car_charge_kwh_grid = 0f
+    var car_charge_kwh_grid_total = 0f
+    var car_battery_capacity = 0f
     @JvmField
     var car_battery_voltage = 0.0
     var car_battery_current_raw = 0.0
@@ -350,6 +368,33 @@ class CarData : Serializable {
     var car_energyused = 0f
     @JvmField
     var car_energyrecd = 0f
+
+    // Car Gen Message "X"
+    // not implemented yet?
+    var car_gen_inprogress = false
+    var car_gen_pilot = false
+    var car_gen_voltage = 0
+    var car_gen_current = 0f
+    var car_gen_power = 0f
+    var car_gen_efficiency = 0f
+    var car_gen_type  = ""
+    var car_gen_state  = ""
+    var car_gen_substate  = ""
+    var car_gen_mode  = ""
+    var car_gen_climit = 0f
+    var car_gen_limit_range = 0f
+    var car_gen_limit_soc = 0
+    var car_gen_kwh = 0f
+    var car_gen_kwh_grid = 0f
+    var car_gen_kwh_grid_total = 0f
+    var car_gen_time = 0
+    var car_gen_timermode = 0
+    var car_gen_timerstart = 0
+    var car_gen_duration_empty = 0
+    var car_gen_duration_range = 0
+    var car_gen_duration_soc = 0
+    var car_gen_temp = 0f
+    var car_gen_timestamp = ""
 
     //
     // Renault Twizy specific
@@ -575,6 +620,7 @@ class CarData : Serializable {
     /**
      * Process status message ("S")
      */
+    @RequiresApi(Build.VERSION_CODES.O)
     fun processStatus(msgdata: String): Boolean {
         init()
         Log.d(TAG, "processStatus: $msgdata")
@@ -693,6 +739,20 @@ class CarData : Serializable {
                 } else {
                     ""
                 }
+            }
+            if (dataParts.size >= 42) {
+                car_charge_kwh_grid = dataParts[38].toFloat()
+                car_charge_kwh_grid_total = dataParts[39].toFloat()
+                car_battery_capacity = dataParts[40].toFloat()
+
+                val dateFormat = appPrefs!!.getData("showfahrenheit", "off") == "on"
+                val charge_timestamp_raw = dataParts[41].toInt()
+                val timestamp_formater = if(!dateFormat) {
+                    DateTimeFormatter.ofPattern("dd.MM.yy  HH:mm").withZone(ZoneId.systemDefault())
+                } else {
+                    DateTimeFormatter.ofPattern("MM/dd yy  hh:mm").withZone(ZoneId.systemDefault())
+                }
+                car_charge_timestamp = timestamp_formater.format(Instant.ofEpochSecond(charge_timestamp_raw.toLong()))
             }
         } catch (e: Exception) {
             Log.e(TAG, "processStatus: ERROR", e)
@@ -834,6 +894,9 @@ class CarData : Serializable {
             }
             if (dataParts.size >= 9) {
                 car_hardware = dataParts[8]
+            }
+            if (dataParts.size >= 10) {
+                car_mdm_mode = dataParts[9].split(";")[0].toString()
             }
         } catch (e: Exception) {
             Log.e(TAG, "processFirmware: ERROR", e)
@@ -1014,6 +1077,72 @@ class CarData : Serializable {
     }
 
     /**
+     * Process GEN message ("X")
+     * not implemented yet?
+     */
+    fun processGen(msgdata: String): Boolean {
+        init()
+        Log.d(TAG, "processGen: $msgdata")
+        try {
+            val dataParts =
+                msgdata.split(",\\s*".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            if (dataParts.size >= 9) {
+                car_gen_inprogress = dataParts[0].toBoolean()
+                car_gen_pilot = dataParts[1].toBoolean()
+                car_gen_voltage = dataParts[2].toInt()
+                car_gen_current = dataParts[3].toFloat()
+                car_gen_power = dataParts[4].toFloat()
+                car_gen_efficiency = dataParts[5].toFloat()
+                car_gen_type = dataParts[6]
+                car_gen_state = dataParts[7]
+                car_gen_substate = dataParts[8]
+                car_gen_mode = dataParts[9]
+                if (dataParts[9] == "booster" && car_type in listOf("SQ") ) {
+                    car_ac_booster_metrics = true
+                    car_ac_booster_on = dataParts[10]
+                    car_ac_booster_weekly = dataParts[11]
+                    car_ac_booster_time = dataParts[12]
+                    car_ac_booster_ds = dataParts[13].toInt()
+                    car_ac_booster_de = dataParts[14].toInt()
+                    car_ac_booster_bdt = dataParts[15].toInt()
+                    car_gen_climit = dataParts[16].toFloat()
+                    car_gen_limit_range = dataParts[17].toFloat()
+                    car_gen_limit_soc = dataParts[18].toInt()  // << v.e.gear
+                    car_gen_kwh = dataParts[19].toFloat()
+                    car_gen_kwh_grid = dataParts[20].toFloat()
+                    car_gen_kwh_grid_total = dataParts[21].toFloat()
+                    car_gen_time = dataParts[22].toInt()
+                    car_gen_timermode = dataParts[23].toInt()
+                    car_gen_timerstart = dataParts[24].toInt()
+                    car_gen_duration_empty = dataParts[25].toInt()
+                    car_gen_duration_range = dataParts[26].toInt()
+                    car_gen_duration_soc = dataParts[27].toInt()
+                    car_gen_temp = dataParts[28].toFloat()
+                } else {
+                    car_gen_climit = dataParts[10].toFloat()
+                    car_gen_limit_range = dataParts[11].toFloat()
+                    car_gen_limit_soc = dataParts[12].toInt()
+                    car_gen_kwh = dataParts[13].toFloat()
+                    car_gen_kwh_grid = dataParts[14].toFloat()
+                    car_gen_kwh_grid_total = dataParts[15].toFloat()
+                    car_gen_time = dataParts[16].toInt()
+                    car_gen_timermode = dataParts[17].toInt()
+                    car_gen_timerstart = dataParts[18].toInt()
+                    car_gen_duration_empty = dataParts[19].toInt()
+                    car_gen_duration_range = dataParts[20].toInt()
+                    car_gen_duration_soc = dataParts[21].toInt()
+                    car_gen_temp = dataParts[22].toFloat()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "processGen: ERROR", e)
+            return false
+        }
+        recalc()
+        return true
+    }
+
+    /**
      * Get data extract suitable for system broadcast.
      *
      * The intended receivers are automation Apps like Automagic & Tasker,
@@ -1080,7 +1209,10 @@ class CarData : Serializable {
             b.putInt("car_chargelimit_minsremaining_range", car_chargelimit_minsremaining_range)
             b.putInt("car_chargelimit_soclimit", car_chargelimit_soclimit)
             b.putInt("car_chargelimit_minsremaining_soc", car_chargelimit_minsremaining_soc)
-
+            b.putFloat("car_charge_kwh_grid", car_charge_kwh_grid)
+            b.putFloat("car_charge_kwh_grid_total", car_charge_kwh_grid_total)
+            b.putFloat("car_battery_capacity", car_battery_capacity)
+            b.putString("car_charge_timestamp", car_charge_timestamp)
 
             //
             // Location (msgCode 'L')
@@ -1148,6 +1280,14 @@ class CarData : Serializable {
             b.putDouble("car_12vline_ref", car_12vline_ref)
             b.putDouble("car_12v_current", car_12v_current)
 
+            b.putBoolean("car_ac_booster_metrics", car_ac_booster_metrics)
+            b.putString("car_ac_booster_on", car_ac_booster_on)
+            b.putString("car_ac_booster_weekly", car_ac_booster_weekly)
+            b.putString("car_ac_booster_time", car_ac_booster_time)
+            b.putInt("car_ac_booster_ds", car_ac_booster_ds)
+            b.putInt("car_ac_booster_de", car_ac_booster_de)
+            b.putInt("car_ac_booster_bdt", car_ac_booster_bdt)
+
 
             //
             // Firmware (msgCode 'F')
@@ -1161,6 +1301,7 @@ class CarData : Serializable {
             b.putInt("car_canwrite", car_canwrite_raw)
             b.putInt("car_servicedays", car_servicetime)
             b.putInt("car_servicedist", car_servicerange)
+            b.putString("car_mdm_mode", car_mdm_mode)
 
             //
             // TPMS new flexible wheel layout (msgCode 'Y')
@@ -1200,6 +1341,35 @@ class CarData : Serializable {
             // Capabilities (msgCode 'V')
             //
             b.putString("car_capabilities", car_capabilities)
+
+            //
+            //  Gen (msgCode 'X')
+            //
+            // not implemented yet?
+            b.putBoolean("car_gen_inprogress", car_gen_inprogress)
+            b.putBoolean("car_gen_pilot", car_gen_pilot)
+            b.putInt("car_gen_voltage", car_gen_voltage)
+            b.putFloat("car_gen_current", car_gen_current)
+            b.putFloat("car_gen_power", car_gen_power)
+            b.putFloat("car_gen_efficiency", car_gen_efficiency)
+            b.putString("car_gen_type", car_gen_type)
+            b.putString("car_gen_state", car_gen_state)
+            b.putString("car_gen_substate", car_gen_substate)
+            b.putString("car_gen_mode", car_gen_mode)
+            b.putFloat("car_gen_climit", car_gen_climit)
+            b.putFloat("car_gen_limit_range", car_gen_limit_range)
+            b.putInt("car_gen_limit_soc", car_gen_limit_soc)
+            b.putFloat("car_gen_kwh", car_gen_kwh)
+            b.putFloat("car_gen_kwh_grid", car_gen_kwh_grid)
+            b.putFloat("car_gen_kwh_grid_total", car_gen_kwh_grid_total)
+            b.putInt("car_gen_time", car_gen_time)
+            b.putInt("car_gen_timermode", car_gen_timermode)
+            b.putInt("car_gen_timerstart", car_gen_timerstart)
+            b.putInt("car_gen_duration_empty", car_gen_duration_empty)
+            b.putInt("car_gen_duration_range", car_gen_duration_range)
+            b.putInt("car_gen_duration_soc", car_gen_duration_soc)
+            b.putFloat("car_gen_temp", car_gen_temp)
+            b.putString("car_gen_timestamp", car_gen_timestamp)
         } catch (e: Exception) {
             e.printStackTrace()
         }

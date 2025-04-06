@@ -55,6 +55,24 @@
             android:defaultValue="false"
             android:title="@string/lb_options_commands_cb"
             app:key="communication_commands" />
+        <Preference
+            android:title="@string/lb_options_apikey"
+            app:summary=""
+            app:key="api_key" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/other_settings">
+        <SwitchPreferenceCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="false"
+            android:title="@string/GSM_icon"
+            app:key="gsm_icon" />
+        <SwitchPreferenceCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="false"
+            android:title="@string/GPS_icon"
+            app:key="gps_icon" />
         <SwitchPreferenceCompat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -65,14 +83,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:defaultValue="false"
+            android:title="@string/mi_car_show_tpms"
+            app:key="show_tpms_at_button" />
+        <SwitchPreferenceCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="false"
             android:title="@string/mi_car_details_temp"
             app:key="temperatures_f" />
-        <Preference
-            android:title="@string/lb_options_apikey"
-            app:summary=""
-            app:key="api_key" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/other_settings">
         <SwitchPreferenceCompat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

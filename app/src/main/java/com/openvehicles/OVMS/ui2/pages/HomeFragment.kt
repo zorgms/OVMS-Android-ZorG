@@ -64,11 +64,14 @@ import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.entities.StoredCommand
 import com.openvehicles.OVMS.ui.BaseFragment
 import com.openvehicles.OVMS.ui.utils.Ui
+import com.openvehicles.OVMS.ui.utils.Ui.getDrawableIdentifier
 import com.openvehicles.OVMS.ui2.MainActivityUI2
 import com.openvehicles.OVMS.ui2.components.hometabs.HomeTab
 import com.openvehicles.OVMS.ui2.components.hometabs.HomeTabsAdapter
 import com.openvehicles.OVMS.ui2.components.quickactions.ChargingQuickAction
+import com.openvehicles.OVMS.ui2.components.quickactions.ClimateDaysQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.ClimateQuickAction
+import com.openvehicles.OVMS.ui2.components.quickactions.ClimateTimerQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.CustomCommandQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.Homelink1QuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.Homelink2QuickAction
@@ -150,6 +153,8 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 TwizyDriveMode1QuickAction({null}, context),
                 TwizyDriveMode2QuickAction({null}, context),
                 TwizyDriveMode3QuickAction({null}, context),
+                ClimateTimerQuickAction({null}, context),
+                ClimateDaysQuickAction({null}, context),
                 CustomCommandQuickAction("custom", AppCompatResources.getDrawable(context, R.drawable.ic_custom_command)!!, "", {null}, context.getString(R.string.custom_command)),
                 )
         }
@@ -174,9 +179,6 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         appPrefs = AppPrefs(requireContext(), "ovms")
 
         val menuHost: MenuHost = requireActivity()
-
-
-
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.home_menu, menu)
@@ -308,7 +310,6 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         initialiseTabs(carData)
         initialiseBottomInfo(carData)
         initialiseCarDropDown()
-
     }
 
     private fun initialiseCarDropDown() {
@@ -803,8 +804,8 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         val action1 = findViewById(R.id.charging_action1) as Button
         val action2 = findViewById(R.id.charging_action2) as Button
 
-        action1.isEnabled = carData?.car_charging == false && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115
-        action2.isEnabled = carData?.car_charging == true && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115
+        action1.isEnabled = carData?.car_charging == false && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115 && carData.car_type !in listOf("SQ")
+        action2.isEnabled = carData?.car_charging == true && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115 && carData.car_type !in listOf("SQ")
 
         action1.setOnClickListener {
             MaterialAlertDialogBuilder(requireActivity())
@@ -891,7 +892,9 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                         ClimateQuickAction({null}),
                         Homelink1QuickAction({null}),
                         Homelink2QuickAction({null}),
-                        Homelink3QuickAction({null})
+                        Homelink3QuickAction({null}),
+                        ClimateTimerQuickAction({null}),
+                        ClimateDaysQuickAction({null})
                     ).filter { it.commandsAvailable() }.map { it.id }.take(6).toTypedArray()
                     else -> arrayOf(
                         LockQuickAction({null}),
@@ -927,6 +930,8 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             LockQuickAction.ACTION_ID -> LockQuickAction(apiServiceGetter)
             ValetQuickAction.ACTION_ID -> ValetQuickAction(apiServiceGetter)
             WakeupQuickAction.ACTION_ID -> WakeupQuickAction(apiServiceGetter)
+            ClimateTimerQuickAction.ACTION_ID -> ClimateTimerQuickAction(apiServiceGetter)
+            ClimateDaysQuickAction.ACTION_ID -> ClimateDaysQuickAction(apiServiceGetter)
             else -> {
                 if (id.startsWith("rt_profile_")) {
                     return when (id) {
@@ -1036,7 +1041,32 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
     private fun initialiseTabs(carData: CarData?) {
         tabsAdapter.mData = emptyList()
 
-        tabsAdapter.mData += HomeTab(TAB_CONTROLS, R.drawable.ic_controls_tab, getString(R.string.controls_tab_label), null)
+        var tpms = ""
+        if(appPrefs.getData("showtpmscontrol", "off") == "on"){
+            var pressure = carData?.car_tpms_pressure
+            if (pressure != null && pressure.size == 4)
+            tpms = String.format(
+                "%s %s | %s %s | %s %s | %s %s",
+                getString(R.string.fl_tpms),
+                pressure?.get(0) ?: "",
+                getString(R.string.fr_tpms),
+                pressure?.get(1) ?: "",
+                getString(R.string.rl_tpms),
+                pressure?.get(2) ?: "",
+                getString(R.string.rr_tpms),
+                pressure?.get(3) ?: ""
+            )
+            if (pressure != null && pressure.size == 2)
+                tpms = String.format(
+                    "%s %s | %s %s",
+                    getString(R.string.front_tpms),
+                    pressure?.get(0) ?: "",
+                    getString(R.string.rear_tpms),
+                    pressure?.get(1) ?: ""
+                )
+        }
+
+        tabsAdapter.mData += HomeTab(TAB_CONTROLS, R.drawable.ic_controls_tab, getString(R.string.controls_tab_label), tpms)
 
         var climateData = ""
         if (carData?.car_temp_cabin != null && carData.car_temp_cabin.isNotEmpty()) {
@@ -1047,6 +1077,24 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 climateData+= ", "
             climateData += String.format("%s: %s", getString(R.string.textAMBIENT), carData.car_temp_ambient)
         }
+        if (carData?.car_type in listOf("SQ") ) {
+            if (carData?.car_ac_booster_on == "yes" && climateData != "") {
+                val timeraw = carData.car_ac_booster_time.split("")
+                val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
+                val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
+                climateData += ", "
+                climateData += String.format(
+                    "A/C: $time_h:$time_m h"
+                )
+            } else if (carData?.car_ac_booster_on == "yes") {
+                val timeraw = carData.car_ac_booster_time.split("")
+                val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
+                val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
+                climateData += String.format(
+                    "A/C: $time_h:$time_m h"
+                )
+            }
+        }
 
         tabsAdapter.mData += HomeTab(TAB_CLIMATE, R.drawable.ic_ac,
             getString(R.string.textAC).lowercase()
@@ -1055,14 +1103,25 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         var consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(100)?.div(carData.car_tripmeter_raw.div(10))
         if (consumption?.isNaN() == true)
             consumption = 0f
-        val st = String.format(
-            "%.1f Wh/%s, Regen %.1f kWh, Trip %s",
-            consumption,
-            carData?.car_distance_units,
-            carData?.car_energyrecd?.times(10)?.let { floor(it.toDouble()) }?.div(10) ?: 0,
-            carData?.car_tripmeter
-        )
-
+        val st = if(carData?.car_type in listOf("SQ")) {
+            String.format(
+                "%.1f kWh/%s, Con %.1f kWh, Regen %.1f kWh\nTrip %s, 12V Batt %sV",
+                consumption,
+                carData?.car_distance_units,
+                carData?.car_energyused,
+                carData?.car_energyrecd,
+                carData?.car_tripmeter,
+                carData?.car_12vline_voltage
+            )
+        } else {
+            String.format(
+                "%.1f Wh/%s, Regen %.1f kWh, Trip %s",
+                consumption,
+                carData?.car_distance_units,
+                carData?.car_energyrecd?.times(10)?.let { floor(it.toDouble()) }?.div(10) ?: 0,
+                carData?.car_tripmeter
+            )
+        }
 
         var geocodedLocation = ""
         if (context != null) {
@@ -1126,9 +1185,15 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         if (carData?.car_odometer?.isNotEmpty() == true) {
             carInfo += carData.car_odometer
         }
+
         if (carData?.car_vin?.isNotEmpty() == true) {
             carInfo += "\nVIN: ${carData.car_vin}"
         }
+
+        if (carData?.car_gsmlock?.isNotEmpty() == true) {
+            carInfo += "\nGSM: ${carData.car_gsmlock} ${carData.car_mdm_mode}\n"
+        }
+
         if (carData?.car_firmware?.isNotEmpty() == true) {
             carInfo += "\n${getString(R.string.lb_ovms_firmware)} ${carData.car_firmware}"
         }
@@ -1155,6 +1220,28 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         quickActionsAdapter.notifyDataSetChanged()
     }
 
+    private fun gsmicon(carData: CarData?) {
+        // GSM Bar
+        if (appPrefs.getData("gsm_icon", "off") == "on") {
+            val gsmimg = findViewById(R.id.gsmView) as ImageView
+            gsmimg.visibility = View.VISIBLE
+            gsmimg.setImageResource(
+                getDrawableIdentifier(
+                    activity,
+                    "signal_strength_" + carData?.car_gsm_bars
+                )
+            )
+        }
+    }
+
+    private fun gpsicon(carData: CarData?) {
+        // GPS Bar
+        if (appPrefs.getData("gps_icon", "off") == "on") {
+            val gpsimg = findViewById(R.id.gpsView) as ImageView
+            gpsimg.visibility = if(carData?.car_gpslock == true) View.VISIBLE else View.INVISIBLE
+        }
+    }
+
     override fun update(carData: CarData?) {
         this.carData = carData
         setupVisualisation(carData)
@@ -1163,6 +1250,8 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         initialiseTabs(carData)
         initialiseBottomInfo(carData)
         initialiseCarDropDown()
+        gsmicon(carData)
+        gpsicon(carData)
     }
 
     override fun onServiceLoggedIn(service: ApiService?, isLoggedIn: Boolean) {

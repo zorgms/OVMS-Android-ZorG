@@ -50,6 +50,26 @@
                 tools:text="21" />
 
             <TextView
+                android:id="@+id/ambientTempTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/textAMBIENT"
+                app:layout_constraintEnd_toEndOf="@+id/tempUnit1"
+                app:layout_constraintStart_toStartOf="@+id/ambientTemp"
+                app:layout_constraintTop_toBottomOf="@+id/ambientTemp" />
+
+            <TextView
+                android:id="@+id/ClimateTxtH"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="05:15 h"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/tempUnit1"
+                app:layout_constraintStart_toStartOf="@+id/ambientTempTxt"
+                app:layout_constraintTop_toBottomOf="@+id/ambientTempTxt" />
+
+            <TextView
                 android:id="@+id/cabinTemp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -62,22 +82,24 @@
                 tools:text="22" />
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/textAMBIENT"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="@+id/tempUnit1"
-                app:layout_constraintStart_toStartOf="@+id/ambientTemp"
-                app:layout_constraintTop_toBottomOf="@+id/ambientTemp" />
-
-            <TextView
+                android:id="@+id/cabinTempTxt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/textCAB"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/tempUnit2"
                 app:layout_constraintStart_toStartOf="@+id/cabinTemp"
                 app:layout_constraintTop_toBottomOf="@+id/cabinTemp" />
+
+            <TextView
+                android:id="@+id/ClimateTxtD"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mon. - Fri."
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/tempUnit2"
+                app:layout_constraintStart_toStartOf="@+id/cabinTempTxt"
+                app:layout_constraintTop_toBottomOf="@+id/cabinTempTxt" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/climateActions"
