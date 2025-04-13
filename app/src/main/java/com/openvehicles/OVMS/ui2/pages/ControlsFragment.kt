@@ -148,20 +148,22 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         }
 
         // check TPMS size and fill up with "---" if needed to 4 values
-        fun checkTPMSsize(result: Array<String?>?, value: String = "pressure"): Array<String?>? {
-            var result = result
-            if (result == null) {
-                if (value == "wheelname") {
-                    result = arrayOf(getString(R.string.fl_tpms),getString(R.string.fr_tpms),getString(R.string.rl_tpms),getString(R.string.rr_tpms))
-                } else {
-                    result = arrayOf("---", "---", "---", "---")
+        fun checkTPMSsize(result: Array<String?>?, value: String = "pressure"): Array<String?> {
+            return when {
+                result == null -> {
+                    when (value) {
+                        "wheelname" -> arrayOf(getString(R.string.fl_tpms), getString(R.string.fr_tpms), getString(R.string.rl_tpms), getString(R.string.rr_tpms))
+                        "alert" -> arrayOf("0", "0", "0", "0")
+                        else -> arrayOf("---", "---", "---", "---")
+                    }
                 }
-            } else if (result.size < 4) {
-                while (result.size < 4) {
-                    result += "---"
+                result.size < 4 && value == "alert" -> {
+                    result + Array(4 - result.size) { "0" } // Fill with "0"
+                }
+                else -> {
+                    result + Array(4 - result.size) { "---" } // Fill with "---"
                 }
             }
-            return result
         }
 
         // Get TPMS data from firmware
@@ -265,26 +267,32 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         var val2: Array<String?>? = null
         var alert: IntArray? = intArrayOf(0, 0, 0, 0)
 
-        if (carData?.car_tpms_wheelname != null && carData.car_tpms_wheelname!!.size >= 1) {
+        if (carData?.car_tpms_wheelname != null && carData.car_tpms_wheelname!!.isNotEmpty()) {
             // New data (msg code 'Y'):
-            if (carData.stale_tpms_pressure != CarData.DataStale.NoValue && carData.car_tpms_pressure!!.size >= 1) {
+            if (carData.stale_tpms_pressure != CarData.DataStale.NoValue && carData.car_tpms_pressure!!.isNotEmpty()) {
                 stale1 = carData.stale_tpms_pressure
                 val1 = checkTPMSsize(carData.car_tpms_pressure, "pressure")  // size check and fill up with "---" for pressure
             }
-            if (carData.stale_tpms_temp != CarData.DataStale.NoValue && carData.car_tpms_temp!!.size >= 1) {
+            if (carData.stale_tpms_temp != CarData.DataStale.NoValue && carData.car_tpms_temp!!.isNotEmpty()) {
                 val2 = checkTPMSsize(carData.car_tpms_temp, "temp")          // size check and fill up with "---" for temperatures
             }
-            if (carData.stale_tpms_health != CarData.DataStale.NoValue && carData.car_tpms_health!!.size >= 1) {
+            if (carData.stale_tpms_health != CarData.DataStale.NoValue && carData.car_tpms_health!!.isNotEmpty()) {
                 if (stale1 == CarData.DataStale.NoValue) {
                     stale1 = carData.stale_tpms_health
                     val1 = checkTPMSsize(carData.car_tpms_health, "health") // size check and fill up with "---" for health
                 }
             }
-            if (carData.stale_tpms_alert != CarData.DataStale.NoValue && carData.car_tpms_alert!!.size >= 4) {
+            if (carData.stale_tpms_alert != CarData.DataStale.NoValue && carData.car_tpms_alert!!.isNotEmpty()) {
                 alert = carData.car_tpms_alert_raw
+                if (alert == null) {
+                    alert = intArrayOf(0, 0, 0, 0)
+                } else if (alert.size < 4) {
+                    while (alert.size < 4)
+                    alert +=  0 // Fill with "0"
+                }
                 if (stale1 == CarData.DataStale.NoValue) {
                     stale1 = carData.stale_tpms_alert
-                    val1 = carData.car_tpms_alert
+                    val1 = checkTPMSsize(carData.car_tpms_alert, "alert") // size check and fill up with "0" for alert
                 }
             } else {
                 alert = intArrayOf(0, 0, 0, 0)
