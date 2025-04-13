@@ -14,7 +14,10 @@ import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.api.ApiService
 import com.openvehicles.OVMS.ui.utils.Ui
 import com.openvehicles.OVMS.utils.AppPrefs
+import com.openvehicles.OVMS.entities.CarData
+import com.openvehicles.OVMS.utils.CarsStorage
 import com.openvehicles.OVMS.utils.Sys
+import com.openvehicles.OVMS.utils.CarsStorage.getLastSelectedCarId
 
 /**
  * UI Settings
@@ -32,9 +35,12 @@ class AppUISettingsFragment: PreferenceFragmentCompat() {
             values.joinToString(", ") { entries[findIndexOfValue(it)] }
     }
 
+    private var carData: CarData? = null
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.app_preferences, rootKey)
 
+        carData = CarsStorage.getSelectedCarData()
         val appPrefs = AppPrefs(requireContext(), "ovms")
 
         val home_range_display_mode_preference = findPreference<MultiSelectListPreference>("home_range_display_mode")
@@ -92,6 +98,9 @@ class AppUISettingsFragment: PreferenceFragmentCompat() {
                 true
             }
 
+        // TPMS setting
+
+        val vehicleId = getLastSelectedCarId()
         val pressurePreference = findPreference<SwitchPreferenceCompat>("pressure_psi_bar")
         pressurePreference?.isChecked = appPrefs.getData("showtpmsbar", "off") == "on"
         pressurePreference?.onPreferenceChangeListener =
@@ -107,6 +116,30 @@ class AppUISettingsFragment: PreferenceFragmentCompat() {
                 appPrefs.saveData("showtpmscontrol", if (newValue as Boolean) "on" else "off")
                 true
             }
+
+        val tpmsnamePreference = findPreference<SwitchPreferenceCompat>("tpms_wheelname_app")
+        tpmsnamePreference?.isChecked = appPrefs.getData("tpms_wheelname_app", "off") == "on"
+        tpmsnamePreference?.onPreferenceChangeListener =
+            OnPreferenceChangeListener { preference, newValue ->
+                appPrefs.saveData("tpms_wheelname_app", if (newValue as Boolean) "on" else "off")
+                true
+            }
+        val tpmsSortByFirmwarePreference = findPreference<SwitchPreferenceCompat>("sort_tpms_by_firmware")
+        // TODO: option only for supported Cars visible or enable?
+        // tpmsSortByFirmwarePreference?.isVisible = carData?.car_type in listOf("SQ")
+        tpmsSortByFirmwarePreference?.isEnabled = carData?.car_type in listOf("SQ")
+        tpmsSortByFirmwarePreference?.isChecked = appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on"
+        tpmsSortByFirmwarePreference?.onPreferenceChangeListener =
+            OnPreferenceChangeListener { preference, newValue ->
+                appPrefs.saveData("tmps_firmware_$vehicleId",if (newValue as Boolean) "on" else "off")
+                appPrefs.saveData("tpms_fl_$vehicleId", "0")
+                appPrefs.saveData("tpms_fr_$vehicleId", "1")
+                appPrefs.saveData("tpms_rl_$vehicleId", "2")
+                appPrefs.saveData("tpms_rr_$vehicleId", "3")
+                true
+            }
+
+        // Other Setting
 
         val temperaturesPreference = findPreference<SwitchPreferenceCompat>("temperatures_f")
         temperaturesPreference?.isChecked = appPrefs.getData("showfahrenheit", "off") == "on"

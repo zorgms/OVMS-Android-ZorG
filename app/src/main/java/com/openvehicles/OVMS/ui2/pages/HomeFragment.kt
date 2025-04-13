@@ -1044,26 +1044,40 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         var tpms = ""
         if(appPrefs.getData("showtpmscontrol", "off") == "on"){
             var pressure = carData?.car_tpms_pressure
-            if (pressure != null && pressure.size == 4)
-            tpms = String.format(
-                "%s %s | %s %s | %s %s | %s %s",
-                getString(R.string.fl_tpms),
-                pressure?.get(0) ?: "",
-                getString(R.string.fr_tpms),
-                pressure?.get(1) ?: "",
-                getString(R.string.rl_tpms),
-                pressure?.get(2) ?: "",
-                getString(R.string.rr_tpms),
-                pressure?.get(3) ?: ""
-            )
-            if (pressure != null && pressure.size == 2)
+            if (pressure != null && pressure.size == 4) {
+                tpms = String.format(
+                    "%s %s | %s %s\n%s %s | %s %s",
+                    getString(R.string.fl_tpms),
+                    pressure?.get(
+                        (appPrefs.getData("tpms_fl_" + carData?.sel_vehicleid, "0")!!.toInt())
+                    ) ?: "",
+                    getString(R.string.fr_tpms),
+                    pressure?.get(
+                        (appPrefs.getData("tpms_fr_" + carData?.sel_vehicleid, "1")!!.toInt())
+                    ) ?: "",
+                    getString(R.string.rl_tpms),
+                    pressure?.get(
+                        (appPrefs.getData("tpms_rl_" + carData?.sel_vehicleid, "2")!!.toInt())
+                    ) ?: "",
+                    getString(R.string.rr_tpms),
+                    pressure?.get(
+                        (appPrefs.getData("tpms_rr_" + carData?.sel_vehicleid, "3")!!.toInt())
+                    ) ?: ""
+                )
+            }
+            if (pressure != null && pressure.size == 2) {
                 tpms = String.format(
                     "%s %s | %s %s",
                     getString(R.string.front_tpms),
-                    pressure?.get(0) ?: "",
+                    pressure?.get(
+                        (appPrefs.getData("tpms_fl_" + carData?.sel_vehicleid, "0")!!.toInt())
+                    ) ?: "",
                     getString(R.string.rear_tpms),
-                    pressure?.get(1) ?: ""
+                    pressure?.get(
+                        (appPrefs.getData("tpms_fr_" + carData?.sel_vehicleid, "1")!!.toInt())
+                    ) ?: ""
                 )
+            }
         }
 
         tabsAdapter.mData += HomeTab(TAB_CONTROLS, R.drawable.ic_controls_tab, getString(R.string.controls_tab_label), tpms)

@@ -691,6 +691,9 @@
     ]]></string>
     <string name="mi_app_about">Über OVMS</string>
     <string name="parked">Geparkt</string>
+    <string name="charging_estimation_soc">~%s bis SoC limit</string>
+    <string name="charging_estimation_range">~%s bis Reichweiten limit</string>
+    <string name="charging_estimation_full">~%s bis voll</string>
     <string name="start_charging_label">Ladung starten</string>
     <string name="stop_charging_label">Ladung stoppen</string>
     <string name="charge_limit_action">Aktion bei Ladegrenze</string>
@@ -736,6 +739,23 @@
     <string name="fr_tpms">VR</string>
     <string name="rl_tpms">HL</string>
     <string name="rr_tpms">HR</string>
+    <string name="front_tpms">Vorne</string>
+    <string name="rear_tpms">Hinten"</string>
+    <string name="fl_get_tpms">setze VL von TPMS Wert:</string>
+    <string name="fr_get_tpms">setze VR von TPMS Wert:</string>
+    <string name="rl_get_tpms">setze HL von TPMS Wert:</string>
+    <string name="rr_get_tpms">setze HR von TPMS Wert:</string>
+    <string name="fl_set_tpms">setze VL Wert</string>
+    <string name="fr_set_tpms">setze VR Wert</string>
+    <string name="rl_set_tpms">setze HL Wert</string>
+    <string name="rr_set_tpms">setze HR Wert</string>
+    <string name="tpms_fl">vorne links</string>
+    <string name="tpms_fr">vorne rechts</string>
+    <string name="tpms_rl">hinten links</string>
+    <string name="tpms_rr">hinten rechts</string>
+    <string name="mi_car_sort_tpms">sortiere TPMS Werte per Firmware</string>
+    <string name="tpms_settings">TPMS Einstellungen</string>
+    <string name="mi_car_tpms_wheelname">TPMS Radnamen per App</string>
     <string name="textLASTCHARGING">Letzte Ladung</string>
     <string name="GSM_icon">GSM icon anzeigen</string>
     <string name="GPS_icon">GPS icon anzeigen</string>
@@ -752,8 +772,6 @@
     <string name="lb_booster_day_sel">Klima von/bis Tag Auswahl</string>
     <string name="lb_booster_day_start">erster Tag</string>
     <string name="lb_booster_day_end">letzter Tag</string>
-    <string name="front_tpms">Vorne</string>
-    <string name="rear_tpms">Hinten"</string>
     <string-array name="lb_booster_mode" translatable="false">
         <item>@string/lb_5min</item>
         <item>@string/lb_10min</item>
