@@ -16,8 +16,8 @@ import com.openvehicles.OVMS.ui.witdet.SwitcherView
 class ClimateTimerQuickAction(apiServiceGetter: () -> ApiService?, context: Context? = null) :
 
     QuickAction(ACTION_ID, R.drawable.heat_cool_w, apiServiceGetter,
-        actionOnTint = R.attr.colorSecondaryContainer,
-        actionOffTint = R.color.cardview_dark_background,
+        actionOnTint = R.color.colorDarkgreen,// R.attr.colorSecondaryContainer,
+        actionOffTint = R.attr.colorSecondaryContainer, // R.color.cardview_dark_background,
         label = context?.getString(R.string.lb_booster_time)) {
     companion object {
         const val ACTION_ID = "climatetimer"
@@ -48,7 +48,7 @@ class ClimateTimerQuickAction(apiServiceGetter: () -> ApiService?, context: Cont
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.climate_control)
             .setView(dialogView)
-            .setNegativeButton(R.string.Cancel, null)
+            .setNegativeButton(R.string.Cancel,null)
             .setPositiveButton(R.string.Set) { _, _ ->
 
                 val booster_hd = dialogView.findViewById<SlideNumericView>(R.id.booster_time_hour)
@@ -65,6 +65,12 @@ class ClimateTimerQuickAction(apiServiceGetter: () -> ApiService?, context: Cont
                             sendCommand(cmd)
                         }
                     }
+                }
+            }
+            .setNeutralButton(R.string.lb_booster_time_off) { _, _ ->
+                if (getCarData()?.car_ac_booster_on == "yes") {
+                    val cmd = "7,metrics set xsq.booster.data 1,2,2,-1,-1,-1,-1"
+                    sendCommand(cmd)
                 }
             }
             .show()

@@ -147,40 +147,33 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                 if (staleTPMS.visibility == View.VISIBLE) View.INVISIBLE else View.VISIBLE
         }
 
-        frTPMS.setOnClickListener {
-            val carType = carData?.car_type?.lowercase() // config xsq = defined smart EQ config path in the Firmware
-            val pressure = carData?.car_tpms_pressure
-            val tpms_fl = getString(R.string.tpms_fl) + " " + pressure?.get(0)
-            val tpms_fr = getString(R.string.tpms_fr) + " " + pressure?.get(1)
-            val tpms_rl = getString(R.string.tpms_rl) + " " + pressure?.get(2)
-            val tpms_rr = getString(R.string.tpms_rr) + " " + pressure?.get(3)
-            val options = arrayOf(tpms_fl,tpms_fr,tpms_rl,tpms_rr)
-            var checkedItem = 1
-            AlertDialog.Builder(requireActivity())
-                .setTitle(R.string.fr_get_tpms)
-                .setSingleChoiceItems(options, checkedItem) { _, which ->
-                    checkedItem = which // Update the selected item index
+        // check TPMS size and fill up with "---" if needed to 4 values
+        fun checkTPMSsize(result: Array<String?>?, value: String = "pressure"): Array<String?>? {
+            var result = result
+            if (result == null) {
+                if (value == "wheelname") {
+                    result = arrayOf(getString(R.string.fl_tpms),getString(R.string.fr_tpms),getString(R.string.rl_tpms),getString(R.string.rr_tpms))
+                } else {
+                    result = arrayOf("---", "---", "---", "---")
                 }
-                .setNegativeButton(R.string.Close, null)
-                .setPositiveButton(R.string.fr_set_tpms) { _, _ ->
-                    val vehicleId = getLastSelectedCarId()
-                    if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
-                        sendCommand(R.string.fr_set_tpms, "7,config set x$carType TPMS_FR $checkedItem", this@ControlsFragment)
-                    } else {
-                        appPrefs.saveData("tpms_fr_$vehicleId", "$checkedItem")
-                    }
+            } else if (result.size < 4) {
+                while (result.size < 4) {
+                    result += "---"
                 }
-                .show()
+            }
+            return result
         }
 
+        // Get TPMS data from firmware
+        val carType = carData?.car_type?.lowercase() // config xsq = defined smart EQ config path in the Firmware
+        var pressure = checkTPMSsize(carData?.car_tpms_pressure, "pressure")
+        val tpms_fl = getString(R.string.tpms_fl) + " " + pressure?.get(0)
+        val tpms_fr = getString(R.string.tpms_fr) + " " + pressure?.get(1)
+        val tpms_rl = getString(R.string.tpms_rl) + " " + pressure?.get(2)
+        val tpms_rr = getString(R.string.tpms_rr) + " " + pressure?.get(3)
+        val options = arrayOf(tpms_fl,tpms_fr,tpms_rl,tpms_rr)
+
         flTPMS.setOnClickListener {
-            val carType = carData?.car_type?.lowercase() // config xsq = defined smart EQ config path in the Firmware
-            val pressure = carData?.car_tpms_pressure
-            val tpms_fl = getString(R.string.tpms_fl) + " " + pressure?.get(0)
-            val tpms_fr = getString(R.string.tpms_fr) + " " + pressure?.get(1)
-            val tpms_rl = getString(R.string.tpms_rl) + " " + pressure?.get(2)
-            val tpms_rr = getString(R.string.tpms_rr) + " " + pressure?.get(3)
-            val options = arrayOf(tpms_fl,tpms_fr,tpms_rl,tpms_rr)
             var checkedItem = 0
             AlertDialog.Builder(requireActivity())
                 .setTitle(R.string.fl_get_tpms)
@@ -195,44 +188,32 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                     } else {
                         appPrefs.saveData("tpms_fl_$vehicleId", "$checkedItem")
                     }
+                    updateTPMSData(carData)
                 }
                 .show()
         }
 
-        rrTPMS.setOnClickListener {
-            val carType = carData?.car_type?.lowercase() // config xsq = defined smart EQ config path in the Firmware
-            val pressure = carData?.car_tpms_pressure
-            val tpms_fl = getString(R.string.tpms_fl) + " " + pressure?.get(0)
-            val tpms_fr = getString(R.string.tpms_fr) + " " + pressure?.get(1)
-            val tpms_rl = getString(R.string.tpms_rl) + " " + pressure?.get(2)
-            val tpms_rr = getString(R.string.tpms_rr) + " " + pressure?.get(3)
-            val options = arrayOf(tpms_fl,tpms_fr,tpms_rl,tpms_rr)
-            var checkedItem = 3
+        frTPMS.setOnClickListener {
+            var checkedItem = 1
             AlertDialog.Builder(requireActivity())
-                .setTitle(R.string.rr_get_tpms)
+                .setTitle(R.string.fr_get_tpms)
                 .setSingleChoiceItems(options, checkedItem) { _, which ->
                     checkedItem = which // Update the selected item index
                 }
                 .setNegativeButton(R.string.Close, null)
-                .setPositiveButton(R.string.rr_set_tpms) { _, _ ->
+                .setPositiveButton(R.string.fr_set_tpms) { _, _ ->
                     val vehicleId = getLastSelectedCarId()
                     if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
-                        sendCommand(R.string.rr_set_tpms, "7,config set x$carType TPMS_RR $checkedItem", this@ControlsFragment)
+                        sendCommand(R.string.fr_set_tpms, "7,config set x$carType TPMS_FR $checkedItem", this@ControlsFragment)
                     } else {
-                        appPrefs.saveData("tpms_rr_$vehicleId", "$checkedItem")
+                        appPrefs.saveData("tpms_fr_$vehicleId", "$checkedItem")
                     }
+                    updateTPMSData(carData)
                 }
                 .show()
         }
 
         rlTPMS.setOnClickListener {
-            val carType = carData?.car_type?.lowercase() // config xsq = defined smart EQ config path in the Firmware
-            val pressure = carData?.car_tpms_pressure
-            val tpms_fl = getString(R.string.tpms_fl) + " " + pressure?.get(0)
-            val tpms_fr = getString(R.string.tpms_fr) + " " + pressure?.get(1)
-            val tpms_rl = getString(R.string.tpms_rl) + " " + pressure?.get(2)
-            val tpms_rr = getString(R.string.tpms_rr) + " " + pressure?.get(3)
-            val options = arrayOf(tpms_fl,tpms_fr,tpms_rl,tpms_rr)
             var checkedItem = 2
             AlertDialog.Builder(requireActivity())
                 .setTitle(R.string.rl_get_tpms)
@@ -247,6 +228,27 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                     } else {
                         appPrefs.saveData("tpms_rl_$vehicleId", "$checkedItem")
                     }
+                    updateTPMSData(carData)
+                }
+                .show()
+        }
+
+        rrTPMS.setOnClickListener {
+            var checkedItem = 3
+            AlertDialog.Builder(requireActivity())
+                .setTitle(R.string.rr_get_tpms)
+                .setSingleChoiceItems(options, checkedItem) { _, which ->
+                    checkedItem = which // Update the selected item index
+                }
+                .setNegativeButton(R.string.Close, null)
+                .setPositiveButton(R.string.rr_set_tpms) { _, _ ->
+                    val vehicleId = getLastSelectedCarId()
+                    if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
+                        sendCommand(R.string.rr_set_tpms, "7,config set x$carType TPMS_RR $checkedItem", this@ControlsFragment)
+                    } else {
+                        appPrefs.saveData("tpms_rr_$vehicleId", "$checkedItem")
+                    }
+                    updateTPMSData(carData)
                 }
                 .show()
         }
@@ -263,19 +265,19 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         var val2: Array<String?>? = null
         var alert: IntArray? = intArrayOf(0, 0, 0, 0)
 
-        if (carData?.car_tpms_wheelname != null && carData.car_tpms_wheelname!!.size >= 4) {
+        if (carData?.car_tpms_wheelname != null && carData.car_tpms_wheelname!!.size >= 1) {
             // New data (msg code 'Y'):
-            if (carData.stale_tpms_pressure != CarData.DataStale.NoValue && carData.car_tpms_pressure!!.size >= 4) {
+            if (carData.stale_tpms_pressure != CarData.DataStale.NoValue && carData.car_tpms_pressure!!.size >= 1) {
                 stale1 = carData.stale_tpms_pressure
-                val1 = carData.car_tpms_pressure
+                val1 = checkTPMSsize(carData.car_tpms_pressure, "pressure")  // size check and fill up with "---" for pressure
             }
-            if (carData.stale_tpms_temp != CarData.DataStale.NoValue && carData.car_tpms_temp!!.size >= 4) {
-                val2 = carData.car_tpms_temp
+            if (carData.stale_tpms_temp != CarData.DataStale.NoValue && carData.car_tpms_temp!!.size >= 1) {
+                val2 = checkTPMSsize(carData.car_tpms_temp, "temp")          // size check and fill up with "---" for temperatures
             }
-            if (carData.stale_tpms_health != CarData.DataStale.NoValue && carData.car_tpms_health!!.size >= 4) {
+            if (carData.stale_tpms_health != CarData.DataStale.NoValue && carData.car_tpms_health!!.size >= 1) {
                 if (stale1 == CarData.DataStale.NoValue) {
                     stale1 = carData.stale_tpms_health
-                    val1 = carData.car_tpms_health
+                    val1 = checkTPMSsize(carData.car_tpms_health, "health") // size check and fill up with "---" for health
                 }
             }
             if (carData.stale_tpms_alert != CarData.DataStale.NoValue && carData.car_tpms_alert!!.size >= 4) {
@@ -291,7 +293,7 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
             if (stale2 == DataStale.NoValue && stale1 != DataStale.NoValue && carData.car_type in listOf("SQ")) {
                 stale2 = stale1
                 val2 = val1
-                val1 = carData.car_tpms_wheelname
+                val1 = checkTPMSsize(carData.car_tpms_wheelname, "wheelname")  // size check and fill up with "---" for wheelnames
             }
         } else if (carData != null) {
             // Legacy data (msg code 'W'): only pressures & temperatures available
@@ -308,6 +310,8 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                 carData.car_tpms_rl_t,
                 carData.car_tpms_rr_t
             )
+            checkTPMSsize(val1, "pressure")  // size check and fill up with "---" for pressure
+            checkTPMSsize(val2, "temp")      // size check and fill up with "---" for temperatures
             alert = intArrayOf(0, 0, 0, 0)
         }
 
@@ -315,51 +319,51 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         val appwheelname = if (appPrefs.getData("tpms_wheelname_app", "off") == "on") {
             arrayOf(getString(R.string.fl_tpms),getString(R.string.fr_tpms),getString(R.string.rl_tpms),getString(R.string.rr_tpms))
         } else {
-            carData?.car_tpms_wheelname ?: arrayOf(getString(R.string.fl_tpms),getString(R.string.fr_tpms),getString(R.string.rl_tpms),getString(R.string.rr_tpms))
+            checkTPMSsize(carData?.car_tpms_wheelname, "wheelname")  // size check and fill up with "---" for wheelnames
         }
         if (carData?.stale_tpms_temp == CarData.DataStale.NoValue) {
             flTPMS.text = String.format(
                 "%s\n%s",
-                appwheelname.get(0),
+                appwheelname?.get(0),
                 val2?.get((appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())) ?: "---"
             )
             frTPMS.text = String.format(
                 "%s\n%s",
-                appwheelname.get(1),
+                appwheelname?.get(1),
                 val2?.get((appPrefs.getData("tpms_fr_$vehicleId", "1")!!.toInt())) ?: "---"
             )
             rlTPMS.text = String.format(
                 "%s\n%s",
-                appwheelname.get(2),
+                appwheelname?.get(2),
                 val2?.get((appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())) ?: "---"
             )
             rrTPMS.text = String.format(
                 "%s\n%s",
-                appwheelname.get(3),
+                appwheelname?.get(3),
                 val2?.get((appPrefs.getData("tpms_rr_$vehicleId", "3")!!.toInt())) ?: "---"
             )
         } else {
             flTPMS.text = String.format(
                 "%s\n%s\n%s",
-                appwheelname.get(0),
+                appwheelname?.get(0),
                 val1?.get((appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())) ?: "---",
                 val2?.get((appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())) ?: "---"
             )
             frTPMS.text = String.format(
                 "%s\n%s\n%s",
-                appwheelname.get(1),
+                appwheelname?.get(1),
                 val1?.get((appPrefs.getData("tpms_fr_$vehicleId", "1")!!.toInt())) ?: "---",
                 val2?.get((appPrefs.getData("tpms_fr_$vehicleId", "1")!!.toInt())) ?: "---"
             )
             rlTPMS.text = String.format(
                 "%s\n%s\n%s",
-                appwheelname.get(2),
+                appwheelname?.get(2),
                 val1?.get((appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())) ?: "---",
                 val2?.get((appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())) ?: "---"
             )
             rrTPMS.text = String.format(
                 "%s\n%s\n%s",
-                appwheelname.get(3),
+                appwheelname?.get(3),
                 val1?.get((appPrefs.getData("tpms_rr_$vehicleId", "3")!!.toInt())) ?: "---",
                 val2?.get((appPrefs.getData("tpms_rr_$vehicleId", "3")!!.toInt())) ?: "---"
             )
@@ -367,13 +371,13 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
 
         val alertcol = intArrayOf(0xFFFFFF, Color.YELLOW, Color.RED)
         if ((alert?.get(0) ?: 0) != 0)
-            flTPMS.setTextColor(alertcol[alert!![0]])
+            flTPMS.setTextColor(alertcol[alert!![(appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())]])
         if ((alert?.get(1) ?: 0) != 0)
-            frTPMS.setTextColor(alertcol[1])
+            frTPMS.setTextColor(alertcol[(appPrefs.getData("tpms_fr_$vehicleId", "1")!!.toInt())])
         if ((alert?.get(2) ?: 0) != 0)
-            rlTPMS.setTextColor(alertcol[alert!![2]])
+            rlTPMS.setTextColor(alertcol[alert!![(appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())]])
         if ((alert?.get(3) ?: 0) != 0)
-            rrTPMS.setTextColor(alertcol[alert!![3]])
+            rrTPMS.setTextColor(alertcol[alert!![(appPrefs.getData("tpms_rr_$vehicleId", "3")!!.toInt())]])
 
         if (stale1 == CarData.DataStale.NoValue) {
             staleTPMS.setTextColor(Color.RED)

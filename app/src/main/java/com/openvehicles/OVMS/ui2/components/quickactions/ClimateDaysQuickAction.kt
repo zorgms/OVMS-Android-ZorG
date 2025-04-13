@@ -15,8 +15,8 @@ import com.openvehicles.OVMS.ui.witdet.SwitcherView
 class ClimateDaysQuickAction(apiServiceGetter: () -> ApiService?, context: Context? = null) :
 
     QuickAction(ACTION_ID, R.drawable.calendar, apiServiceGetter,
-        actionOnTint = R.attr.colorSecondaryContainer,
-        actionOffTint = R.color.cardview_dark_background,
+        actionOnTint = R.color.colorDarkgreen,// R.attr.colorSecondaryContainer,
+        actionOffTint = R.attr.colorSecondaryContainer, // R.color.cardview_dark_background,
         label = context?.getString(R.string.lb_booster_time_weekly)) {
     companion object {
         const val ACTION_ID = "climatedays"
@@ -38,7 +38,7 @@ class ClimateDaysQuickAction(apiServiceGetter: () -> ApiService?, context: Conte
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.lb_booster_day_sel)
             .setView(dialogView)
-            .setNegativeButton(R.string.Cancel, null)
+            .setNegativeButton(R.string.Cancel,null)
             .setPositiveButton(R.string.Set) { _, _ ->
 
                 val booster_start = dialogView.findViewById<SwitcherView>(R.id.booster_ds)
@@ -49,6 +49,15 @@ class ClimateDaysQuickAction(apiServiceGetter: () -> ApiService?, context: Conte
 
                 val cmd = "7,metrics set xsq.booster.data 1,1,1,-1,$booster_nds,$booster_nde,-1"
                 sendCommand(cmd)
+            }
+            .setNeutralButton(R.string.lb_booster_weekly_off) { _, _ ->
+                if (getCarData()?.car_ac_booster_on == "yes") {
+                    val cmd = "7,metrics set xsq.booster.data 1,1,2,-1,-1,-1,-1"
+                    sendCommand(cmd)
+                } else if (getCarData()?.car_ac_booster_weekly == "yes") {
+                    val cmd = "7,metrics set xsq.booster.data 1,2,2,-1,-1,-1,-1"
+                    sendCommand(cmd)
+                }
             }
             .show()
     }
