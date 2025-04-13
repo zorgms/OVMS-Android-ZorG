@@ -15,4 +15,5 @@
     <color name="chargeErrorColor">#A20101</color>
     <color name="chargeOtherColor">#BC8600</color>
     <color name="chargeOtherColor2">#FFD97A</color>
+    <color name="colorDarkgreen">#2D6201</color>
 </resources>

@@ -284,6 +284,10 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
                 (carData.car_charge_linevoltage_raw.toDouble() * carData.car_charge_current_raw.toDouble()) / -1000.0
         }
 
+        if (carData?.car_type == "SQ") {
+            chargingPower = carData!!.car_charge_power_input_kw_raw.toDouble()
+        }
+
         battkW.text = String.format("%2.2f kW", chargingPower)
 
 
