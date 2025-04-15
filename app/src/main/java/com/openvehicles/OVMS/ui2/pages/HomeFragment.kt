@@ -768,12 +768,11 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
         if (carData?.car_type == "SQ") {
             chargingCardSubtitle.text = String.format(
-                "▾%.1fkWh  ⚡%.1fkW  %.0fA  %.0fV  ⚡%s%%",
+                "▾%.1fkWh  ⚡%.1fkW  %s  ⚡%.1f%%",
                 carData?.car_charge_kwhconsumed,
                 carData?.car_charge_power_input_kw_raw,
-                carData?.car_charge_current_raw,
-                carData?.car_charge_linevoltage,
-                carData?.car_charger_efficiency
+                carData?.car_charge_voltagecurrent,
+                carData?.car_charger_efficiency,
             )
         } else {
             chargingCardSubtitle.text = String.format("%2.2f kW, %s %s, Battery: %s", chargingPower, carData?.car_charge_linevoltage, carData?.car_charge_current, carData?.car_temp_battery)
