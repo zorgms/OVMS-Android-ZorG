@@ -57,7 +57,6 @@ class ControlParametersFragment : BaseFragment(), OnResultCommandListener, OnIte
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         activity?.setTitle(R.string.Parameters)
-        compatActivity?.setTitle(R.string.Parameters)
     }
 
     override fun onServiceAvailable(service: ApiService) {
