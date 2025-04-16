@@ -783,9 +783,10 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
         ampLimit.text = carData?.car_charge_currentlimit
         ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw)
+        ampLimitSlider.isEnabled = carData?.car_type !in listOf("SQ")  // SQ does not support amp limit
+
         val touchListener: RangeSlider.OnSliderTouchListener = object :
             RangeSlider.OnSliderTouchListener {
-
 
             override fun onStartTrackingTouch(slider: RangeSlider) {
             }

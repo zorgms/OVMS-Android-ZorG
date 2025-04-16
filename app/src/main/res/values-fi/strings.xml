@@ -122,7 +122,7 @@
     <string name="lb_ft_rt_kickdown_threshold">#%d: Kickdownin kynnys</string>
     <string name="lb_ft_rt_kickdown_compzero">#%d: Kickdownin kompensaatio</string>
     <string name="lb_ft_rt_chargemode">#%d: Latausrajan pysäytystila</string>
-    <string name="lb_ft_rt_chargepower">#%d: Latausrajan taso (%)</string>
+    <string name="lb_ft_rt_chargepower">#%d: Latausrajan taso (%%)</string>
     <string name="lb_ft_rt_suffsoc">#%d: Riittävä lataustaso</string>
     <string name="lb_ft_rt_suffrange">#%d: Riittävä ajokantama</string>
     <string name="lb_ft_rt_maxrange">#%d: Maksimi ihanteellinen kantama</string>

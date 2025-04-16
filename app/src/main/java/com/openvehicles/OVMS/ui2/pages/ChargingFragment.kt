@@ -260,7 +260,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         val batteryTemp = findViewById(R.id.battTemp) as TextView
         val chargerTemp = findViewById(R.id.chargerTemp) as TextView
         batteryTemp.text = carData?.car_temp_battery
-        chargerTemp.text = carData?.car_temp_charger
+        chargerTemp.text = if (carData?.car_type != "SQ") carData?.car_temp_charger else String.format("%.1f%%",carData?.car_charger_efficiency)
 
         // Battery charging Volt, Amp and kW
 
@@ -474,7 +474,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         socLimit.text = "${sufficientSocSeekbar.values.first().toInt()}%"
 
         sufficientSocLimitSwitch.setOnCheckedChangeListener { compoundButton, b ->
-            sufficientSocSeekbar.isEnabled = sufficientSocLimitSwitch.isChecked && carData?.car_type !in listOf("SQ")
+            sufficientSocSeekbar.isEnabled = sufficientSocLimitSwitch.isChecked
             if (!sufficientSocLimitSwitch.isChecked) {
                 if (carData?.car_type == "VWUP") {
                     sendCommandWithProgress(

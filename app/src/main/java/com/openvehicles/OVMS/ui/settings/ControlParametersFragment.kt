@@ -17,8 +17,10 @@ import com.openvehicles.OVMS.api.ApiService
 import com.openvehicles.OVMS.api.OnResultCommandListener
 import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.ui.BaseFragment
+import com.openvehicles.OVMS.ui.BaseFragmentActivity
 import com.openvehicles.OVMS.ui.utils.Ui
 import com.openvehicles.OVMS.ui.utils.Ui.showEditDialog
+import com.openvehicles.OVMS.utils.AppPrefs
 import com.openvehicles.OVMS.utils.CarsStorage.getStoredCars
 
 class ControlParametersFragment : BaseFragment(), OnResultCommandListener, OnItemClickListener {
@@ -28,6 +30,8 @@ class ControlParametersFragment : BaseFragment(), OnResultCommandListener, OnIte
     private var editPosition = 0
     private var carData: CarData? = null
     private var service: ApiService? = null
+    private var appPrefs: AppPrefs? = null
+    private var oldUiEnabled = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,6 +60,9 @@ class ControlParametersFragment : BaseFragment(), OnResultCommandListener, OnIte
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         activity?.setTitle(R.string.Parameters)
+        compatActivity?.setTitle(R.string.Parameters)
+        appPrefs = AppPrefs(compatActivity!!, "ovms")
+        oldUiEnabled = appPrefs!!.getData("option_oldui_enabled", "0") == "1"
     }
 
     override fun onServiceAvailable(service: ApiService) {
@@ -94,13 +101,17 @@ class ControlParametersFragment : BaseFragment(), OnResultCommandListener, OnIte
                 Toast.LENGTH_SHORT
             ).show()
         } else {
+            var baseActivity: BaseFragmentActivity? = null
+            try {
+                baseActivity = activity as BaseFragmentActivity?
+            } catch (ignored: Exception) {}
             showEditDialog(
-                context,
-                adapter!!.getTitleRow(context, position),
-                item,
-                R.string.Set,
-                isPasswd,
-                object : Ui.OnChangeListener<String?> {
+                context = context,
+                title = adapter!!.getTitleRow(context, position),
+                value = item,
+                buttonResId = R.string.Set,
+                isPassword = isPasswd,
+                listener = object : Ui.OnChangeListener<String?> {
                     override fun onAction(data: String?) {
                         sendCommand(
                             String.format("4,%d,%s", position, data),
@@ -108,7 +119,7 @@ class ControlParametersFragment : BaseFragment(), OnResultCommandListener, OnIte
                         )
                         adapter!!.setParam(position, data)
                     }
-                })
+                }, newUi = baseActivity == null)
         }
     }
 
