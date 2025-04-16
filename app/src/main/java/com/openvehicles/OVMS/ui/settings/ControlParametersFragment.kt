@@ -20,7 +20,6 @@ import com.openvehicles.OVMS.ui.BaseFragment
 import com.openvehicles.OVMS.ui.BaseFragmentActivity
 import com.openvehicles.OVMS.ui.utils.Ui
 import com.openvehicles.OVMS.ui.utils.Ui.showEditDialog
-import com.openvehicles.OVMS.utils.AppPrefs
 import com.openvehicles.OVMS.utils.CarsStorage.getStoredCars
 
 class ControlParametersFragment : BaseFragment(), OnResultCommandListener, OnItemClickListener {
@@ -30,8 +29,6 @@ class ControlParametersFragment : BaseFragment(), OnResultCommandListener, OnIte
     private var editPosition = 0
     private var carData: CarData? = null
     private var service: ApiService? = null
-    private var appPrefs: AppPrefs? = null
-    private var oldUiEnabled = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,8 +58,6 @@ class ControlParametersFragment : BaseFragment(), OnResultCommandListener, OnIte
         super.onActivityCreated(savedInstanceState)
         activity?.setTitle(R.string.Parameters)
         compatActivity?.setTitle(R.string.Parameters)
-        appPrefs = AppPrefs(compatActivity!!, "ovms")
-        oldUiEnabled = appPrefs!!.getData("option_oldui_enabled", "0") == "1"
     }
 
     override fun onServiceAvailable(service: ApiService) {
