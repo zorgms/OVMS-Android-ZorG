@@ -166,13 +166,87 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
             }
         }
 
+        // Determine primary and (if available) secondary TPMS values:
+        var stale1 = DataStale.NoValue
+        var stale2 = DataStale.NoValue
+        var val1 = carData?.car_tpms_wheelname
+        var val2: Array<String?>? = null
+        var alert: IntArray? = intArrayOf(0, 0, 0, 0)
+
+        if (carData?.car_tpms_wheelname != null && carData.car_tpms_wheelname!!.isNotEmpty()) {
+            // New data (msg code 'Y'):
+            if (carData.stale_tpms_pressure != CarData.DataStale.NoValue && carData.car_tpms_pressure!!.isNotEmpty()) {
+                stale1 = carData.stale_tpms_pressure
+                val1 = checkTPMSsize(carData.car_tpms_pressure, "pressure")  // size check and fill up with "---" for pressure
+            }
+            if (carData.stale_tpms_temp != CarData.DataStale.NoValue && carData.car_tpms_temp!!.isNotEmpty()) {
+                stale2 = carData.stale_tpms_temp
+                val2 = checkTPMSsize(carData.car_tpms_temp, "temp")          // size check and fill up with "---" for temperatures
+            }
+            if (carData.stale_tpms_health != CarData.DataStale.NoValue && carData.car_tpms_health!!.isNotEmpty()) {
+                if (stale1 == CarData.DataStale.NoValue) {
+                    stale1 = carData.stale_tpms_health
+                    val1 = checkTPMSsize(carData.car_tpms_health, "health") // size check and fill up with "---" for health
+                }
+            }
+            if (carData.stale_tpms_alert != CarData.DataStale.NoValue && carData.car_tpms_alert!!.isNotEmpty()) {
+                alert = carData.car_tpms_alert_raw
+                if (alert == null) {
+                    alert = intArrayOf(0, 0, 0, 0)
+                } else if (alert.size < 4) {
+                    while (alert.size < 4)
+                        alert +=  0 // Fill with "0"
+                }
+                if (stale1 == CarData.DataStale.NoValue) {
+                    stale1 = carData.stale_tpms_alert
+                    val1 = checkTPMSsize(carData.car_tpms_alert, "alert") // size check and fill up with "0" for alert
+                }
+            } else {
+                alert = intArrayOf(0, 0, 0, 0)
+            }
+        } else if (carData != null) {
+            // Legacy data (msg code 'W'): only pressures & temperatures available
+            val1 = arrayOf(
+                carData.car_tpms_fl_p,
+                carData.car_tpms_fr_p,
+                carData.car_tpms_rl_p,
+                carData.car_tpms_rr_p
+            )
+            stale1 = carData.stale_tpms
+            val2 = arrayOf(
+                carData.car_tpms_fl_t,
+                carData.car_tpms_fr_t,
+                carData.car_tpms_rl_t,
+                carData.car_tpms_rr_t
+            )
+            // Legacy 'W' message had no distinct temperature meta data, guess availability from values:
+            if (carData.car_tpms_fl_t_raw != 0.0 || carData.car_tpms_fr_t_raw != 0.0 || carData.car_tpms_rl_t_raw != 0.0 || carData.car_tpms_rr_t_raw != 0.0) {
+                stale2 = carData.stale_tpms
+            }
+            checkTPMSsize(val1, "pressure")  // size check and fill up with "---" for pressure
+            checkTPMSsize(val2, "temp")      // size check and fill up with "---" for temperatures
+            alert = intArrayOf(0, 0, 0, 0)
+        }
+
+        val vehicleId = getLastSelectedCarId()
+        val appwheelname = if (appPrefs.getData("tpms_wheelname_app", "off") == "on") {
+            arrayOf(getString(R.string.fl_tpms),getString(R.string.fr_tpms),getString(R.string.rl_tpms),getString(R.string.rr_tpms))
+        } else {
+            checkTPMSsize(carData?.car_tpms_wheelname, "wheelname")  // size check and fill up with "---" for wheelnames
+        }
+
         // Get TPMS data from firmware
         val carType = carData?.car_type?.lowercase() // config xsq = defined smart EQ config path in the Firmware
-        var pressure = checkTPMSsize(carData?.car_tpms_pressure, "pressure")
-        val tpms_fl = getString(R.string.tpms_fl) + " " + pressure?.get(0)
-        val tpms_fr = getString(R.string.tpms_fr) + " " + pressure?.get(1)
-        val tpms_rl = getString(R.string.tpms_rl) + " " + pressure?.get(2)
-        val tpms_rr = getString(R.string.tpms_rr) + " " + pressure?.get(3)
+        var tpms_fl = getString(R.string.tpms_fl) + " " + val1?.get(0)
+        var tpms_fr = getString(R.string.tpms_fr) + " " + val1?.get(1)
+        var tpms_rl = getString(R.string.tpms_rl) + " " + val1?.get(2)
+        var tpms_rr = getString(R.string.tpms_rr) + " " + val1?.get(3)
+        if (stale2 != DataStale.NoValue) {
+            tpms_fl += "/" + val2?.get(0)
+            tpms_fr += "/" + val2?.get(1)
+            tpms_rl += "/" + val2?.get(2)
+            tpms_rr += "/" + val2?.get(3)
+        }
         val options = arrayOf(tpms_fl,tpms_fr,tpms_rl,tpms_rr)
 
         flTPMS.setOnClickListener {
@@ -261,96 +335,31 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
             return
         }
 
-        var stale1 = DataStale.NoValue
-        var stale2 = DataStale.NoValue
-        var val1 = carData?.car_tpms_wheelname
-        var val2: Array<String?>? = null
-        var alert: IntArray? = intArrayOf(0, 0, 0, 0)
-
-        if (carData?.car_tpms_wheelname != null && carData.car_tpms_wheelname!!.isNotEmpty()) {
-            // New data (msg code 'Y'):
-            if (carData.stale_tpms_pressure != CarData.DataStale.NoValue && carData.car_tpms_pressure!!.isNotEmpty()) {
-                stale1 = carData.stale_tpms_pressure
-                val1 = checkTPMSsize(carData.car_tpms_pressure, "pressure")  // size check and fill up with "---" for pressure
-            }
-            if (carData.stale_tpms_temp != CarData.DataStale.NoValue && carData.car_tpms_temp!!.isNotEmpty()) {
-                val2 = checkTPMSsize(carData.car_tpms_temp, "temp")          // size check and fill up with "---" for temperatures
-            }
-            if (carData.stale_tpms_health != CarData.DataStale.NoValue && carData.car_tpms_health!!.isNotEmpty()) {
-                if (stale1 == CarData.DataStale.NoValue) {
-                    stale1 = carData.stale_tpms_health
-                    val1 = checkTPMSsize(carData.car_tpms_health, "health") // size check and fill up with "---" for health
-                }
-            }
-            if (carData.stale_tpms_alert != CarData.DataStale.NoValue && carData.car_tpms_alert!!.isNotEmpty()) {
-                alert = carData.car_tpms_alert_raw
-                if (alert == null) {
-                    alert = intArrayOf(0, 0, 0, 0)
-                } else if (alert.size < 4) {
-                    while (alert.size < 4)
-                    alert +=  0 // Fill with "0"
-                }
-                if (stale1 == CarData.DataStale.NoValue) {
-                    stale1 = carData.stale_tpms_alert
-                    val1 = checkTPMSsize(carData.car_tpms_alert, "alert") // size check and fill up with "0" for alert
-                }
-            } else {
-                alert = intArrayOf(0, 0, 0, 0)
-            }
-            // TODO display single value in the bottom field:
-            if (stale2 == DataStale.NoValue && stale1 != DataStale.NoValue && carData.car_type in listOf("SQ")) {
-                stale2 = stale1
-                val2 = val1
-                val1 = checkTPMSsize(carData.car_tpms_wheelname, "wheelname")  // size check and fill up with "---" for wheelnames
-            }
-        } else if (carData != null) {
-            // Legacy data (msg code 'W'): only pressures & temperatures available
-            val1 = arrayOf(
-                carData.car_tpms_fl_p,
-                carData.car_tpms_fr_p,
-                carData.car_tpms_rl_p,
-                carData.car_tpms_rr_p
-            )
-            stale1 = carData.stale_tpms
-            val2 = arrayOf(
-                carData.car_tpms_fl_t,
-                carData.car_tpms_fr_t,
-                carData.car_tpms_rl_t,
-                carData.car_tpms_rr_t
-            )
-            checkTPMSsize(val1, "pressure")  // size check and fill up with "---" for pressure
-            checkTPMSsize(val2, "temp")      // size check and fill up with "---" for temperatures
-            alert = intArrayOf(0, 0, 0, 0)
-        }
-
-        val vehicleId = getLastSelectedCarId()
-        val appwheelname = if (appPrefs.getData("tpms_wheelname_app", "off") == "on") {
-            arrayOf(getString(R.string.fl_tpms),getString(R.string.fr_tpms),getString(R.string.rl_tpms),getString(R.string.rr_tpms))
-        } else {
-            checkTPMSsize(carData?.car_tpms_wheelname, "wheelname")  // size check and fill up with "---" for wheelnames
-        }
-        if (carData?.stale_tpms_temp == CarData.DataStale.NoValue) {
+        // Display TPMS wheel values:
+        if (stale2 == DataStale.NoValue) {
+            // No secondary value available, show only primary value:
             flTPMS.text = String.format(
                 "%s\n%s",
                 appwheelname?.get(0),
-                val2?.get((appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())) ?: "---"
+                val1?.get((appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())) ?: "---"
             )
             frTPMS.text = String.format(
                 "%s\n%s",
                 appwheelname?.get(1),
-                val2?.get((appPrefs.getData("tpms_fr_$vehicleId", "1")!!.toInt())) ?: "---"
+                val1?.get((appPrefs.getData("tpms_fr_$vehicleId", "1")!!.toInt())) ?: "---"
             )
             rlTPMS.text = String.format(
                 "%s\n%s",
                 appwheelname?.get(2),
-                val2?.get((appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())) ?: "---"
+                val1?.get((appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())) ?: "---"
             )
             rrTPMS.text = String.format(
                 "%s\n%s",
                 appwheelname?.get(3),
-                val2?.get((appPrefs.getData("tpms_rr_$vehicleId", "3")!!.toInt())) ?: "---"
+                val1?.get((appPrefs.getData("tpms_rr_$vehicleId", "3")!!.toInt())) ?: "---"
             )
         } else {
+            // Show primary and secondary values:
             flTPMS.text = String.format(
                 "%s\n%s\n%s",
                 appwheelname?.get(0),
