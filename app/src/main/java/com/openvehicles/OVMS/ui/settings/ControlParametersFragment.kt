@@ -17,6 +17,7 @@ import com.openvehicles.OVMS.api.ApiService
 import com.openvehicles.OVMS.api.OnResultCommandListener
 import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.ui.BaseFragment
+import com.openvehicles.OVMS.ui.BaseFragmentActivity
 import com.openvehicles.OVMS.ui.utils.Ui
 import com.openvehicles.OVMS.ui.utils.Ui.showEditDialog
 import com.openvehicles.OVMS.utils.CarsStorage.getStoredCars
@@ -94,13 +95,17 @@ class ControlParametersFragment : BaseFragment(), OnResultCommandListener, OnIte
                 Toast.LENGTH_SHORT
             ).show()
         } else {
+            var baseActivity: BaseFragmentActivity? = null
+            try {
+                baseActivity = activity as BaseFragmentActivity?
+            } catch (ignored: Exception) {}
             showEditDialog(
-                context,
-                adapter!!.getTitleRow(context, position),
-                item,
-                R.string.Set,
-                isPasswd,
-                object : Ui.OnChangeListener<String?> {
+                context = context,
+                title = adapter!!.getTitleRow(context, position),
+                value = item,
+                buttonResId = R.string.Set,
+                isPassword = isPasswd,
+                listener = object : Ui.OnChangeListener<String?> {
                     override fun onAction(data: String?) {
                         sendCommand(
                             String.format("4,%d,%s", position, data),
@@ -108,7 +113,7 @@ class ControlParametersFragment : BaseFragment(), OnResultCommandListener, OnIte
                         )
                         adapter!!.setParam(position, data)
                     }
-                })
+                }, newUi = baseActivity == null)
         }
     }
 

@@ -18,6 +18,7 @@ import com.openvehicles.OVMS.api.ApiService
 import com.openvehicles.OVMS.api.OnResultCommandListener
 import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.ui.BaseFragment
+import com.openvehicles.OVMS.ui.BaseFragmentActivity
 import com.openvehicles.OVMS.ui.utils.Ui
 import com.openvehicles.OVMS.ui.utils.Ui.showEditDialog
 import com.openvehicles.OVMS.utils.CarsStorage.getSelectedCarData
@@ -79,17 +80,22 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
 
     override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
         val context = parent.context
+        var baseActivity: BaseFragmentActivity? = null
+        try {
+            baseActivity = activity as BaseFragmentActivity?
+        } catch (ignored: Exception) {}
         showEditDialog(context,
-            adapter!!.getTitleRow(context, position),
-            adapter!!.getItem(position) as String,
-            R.string.Set,
+            title = adapter!!.getTitleRow(context, position),
+            value = adapter!!.getItem(position) as String,
+            buttonResId = R.string.Set,
             isPassword = false,
-            object : Ui.OnChangeListener<String?> {
+            listener = object : Ui.OnChangeListener<String?> {
                 override fun onAction(data: String?) {
                     sendCommand(String.format("2,%d,%s", position, data), this@FeaturesFragment)
                     adapter!!.setFeature(position, data)
                 }
-            })
+            }, newUi = baseActivity == null)
+
         /*
 		Ui.showPinDialog(context, mAdapter.getTitleRow(context, position), Long.toString(id),
 				R.string.Set, false, new Ui.OnChangeListener<String>() {
