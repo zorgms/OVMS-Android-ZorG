@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.location.Geocoder
 import android.os.Bundle
+import android.util.Log
 import android.util.TypedValue
 import android.util.TypedValue.COMPLEX_UNIT_DIP
 import android.view.Gravity
@@ -63,6 +64,7 @@ import com.openvehicles.OVMS.api.OnResultCommandListener
 import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.entities.StoredCommand
 import com.openvehicles.OVMS.ui.BaseFragment
+import com.openvehicles.OVMS.ui.MapFragment
 import com.openvehicles.OVMS.ui.utils.Ui
 import com.openvehicles.OVMS.ui.utils.Ui.getDrawableIdentifier
 import com.openvehicles.OVMS.ui2.MainActivityUI2
@@ -131,6 +133,8 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         }
 
     companion object {
+        private const val TAG = "HomeFragment"
+
         private val TAB_CONTROLS = 1
         private val TAB_LOCATION = 2
         private val TAB_CHARGING = 3
@@ -1268,6 +1272,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
     }
 
     override fun update(carData: CarData?) {
+        Log.d(TAG, "update: lastupdated=" + carData?.car_lastupdated)
         this.carData = carData
         setupVisualisation(carData)
         initialiseChargingCard(carData)
@@ -1280,10 +1285,15 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
     }
 
     override fun onServiceLoggedIn(service: ApiService?, isLoggedIn: Boolean) {
+        Log.d(TAG, "onServiceLoggedIn: isLoggedIn=" + isLoggedIn)
         val statusText: TextView = findViewById(R.id.carStatus) as TextView
-        statusText.text = getString(if (isLoggedIn) R.string.loading else R.string.connecting)
         val statusProgressBar = findViewById(R.id.carUpdatingProgress) as CircularProgressIndicator
-        statusProgressBar.visibility = View.VISIBLE
+        if (!isLoggedIn) {
+            statusText.text = getString(R.string.connecting)
+            statusProgressBar.visibility = View.VISIBLE
+        } else {
+            update(carData)
+        }
     }
 
     override fun onItemClick(view: View?, position: Int) {
