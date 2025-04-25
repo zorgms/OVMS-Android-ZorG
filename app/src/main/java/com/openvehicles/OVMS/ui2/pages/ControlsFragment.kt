@@ -390,7 +390,7 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         if ((alert?.get(0) ?: 0) != 0)
             flTPMS.setTextColor(alertcol[alert!![(appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())]])
         if ((alert?.get(1) ?: 0) != 0)
-            frTPMS.setTextColor(alertcol[(appPrefs.getData("tpms_fr_$vehicleId", "1")!!.toInt())])
+            frTPMS.setTextColor(alertcol[alert!![(appPrefs.getData("tpms_fl_$vehicleId", "1")!!.toInt())]])
         if ((alert?.get(2) ?: 0) != 0)
             rlTPMS.setTextColor(alertcol[alert!![(appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())]])
         if ((alert?.get(3) ?: 0) != 0)
