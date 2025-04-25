@@ -2,6 +2,7 @@ package com.openvehicles.OVMS.ui2.pages
 
 import android.content.Context
 import android.content.DialogInterface
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Matrix
@@ -1221,6 +1222,12 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
         if (carData?.car_gsmlock?.isNotEmpty() == true) {
             carInfo += "\nGSM: ${carData.car_gsmlock} ${carData.car_mdm_mode}\n"
+        }
+
+        try {
+            val pi = context?.packageManager?.getPackageInfo(context?.packageName ?: "", 0)
+            carInfo += "\n${getString(R.string.App)}: ${pi?.versionName} (${pi?.versionCode})"
+        } catch (e: PackageManager.NameNotFoundException) {
         }
 
         if (carData?.car_firmware?.isNotEmpty() == true) {
