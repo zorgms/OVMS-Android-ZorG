@@ -494,11 +494,11 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 val etrSuffRange = carData.car_chargelimit_minsremaining_range
 
                 if (suffSOC > 0 && etrSuffSOC > 0) {
-                    statusText.text = String.format(getString(R.string.charging_estimation_soc), String.format("%02d:%02d", etrSuffSOC / 60, etrSuffSOC % 60))
+                    statusText.text = String.format(getString(R.string.charging_estimation_soc), String.format("%02d:%02dh", etrSuffSOC / 60, etrSuffSOC % 60))
                 } else if (suffRange > 0 && etrSuffRange > 0) {
-                    statusText.text = String.format(getString(R.string.charging_estimation_range), String.format("%02d:%02d", etrSuffRange / 60, etrSuffRange % 60))
+                    statusText.text = String.format(getString(R.string.charging_estimation_range), String.format("%02d:%02dh", etrSuffRange / 60, etrSuffRange % 60))
                 } else if (etrFull > 0) {
-                    statusText.text = String.format(getString(R.string.charging_estimation_full), String.format("%02d:%02d", etrFull / 60, etrFull % 60))
+                    statusText.text = String.format(getString(R.string.charging_estimation_full), String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
                 }
 
                 var chargeStateInfo = 0
@@ -1112,9 +1112,8 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 val timeraw = carData.car_ac_booster_time.split("")
                 val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
                 val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
-                climateData += ", "
                 climateData += String.format(
-                    "A/C: $time_h:$time_m h"
+                    "\nA/C: $time_h:$time_m h"
                 )
             } else if (carData?.car_ac_booster_on == "yes") {
                 val timeraw = carData.car_ac_booster_time.split("")
