@@ -236,7 +236,7 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
         private const val FEATURE_RESET_KWH100 = 0x07 // reset kWh/100km at start
         private const val FEATURE_BC_KWH100 = 0x0C // # 12 OCS kWh/100km value
         private const val FEATURE_FULL_KM = 0x0D // # 13 OCS kWh/100km value
-        private const val FEATURE_DDT4ALL = 0x10 // # 16 activate DDT4all functionality
+        private const val FEATURE_DOORLOCK = 0x10 // # 16 activate Doorlock warning
 
     }
 
@@ -406,8 +406,8 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
                         R.string.lb_ft_sq_full_km,
                         position
                     )
-                    FEATURE_DDT4ALL -> return context.getString(
-                        R.string.lb_ft_sq_ddt4all,
+                    FEATURE_DOORLOCK -> return context.getString(
+                        R.string.lb_ft_sq_doorlock,
                         position
                     )
                     else -> {}
