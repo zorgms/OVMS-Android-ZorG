@@ -158,7 +158,7 @@
     <string name="lb_ft_sq_boost_double">#%d: Climate  0 = 5 min., 1 = 10 min., 2 = 15 min.</string>
     <string name="lb_ft_sq_bc_kwh100">#%d: OCS kWh/100km value = 1</string>
     <string name="lb_ft_sq_full_km">#%d: charged ideal full range (km)</string>
-    <string name="lb_ft_sq_ddt4all">#%d: DDT4all allowed</string>
+    <string name="lb_ft_sq_doorlock">#%d: Doorlock warning allowed</string>
 
     <string name="lb_cp_registered_telephone">#%d: Registered Telephone</string>
     <string name="lb_cp_module_password">#%d: Module Password</string>
