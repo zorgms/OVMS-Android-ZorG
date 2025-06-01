@@ -89,10 +89,10 @@ class LockQuickAction(apiServiceGetter: () -> ApiService?, context: Context? = n
             builder.setPositiveButton(R.string.execute) { _, _ ->
                 val cmd: String
                 cmd = when (checkedItem) {
-                    0 -> "20"
-                    1 -> "22"
-                    2 -> "23,1"
-                    3 -> "23,0"
+                    0 -> "20, 1234"
+                    1 -> "22, 1234"
+                    2 -> "7,xsq ddt4all 1"
+                    3 -> "7,xsq ddt4all 0"
                     else -> ""
                 }
                 sendCommand(cmd)

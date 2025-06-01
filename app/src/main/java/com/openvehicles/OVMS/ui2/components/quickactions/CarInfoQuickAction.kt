@@ -8,10 +8,10 @@ import com.openvehicles.OVMS.ui.BaseFragmentActivity.Companion.show
 import com.openvehicles.OVMS.ui.settings.CarInfoFragment
 
 /**
- * Quick action handling climate control
+ * Quick action carinfo
  */
 class CarInfoQuickAction(apiServiceGetter: () -> ApiService?, context: Context? = null) :
-    QuickAction(ACTION_ID, R.drawable.ic_homelink_num, apiServiceGetter,
+    QuickAction(ACTION_ID, R.drawable.ic_homelink, apiServiceGetter,
         actionOnTint = R.attr.colorSecondaryContainer,
         actionOffTint = R.color.cardview_dark_background,
         label = context?.getString(R.string.service_notification_title)) {

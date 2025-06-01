@@ -26,6 +26,7 @@ import com.openvehicles.OVMS.ui.BaseFragment
 import com.openvehicles.OVMS.utils.AppPrefs
 import com.openvehicles.OVMS.ui2.components.quickactions.ChargingQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.CarInfoQuickAction
+import com.openvehicles.OVMS.ui2.components.quickactions.DDT4allQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.Homelink1QuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.Homelink2QuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.Homelink3QuickAction
@@ -497,7 +498,10 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         if (carData?.car_type != "SQ") centerActionsAdapter.mData += ValetQuickAction({getService()})
         centerActionsAdapter.mData += WakeupQuickAction({getService()})
         if (carData?.car_type != "SQ") centerActionsAdapter.mData += ChargingQuickAction({getService()})
-        if (carData?.car_type in listOf("SQ")) centerActionsAdapter.mData += CarInfoQuickAction({getService()})
+        if (carData?.car_type in listOf("SQ")) {
+            centerActionsAdapter.mData += CarInfoQuickAction({getService()})
+            centerActionsAdapter.mData += DDT4allQuickAction({getService()})
+        }
         centerActionsAdapter.notifyDataSetChanged()
     }
 

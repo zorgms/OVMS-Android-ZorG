@@ -863,6 +863,16 @@
     <string name="lb_booster_day_sel">Climate from/to day selection</string>
     <string name="lb_booster_day_start">first Day</string>
     <string name="lb_booster_day_end">last Day</string>
+
+    <string name="lb_autowiper_off">Auto wipe off</string>
+    <string name="lb_autowiper_on">Auto wipe on</string>
+    <string name="lb_wifi">Wifi restart</string>
+    <string name="lb_modem">Modem restart</string>
+    <string name="lb_bipbip_off">Bipbip off (only with Alarm)</string>
+    <string name="lb_bipbip_on">Bipbip on (only with Alarm)</string>
+    <string name="lb_rearwiper_off">link rear Wiper off</string>
+    <string name="lb_rearwiper_on">link rear Wiper on</string>
+    <string name="select_ddt4all_action">DDT4all option</string>
     <string-array name="lb_booster_mode" translatable="false">
         <item>@string/lb_5min</item>
         <item>@string/lb_10min</item>
