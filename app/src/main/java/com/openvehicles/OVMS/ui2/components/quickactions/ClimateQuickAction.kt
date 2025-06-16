@@ -47,7 +47,7 @@ class ClimateQuickAction(apiServiceGetter: () -> ApiService?, context: Context? 
                     0 -> "24,0"
                     1 -> "24,1"
                     2 -> "24,2"
-                    3 -> "7,metrics set xsq.booster.data 1,2,2,-1,-1,-1,-1"
+                    3 -> "7,metrics set xsq.climate.data 1,2,2,-1,-1,-1,-1"
                     else -> ""
                 }
                 sendCommand(cmd)

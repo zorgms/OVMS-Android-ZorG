@@ -47,15 +47,15 @@ class ClimateDaysQuickAction(apiServiceGetter: () -> ApiService?, context: Conte
                 val booster_nds = booster_start.selected
                 val booster_nde = booster_end.selected
 
-                val cmd = "7,metrics set xsq.booster.data 1,1,1,-1,$booster_nds,$booster_nde,-1"
+                val cmd = "7,metrics set xsq.climate.data 1,1,1,-1,$booster_nds,$booster_nde,-1"
                 sendCommand(cmd)
             }
             .setNeutralButton(R.string.lb_booster_weekly_off) { _, _ ->
                 if (getCarData()?.car_ac_booster_on == "yes") {
-                    val cmd = "7,metrics set xsq.booster.data 1,1,2,-1,-1,-1,-1"
+                    val cmd = "7,metrics set xsq.climate.data 1,1,2,-1,-1,-1,-1"
                     sendCommand(cmd)
                 } else if (getCarData()?.car_ac_booster_weekly == "yes") {
-                    val cmd = "7,metrics set xsq.booster.data 1,2,2,-1,-1,-1,-1"
+                    val cmd = "7,metrics set xsq.climate.data 1,2,2,-1,-1,-1,-1"
                     sendCommand(cmd)
                 }
             }

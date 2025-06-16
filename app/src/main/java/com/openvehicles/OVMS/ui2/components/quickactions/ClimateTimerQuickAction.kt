@@ -61,7 +61,7 @@ class ClimateTimerQuickAction(apiServiceGetter: () -> ApiService?, context: Cont
                             val booster_h_val = if (booster_hd.value < 10) String.format("0%d", booster_hd.value) else booster_hd.value
                             val booster_m_val = if (booster_md.value < 10) String.format("0%d", booster_md.value) else booster_md.value
                             val booster_btdsel_val = booster_sel_d.selected
-                            val cmd = "7,metrics set xsq.booster.data 1,1,$state_weekly,$booster_h_val$booster_m_val,$booster_start,$booster_end,$booster_btdsel_val"
+                            val cmd = "7,metrics set xsq.climate.data 1,1,$state_weekly,$booster_h_val$booster_m_val,$booster_start,$booster_end,$booster_btdsel_val"
                             sendCommand(cmd)
                         }
                     }
@@ -69,7 +69,7 @@ class ClimateTimerQuickAction(apiServiceGetter: () -> ApiService?, context: Cont
             }
             .setNeutralButton(R.string.lb_booster_time_off) { _, _ ->
                 if (getCarData()?.car_ac_booster_on == "yes") {
-                    val cmd = "7,metrics set xsq.booster.data 1,2,2,-1,-1,-1,-1"
+                    val cmd = "7,metrics set xsq.climate.data 1,2,2,-1,-1,-1,-1"
                     sendCommand(cmd)
                 }
             }
