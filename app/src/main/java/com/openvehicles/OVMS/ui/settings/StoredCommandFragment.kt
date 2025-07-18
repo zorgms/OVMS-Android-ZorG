@@ -76,6 +76,7 @@ class StoredCommandFragment : BaseFragment(), OnItemClickListener {
         activity?.setTitle(R.string.stored_commands_title)
         setHasOptionsMenu(true)
         listView = ListView(container.context)
+        listView.fitsSystemWindows = true
         listView.onItemClickListener = this
         adapter = StoredCommandAdapter(context, R.layout.item_stored_command, storedCommands, inflater)
         listView.setAdapter(adapter)

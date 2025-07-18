@@ -204,14 +204,25 @@ class MainActivity : ApiActivity(), ActionBar.OnNavigationListener, GetMapDetail
         }
 
         // set up receiver for server communication service:
-        registerReceiver(apiEventReceiver, IntentFilter(ApiService.ACTION_APIEVENT))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(apiEventReceiver, IntentFilter(ApiService.ACTION_APIEVENT),
+                RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(apiEventReceiver, IntentFilter(ApiService.ACTION_APIEVENT))
+        }
 
         // set up receiver for notifications:
-        registerReceiver(notificationReceiver, IntentFilter(ApiService.ACTION_NOTIFICATION))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(notificationReceiver, IntentFilter(ApiService.ACTION_NOTIFICATION),
+                RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(notificationReceiver, IntentFilter(ApiService.ACTION_NOTIFICATION))
+        }
 
         // init UI tabs:
         viewPager = ViewPager(this)
         viewPager.setId(android.R.id.tabhost)
+        viewPager.fitsSystemWindows = true
         setContentView(viewPager)
 
         // check for update, Google Play Services & permissions:
@@ -324,7 +335,7 @@ class MainActivity : ApiActivity(), ActionBar.OnNavigationListener, GetMapDetail
         try {
             // get App version
             val pInfo = packageManager.getPackageInfo(packageName, 0)
-            versionName = pInfo.versionName
+            versionName = pInfo.versionName.toString()
             versionCode = pInfo.versionCode
             if (appPrefs.getData("lastUsedVersionName", "") != versionName) {
                 showVersion()

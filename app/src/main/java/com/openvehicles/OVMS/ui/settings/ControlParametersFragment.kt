@@ -41,6 +41,7 @@ class ControlParametersFragment : BaseFragment(), OnResultCommandListener, OnIte
             carData = getStoredCars()[editPosition]
         }
         listView = ListView(container!!.context)
+        listView!!.fitsSystemWindows = true
         listView!!.onItemClickListener = this
 
         // create storage adapter:

@@ -182,7 +182,11 @@ class ApiService : Service(), ApiTask.ApiTaskListener, ApiObserver {
 
         // Register command receiver:
         Log.d(TAG, "Registering command receiver for Intent: $ACTION_SENDCOMMAND")
-        registerReceiver(mCommandReceiver, IntentFilter(ACTION_SENDCOMMAND))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(mCommandReceiver, IntentFilter(ACTION_SENDCOMMAND), RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(mCommandReceiver, IntentFilter(ACTION_SENDCOMMAND))
+        }
 
         // Register network status receiver:
         registerReceiver(
@@ -200,7 +204,11 @@ class ApiService : Service(), ApiTask.ApiTaskListener, ApiObserver {
         val actionFilter = IntentFilter()
         actionFilter.addAction(ACTION_ENABLE)
         actionFilter.addAction(ACTION_DISABLE)
-        registerReceiver(actionReceiver, actionFilter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(actionReceiver, actionFilter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(actionReceiver, actionFilter)
+        }
 
         // Register as an ApiObserver:
         addObserver(this)

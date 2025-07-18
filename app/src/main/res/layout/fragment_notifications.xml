@@ -1,32 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
     <ListView
+        android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/listView"
-        android:layout_gravity="center_horizontal"
-        android:stackFromBottom="true"
-        android:transcriptMode="alwaysScroll"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
         android:layout_above="@+id/imageView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
+        android:layout_gravity="center_horizontal"
         android:clickable="true"
-        android:longClickable="true"/>
+        android:longClickable="true"
+        android:stackFromBottom="true"
+        android:transcriptMode="alwaysScroll" />
 
     <ImageView
+        android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:id="@+id/imageView"
-        android:src="@drawable/bg_bar_toast"
         android:layout_above="@+id/cmdInput"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:scaleType="fitXY"/>
+        android:scaleType="fitXY"
+        android:src="@drawable/bg_bar_toast" />
 
     <EditText
         android:id="@+id/cmdInput"

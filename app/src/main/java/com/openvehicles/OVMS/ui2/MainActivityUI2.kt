@@ -145,7 +145,12 @@ class MainActivityUI2 : ApiActivity() {
         setContentView(R.layout.activity_main2)
         val toolbar: MaterialToolbar = findViewById(R.id.materialToolbar);
         setSupportActionBar(toolbar)
-        registerReceiver(apiEventReceiver, IntentFilter(ApiService.ACTION_APIEVENT))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(apiEventReceiver, IntentFilter(ApiService.ACTION_APIEVENT),
+                RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(apiEventReceiver, IntentFilter(ApiService.ACTION_APIEVENT))
+        }
 
         // check for update, Google Play Services & permissions:
         checkVersion()
@@ -164,7 +169,7 @@ class MainActivityUI2 : ApiActivity() {
         try {
             // get App version
             val pInfo = packageManager.getPackageInfo(packageName, 0)
-            versionName = pInfo.versionName
+            versionName = pInfo.versionName.toString()
             versionCode = pInfo.versionCode
             if (appPrefs.getData("lastUsedVersionName", "") != versionName) {
                 showVersion()

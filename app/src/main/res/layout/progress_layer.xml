@@ -10,7 +10,7 @@
     android:gravity="center"
     android:minHeight="300dp">
 
-    <com.google.android.material.card.MaterialCardView
+    <androidx.cardview.widget.CardView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_margin="24dp">
@@ -71,13 +71,13 @@
 
             <Button
                 android:id="@+id/progress_cancel"
-                style="@style/Widget.Material3.Button"
+                style="@style/Widget.AppCompat.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:text="@string/Cancel" />
 
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+    </androidx.cardview.widget.CardView>
 
 </LinearLayout>

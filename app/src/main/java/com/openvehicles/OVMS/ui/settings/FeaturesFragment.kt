@@ -46,6 +46,7 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
         }
         Log.d(TAG, "editPosition=$editPosition → carData=$carData")
         listView = ListView(container!!.context)
+        listView!!.fitsSystemWindows = true
         listView!!.onItemClickListener = this
 
         // create storage adapter:

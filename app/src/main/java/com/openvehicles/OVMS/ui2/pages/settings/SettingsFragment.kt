@@ -33,6 +33,7 @@ class SettingsFragment : BaseFragment(), OnItemClickListener {
         savedInstanceState: Bundle?
     ): View {
         listView = ListView(container!!.context)
+        listView!!.fitsSystemWindows = true
         return listView
     }
 

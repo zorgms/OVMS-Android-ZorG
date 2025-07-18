@@ -108,7 +108,7 @@ object Ui {
         newUi: Boolean = false
     ) {
         val view = LayoutInflater.from(context).inflate(if (newUi) R.layout.dlg_edit_v2 else R.layout.dlg_edit, null)
-        val et = view.findViewById<View>(R.id.etxt_input_value) as TextInputEditText
+        val et = view.findViewById<View>(R.id.etxt_input_value) as EditText
         et.setText(value)
         if (isPassword) {
             et.setHint(R.string.lb_enter_passwd)
