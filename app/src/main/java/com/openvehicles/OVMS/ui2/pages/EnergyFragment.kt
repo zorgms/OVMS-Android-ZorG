@@ -31,6 +31,7 @@ import com.openvehicles.OVMS.ui2.components.energymetrics.EnergyMetric
 import com.openvehicles.OVMS.ui2.components.energymetrics.EnergyMetricsAdapter
 import com.openvehicles.OVMS.utils.CarsStorage
 import java.util.Locale
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 
@@ -86,12 +87,12 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
         val icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_batt_l1)!!.toBitmap()
 
         val soc = carData?.car_soc_raw ?: 0f
-        val iconWidth = icon.height.minus(iconBorders).times(((soc / 100.0))).plus(iconOffset)
+        val iconWidth = min(icon.height.minus(iconBorders).times(((soc / 100.0))).plus(iconOffset).roundToInt(), icon.height)
         if (iconWidth > 0) {
             val matrix = Matrix()
             matrix.postRotate(180f)
             val mBitmap =
-                Bitmap.createBitmap(icon, 0, 0, icon.width, iconWidth.roundToInt(), matrix, true)
+                Bitmap.createBitmap(icon, 0, 0, icon.width, iconWidth, matrix, true)
             val layer1Drawable = BitmapDrawable(resources, mBitmap)
             layer1Drawable.gravity = Gravity.BOTTOM
 

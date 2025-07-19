@@ -34,6 +34,7 @@ import com.openvehicles.OVMS.utils.AppPrefs
 import com.openvehicles.OVMS.utils.CarsStorage
 import kotlin.collections.listOf
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 
@@ -207,12 +208,12 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
 
         val limitIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_chargelimit)!!.toBitmap()
         val socLimit = carData?.car_chargelimit_soclimit ?: 0
-        val limitIconWidth = limitIcon.height.minus(iconBorders).times(((socLimit / 100.0))).plus(iconOffset)
+        val limitIconWidth = min(limitIcon.height.minus(iconBorders).times(((socLimit / 100.0))).plus(iconOffset).roundToInt(), limitIcon.height)
         if (limitIconWidth > 0) {
             val matrix = Matrix()
             matrix.postRotate(180f)
             val mBitmap =
-                Bitmap.createBitmap(limitIcon, 0, 0, limitIcon.width, limitIconWidth.roundToInt(), matrix, true)
+                Bitmap.createBitmap(limitIcon, 0, 0, limitIcon.width, limitIconWidth, matrix, true)
             val layer1Drawable = BitmapDrawable(resources, mBitmap)
             layer1Drawable.gravity = Gravity.BOTTOM
             layer1Drawable.setTint(Color.CYAN)
@@ -223,12 +224,12 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         val icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_batt_l1)!!.toBitmap()
 
         val soc = carData?.car_soc_raw ?: 0f
-        val iconWidth = icon.height.minus(iconBorders).times(((soc / 100.0))).plus(iconOffset)
+        val iconWidth = min(icon.height.minus(iconBorders).times(((soc / 100.0))).plus(iconOffset).roundToInt(), icon.height)
         if (iconWidth > 0) {
             val matrix = Matrix()
             matrix.postRotate(180f)
             val mBitmap =
-                Bitmap.createBitmap(icon, 0, 0, icon.width, iconWidth.roundToInt(), matrix, true)
+                Bitmap.createBitmap(icon, 0, 0, icon.width, iconWidth, matrix, true)
             val layer1Drawable = BitmapDrawable(resources, mBitmap)
             layer1Drawable.gravity = Gravity.BOTTOM
 
