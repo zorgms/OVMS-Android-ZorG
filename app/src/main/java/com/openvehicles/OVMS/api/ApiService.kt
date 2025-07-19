@@ -257,9 +257,11 @@ class ApiService : Service(), ApiTask.ApiTaskListener, ApiObserver {
 
         // Forward intent to our handler thread:
         val msg = serviceHandler!!.obtainMessage()
-        msg.arg1 = startId
-        msg.obj = intent
-        serviceHandler!!.sendMessage(msg)
+        if (msg != null) {
+            msg.arg1 = startId
+            msg.obj = intent
+            serviceHandler!!.sendMessage(msg)
+        }
         return super.onStartCommand(intent, flags, startId)
     }
 
