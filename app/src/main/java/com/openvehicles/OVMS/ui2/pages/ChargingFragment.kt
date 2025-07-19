@@ -500,7 +500,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
                 sendCommandWithProgress(
                     String.format(
                         "204,%d,%d,%d,%d",
-                        chargeSuffRange, carData?.car_charge_currentlimit_raw?.toInt() ?: 0, chargeLimitAction
+                        chargeSuffRange, 0, carData?.car_charge_currentlimit_raw?.toInt() ?: 0, chargeLimitAction
                     ),
                     this@ChargingFragment
                 )
