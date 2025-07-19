@@ -36,8 +36,10 @@ class QuickActionsAdapter internal constructor(
         action.initAction(holder.itemView, {
             if (editMode) {
                 if (itemCount > 1) {
-                    mData.removeAt(holder.bindingAdapterPosition)
-                    notifyItemRemoved(holder.bindingAdapterPosition)
+                    if (holder.bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                        mData.removeAt(holder.bindingAdapterPosition)
+                        notifyItemRemoved(holder.bindingAdapterPosition)
+                    }
                     removeAction?.invoke(action)
                 }
             }
