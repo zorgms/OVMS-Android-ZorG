@@ -801,7 +801,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                     .setTitle(R.string.lb_charger_confirm_amp_change)
                     .setNegativeButton(R.string.Cancel) {_, _ ->}
                     .setPositiveButton(android.R.string.ok) { dlg, which ->                     sendCommand(
-                        R.string.msg_setting_charge_m, String.format("10,%d", ampLimitSlider.values.first().toInt()),
+                        R.string.msg_setting_charge_c, String.format("15,%d", ampLimitSlider.values.first().toInt()),
                         this@HomeFragment
                     );dlg.dismiss()}
                     .show()

@@ -401,7 +401,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
                     .setTitle(R.string.lb_charger_confirm_amp_change)
                     .setNegativeButton(R.string.Cancel) {_, _ ->}
                     .setPositiveButton(android.R.string.ok) { dlg, which -> sendCommandWithProgress(
-                        String.format("10,%d", ampLimitSlider.values.first().toInt()),
+                        String.format("15,%d", ampLimitSlider.values.first().toInt()),
                         this@ChargingFragment
                     );dlg.dismiss()}
                     .show()
