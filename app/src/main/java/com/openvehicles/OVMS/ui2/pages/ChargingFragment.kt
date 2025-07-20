@@ -478,32 +478,43 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
             sufficientSocSeekbar.isEnabled = sufficientSocLimitSwitch.isChecked
             if (!sufficientSocLimitSwitch.isChecked) {
                 if (carData?.car_type == "VWUP") {
+                    // CMD_SetChargeAlerts(<soc limit>,<current limit>,<charge mode>)
                     sendCommandWithProgress(
                         String.format(
                             "204,%d,%d,%d",
-                            0, carData?.car_charge_currentlimit_raw?.toInt() ?: 0, chargeLimitAction
+                            0,
+                            carData?.car_charge_currentlimit_raw?.toInt() ?: 0,
+                            chargeLimitAction
                         ),
                         this@ChargingFragment
                     )
                     return@setOnCheckedChangeListener
                 }
                 if (carData?.car_type == "NL") {
+                    // mb: ??? the Leaf does not provide a command 204, where does this originate from?
                     sendCommandWithProgress(
                         String.format(
                             "204,%d,%d",
-                            chargeSuffRange, 0
+                            chargeSuffRange,
+                            0
                         ),
                         this@ChargingFragment
                     )
                     return@setOnCheckedChangeListener
                 }
-                sendCommandWithProgress(
-                    String.format(
-                        "204,%d,%d,%d,%d",
-                        chargeSuffRange, 0, carData?.car_charge_currentlimit_raw?.toInt() ?: 0, chargeLimitAction
-                    ),
-                    this@ChargingFragment
-                )
+                if (carData?.car_type == "RT") {
+                    // CMD_SetChargeAlerts(<range>,<soc>,[<powerlevel>],[<stopmode>])
+                    sendCommandWithProgress(
+                        String.format(
+                            "204,%d,%d,%d,%d",
+                            chargeSuffRange,
+                            0,
+                            carData?.car_charge_currentlimit_raw?.div(5)?.toInt() ?: 0,
+                            chargeLimitAction
+                        ),
+                        this@ChargingFragment
+                    )
+                }
             }
         }
 
@@ -516,32 +527,43 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
 
             override fun onStopTrackingTouch(slider: RangeSlider) {
                 if (carData?.car_type == "VWUP") {
+                    // CMD_SetChargeAlerts(<soc limit>,<current limit>,<charge mode>)
                     sendCommandWithProgress(
                         String.format(
                             "204,%d,%d,%d",
-                            sufficientSocSeekbar.values.first().toInt(), carData?.car_charge_currentlimit_raw?.toInt() ?: 0, chargeLimitAction
+                            sufficientSocSeekbar.values.first().toInt(),
+                            carData?.car_charge_currentlimit_raw?.toInt() ?: 0,
+                            chargeLimitAction
                         ),
                         this@ChargingFragment
                     )
                     return
                 }
                 if (carData?.car_type == "NL") {
+                    // mb: ??? the Leaf does not provide a command 204, where does this originate from?
                     sendCommandWithProgress(
                         String.format(
                             "204,%d,%d",
-                            chargeSuffRange, sufficientSocSeekbar.values.first().toInt()
+                            chargeSuffRange,
+                            sufficientSocSeekbar.values.first().toInt()
                         ),
                         this@ChargingFragment
                     )
                     return
                 }
-                sendCommandWithProgress(
-                    String.format(
-                        "204,%d,%d,%d,%d",
-                        chargeSuffRange, sufficientSocSeekbar.values.first().toInt(), carData?.car_charge_currentlimit_raw?.toInt() ?: 0, chargeLimitAction
-                    ),
-                    this@ChargingFragment
-                )
+                if (carData?.car_type == "RT") {
+                    // CMD_SetChargeAlerts(<range>,<soc>,[<powerlevel>],[<stopmode>])
+                    sendCommandWithProgress(
+                        String.format(
+                            "204,%d,%d,%d,%d",
+                            chargeSuffRange,
+                            sufficientSocSeekbar.values.first().toInt(),
+                            carData?.car_charge_currentlimit_raw?.div(5)?.toInt() ?: 0,
+                            chargeLimitAction
+                        ),
+                        this@ChargingFragment
+                    )
+                }
             }
         }
 
@@ -571,6 +593,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
             sufficientRangeSeekbar.isEnabled = sufficientRangeLimitSwitch.isChecked && carData.car_type !in listOf("SQ")
             if (!sufficientRangeLimitSwitch.isChecked) {
                 if (carData.car_type == "NL") {
+                    // mb: ??? the Leaf does not provide a command 204, where does this originate from?
                     sendCommandWithProgress(
                         String.format(
                             "204,%d",
@@ -580,13 +603,20 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
                     )
                     return@setOnCheckedChangeListener
                 }
-                sendCommandWithProgress(
-                    String.format(
-                        "204,%d,%d,%d,%d",
-                        0, chargeSuffSOC, carData?.car_charge_currentlimit_raw?.toInt() ?: 0, chargeLimitAction
-                    ),
-                    this@ChargingFragment
-                )
+                if (carData?.car_type == "RT") {
+                    // CMD_SetChargeAlerts(<range>,<soc>,[<powerlevel>],[<stopmode>])
+                    sendCommandWithProgress(
+                        String.format(
+                            "204,%d,%d,%d,%d",
+                            0,
+                            chargeSuffSOC,
+                            carData?.car_charge_currentlimit_raw?.div(5)?.toInt() ?: 0,
+                            chargeLimitAction
+                        ),
+                        this@ChargingFragment
+                    )
+                }
+                // Note: VWUP does not provide sufficient range control
             }
         }
 
@@ -598,13 +628,16 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
             }
 
             override fun onStopTrackingTouch(slider: RangeSlider) {
-                sendCommandWithProgress(
-                    String.format(
-                        "204,%d",
-                        sufficientRangeSeekbar.values.first().toInt()
-                    ),
-                    this@ChargingFragment
-                )
+                if (carData?.car_type == "RT") {
+                    // CMD_SetChargeAlerts(<range>,[<soc>],[<powerlevel>],[<stopmode>])
+                    sendCommandWithProgress(
+                        String.format(
+                            "204,%d",
+                            sufficientRangeSeekbar.values.first().toInt()
+                        ),
+                        this@ChargingFragment
+                    )
+                }
             }
         }
 
@@ -636,32 +669,44 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
             chargeLimitAction = checkedMode
             if (checkedMode != -1) {
                 if (carData.car_type == "VWUP") {
+                    // CMD_SetChargeAlerts(<soc limit>,<current limit>,<charge mode>)
                     sendCommandWithProgress(
                         String.format(
                             "204,%d,%d,%d",
-                            chargeSuffSOC, carData?.car_charge_currentlimit_raw?.toInt() ?: 0, checkedMode
+                            chargeSuffSOC,
+                            carData?.car_charge_currentlimit_raw?.toInt() ?: 0,
+                            checkedMode
                         ),
                         this@ChargingFragment
                     )
                     return@addOnButtonCheckedListener
                 }
                 if (carData.car_type == "NL") {
+                    // mb: ??? the Leaf does not provide a command 204, where does this originate from?
                     sendCommandWithProgress(
                         String.format(
                             "204,%d,%d,%d",
-                            chargeSuffRange, chargeSuffSOC, checkedMode
+                            chargeSuffRange,
+                            chargeSuffSOC,
+                            checkedMode
                         ),
                         this@ChargingFragment
                     )
                     return@addOnButtonCheckedListener
                 }
-                sendCommandWithProgress(
-                    String.format(
-                        "204,%d,%d,%d,%d",
-                        chargeSuffRange, chargeSuffSOC, carData?.car_charge_currentlimit_raw?.toInt() ?: 0, checkedMode
-                    ),
-                    this@ChargingFragment
-                )
+                if (carData?.car_type == "RT") {
+                    // CMD_SetChargeAlerts(<range>,[<soc>],[<powerlevel>],[<stopmode>])
+                    sendCommandWithProgress(
+                        String.format(
+                            "204,%d,%d,%d,%d",
+                            chargeSuffRange,
+                            chargeSuffSOC,
+                            carData?.car_charge_currentlimit_raw?.div(5)?.toInt() ?: 0,
+                            checkedMode
+                        ),
+                        this@ChargingFragment
+                    )
+                }
             }
         }
     }
