@@ -37,13 +37,11 @@ class ClimateTimerQuickAction(apiServiceGetter: () -> ApiService?, context: Cont
         val time_m = String.format("%s%s", timeraw?.get(3), timeraw?.get(4))
         val booster_start = String.format("%s",getCarData()?.car_ac_booster_ds)
         val booster_end = String.format("%s", getCarData()?.car_ac_booster_de?.minus(1))
-        val bdt = getCarData()?.car_ac_booster_bdt
 
         booster_h!!.value = time_h.toInt()
         booster_m!!.value = time_m.toInt()
-        booster_sel!!.selected = bdt!!.toInt()
+        booster_sel!!.selected = getCarData()?.car_ac_booster_bdt ?: 0
         val state_weekly = if(booster_weekly == "yes") "1" else "2"
-
 
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.climate_control)

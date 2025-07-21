@@ -32,7 +32,7 @@ class ClimateDaysQuickAction(apiServiceGetter: () -> ApiService?, context: Conte
         val booster_de: SwitcherView = dialogView.findViewById<View>(R.id.booster_de) as? SwitcherView? ?: return
 
         val booster_start = getCarData()?.car_ac_booster_ds ?: 0
-        val booster_end = getCarData()?.car_ac_booster_de?.minus(1) ?: 6
+        val booster_end = getCarData()?.car_ac_booster_de?.minus(1) ?: 5
 
         booster_ds.selected = booster_start
         booster_de.selected = booster_end

@@ -814,7 +814,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                     .setTitle(R.string.lb_charger_confirm_amp_change)
                     .setNegativeButton(R.string.Cancel) {_, _ ->}
                     .setPositiveButton(android.R.string.ok) { dlg, which ->                     sendCommand(
-                        R.string.msg_setting_charge_m, String.format("10,%d", ampLimitSlider.values.first().toInt()),
+                        R.string.msg_setting_charge_c, String.format("15,%d", ampLimitSlider.values.first().toInt()),
                         this@HomeFragment
                     );dlg.dismiss()}
                     .show()
@@ -1113,7 +1113,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
         var climateData = ""
         if (carData?.car_temp_cabin != null && carData.car_temp_cabin.isNotEmpty()) {
-            climateData += String.format("%s: %s", getString(R.string.textCABIN), carData.car_temp_cabin)
+            climateData += String.format("%s: %s", getString(R.string.textCABIN), carData?.car_temp_cabin)
         }
         if (carData?.car_temp_ambient != null && carData.car_temp_ambient.isNotEmpty()) {
             if (climateData != "")
@@ -1150,18 +1150,18 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 "%.1f kWh/%s, Con %.1f kWh, Regen %.1f kWh\nTrip %s, 12V Batt %sV",
                 consumption,
                 carData?.car_distance_units,
-                carData?.car_energyused,
-                carData?.car_energyrecd,
-                carData?.car_tripmeter,
-                carData?.car_12vline_voltage
+                carData?.car_energyused ?: 0.0f,
+                carData?.car_energyrecd ?: 0.0f,
+                carData?.car_tripmeter ?: "N/A",
+                carData?.car_12vline_voltage ?: 0.0f
             )
         } else {
             String.format(
                 "%.1f Wh/%s, Regen %.1f kWh, Trip %s",
                 consumption,
                 carData?.car_distance_units,
-                carData?.car_energyrecd?.times(10)?.let { floor(it.toDouble()) }?.div(10) ?: 0,
-                carData?.car_tripmeter
+                carData?.car_energyrecd?.times(10)?.let { floor(it.toDouble()) }?.div(10) ?: 0.0f,
+                carData?.car_tripmeter ?: "N/A"
             )
         }
 
