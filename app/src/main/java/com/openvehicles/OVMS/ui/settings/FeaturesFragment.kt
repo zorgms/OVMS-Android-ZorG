@@ -257,7 +257,7 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
         }
 
         override fun getItem(position: Int): Any {
-            return feature[position]!!
+            return feature[position] ?: ""
         }
 
         override fun getItemId(position: Int): Long {

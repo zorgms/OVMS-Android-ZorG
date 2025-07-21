@@ -253,7 +253,7 @@ class ControlParametersFragment : BaseFragment(), OnResultCommandListener, OnIte
         }
 
         override fun getItem(position: Int): Any {
-            return params[position]!!
+            return params[position] ?: ""
         }
 
         override fun getItemId(position: Int): Long {
