@@ -32,6 +32,7 @@ import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.utils.AppPrefs
 import com.openvehicles.OVMS.ui.MainActivity
 import com.openvehicles.OVMS.ui.utils.Database
+import com.openvehicles.OVMS.ui2.MainActivityUI2
 import com.openvehicles.OVMS.utils.CarsStorage
 import com.openvehicles.OVMS.utils.Sys
 import java.io.Serializable
@@ -339,7 +340,9 @@ class ApiService : Service(), ApiTask.ApiTaskListener, ApiObserver {
      */
     private fun enableService() {
         Log.i(TAG, "enableService: starting foreground mode")
-        val notificationIntent = Intent(this, MainActivity::class.java)
+        val notificationIntent = Intent(this,
+            if (appPrefs?.getData("option_oldui_enabled", "0") == "1") MainActivity::class.java
+            else MainActivityUI2::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this, 0,
             notificationIntent, Sys.getMutableFlags(0, false)
