@@ -42,8 +42,7 @@ class ClimateQuickAction(apiServiceGetter: () -> ApiService?, context: Context? 
             }
             builder.setNegativeButton(R.string.Close, null)
             builder.setPositiveButton(R.string.execute) { _, _ ->
-                val cmd: String
-                cmd = when (checkedItem) {
+                val cmd: String = when (checkedItem) {
                     0 -> "24,0"
                     1 -> "24,1"
                     2 -> "24,2"

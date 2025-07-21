@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.openvehicles.OVMS.ui.witdet
 
 import android.content.Context
@@ -8,6 +10,7 @@ import android.widget.CompoundButton
 import android.widget.LinearLayout
 import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.ui.utils.Ui
+import androidx.core.view.isEmpty
 
 class SwitcherView @JvmOverloads constructor(
     context: Context,
@@ -56,7 +59,7 @@ class SwitcherView @JvmOverloads constructor(
 
         for (text in pValues) {
             val button = SwitcherButton(context)
-            if (_selected < 0 && childCount == 0) {
+            if (_selected < 0 && isEmpty()) {
                 button.setChecked(true)
             }
             button.setSingleLine()
