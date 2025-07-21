@@ -40,7 +40,7 @@
     <string name="DefaultMode">STANDARD</string>
     <string name="ChargingOverlay">Laden</string>
     <string name="BatteryOverlay">Batterie</string>
-    <string name="EstimatedShort">&#8230;GESCHÄTZT</string>
+    <string name="EstimatedShort">GESCHÄTZT</string>
     <string name="IdealShort">REICHWEITE IDEAL</string>
     <string name="BatteryText">Batterie</string>
     <string name="Homelink">Homelink</string>

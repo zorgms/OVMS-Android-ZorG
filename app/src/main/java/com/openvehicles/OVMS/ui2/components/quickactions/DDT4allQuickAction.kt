@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.DialogInterface
 import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.api.ApiService
-import com.openvehicles.OVMS.entities.CarData
-import com.openvehicles.OVMS.ui.utils.Ui
 
 /**
  * Quick action handling none protected DDT4all commands
@@ -44,8 +42,7 @@ class DDT4allQuickAction(apiServiceGetter: () -> ApiService?, context: Context? 
         }
         builder.setNegativeButton(R.string.Close, null)
         builder.setPositiveButton(R.string.execute) { _, _ ->
-            val cmd: String
-            cmd = when (checkedItem) {
+            val cmd: String = when (checkedItem) {
                 0 -> "7,xsq ddt4all 2"
                 1 -> "7,xsq ddt4all 3"
                 2 -> "7,xsq ddt4all 4"

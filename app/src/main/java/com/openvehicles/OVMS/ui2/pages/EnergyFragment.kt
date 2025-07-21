@@ -33,6 +33,7 @@ import com.openvehicles.OVMS.utils.CarsStorage
 import java.util.Locale
 import kotlin.math.min
 import kotlin.math.roundToInt
+import androidx.core.graphics.drawable.toDrawable
 
 
 class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAdapter.ItemClickListener {
@@ -86,14 +87,14 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
 
         val icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_batt_l1)!!.toBitmap()
 
-        val soc = carData?.car_soc_raw ?: 0f
+        val soc = carData?.car_soc_raw ?: 0.0f
         val iconWidth = min(icon.height.minus(iconBorders).times(((soc / 100.0))).plus(iconOffset).roundToInt(), icon.height)
         if (iconWidth > 0) {
             val matrix = Matrix()
             matrix.postRotate(180f)
             val mBitmap =
                 Bitmap.createBitmap(icon, 0, 0, icon.width, iconWidth, matrix, true)
-            val layer1Drawable = BitmapDrawable(resources, mBitmap)
+            val layer1Drawable = mBitmap.toDrawable(resources)
             layer1Drawable.gravity = Gravity.BOTTOM
 
             if (carData?.car_charging == true) {
@@ -131,9 +132,10 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
         val battVolt = findViewById(R.id.battVolt) as TextView
         val battAmp = findViewById(R.id.battAmp) as TextView
         val battkW = findViewById(R.id.battkW) as TextView
-        battVolt.text = String.format("%2.1f V", carData?.car_battery_voltage)
-        battAmp.text = if(carData?.car_type != "SQ") String.format("%2.1f A", carData?.car_battery_current_raw) else String.format("%2.0f Ah", carData?.car_CAC)
-        battkW.text = if(carData?.car_type != "SQ") String.format("%2.2f kW", carData?.car_power) else String.format("%2.1f kWh", carData?.car_battery_capacity)
+
+        battVolt.text = String.format("%2.1f V", carData?.car_battery_voltage ?: 0.0f)
+        battAmp.text = if(carData?.car_type != "SQ") String.format("%2.1f A", carData?.car_battery_current_raw ?: 0.0f) else String.format("%2.0f Ah", carData?.car_CAC ?: 0.0f)
+        battkW.text = if(carData?.car_type != "SQ") String.format("%2.2f kW", carData?.car_power ?: 0.0f) else String.format("%2.1f kWh", carData?.car_battery_capacity ?: 0.0f)
 
         // Metrics
 
@@ -149,40 +151,38 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
                 carData?.car_temp_motor
             )
         } else {
-            val defaulttime = (carData!!.car_charge_timestamp.startsWith("01.01.70") || carData!!.car_charge_timestamp.startsWith("01/01 70") || carData!!.car_charge_timestamp.startsWith("31.12.69"))
+            val timestampString = carData?.car_charge_timestamp
+            var date = "N/A"
+            var time = "N/A"
+            val kwhconsumed = carData?.car_charge_kwhconsumed ?: 0.0f
+            if (timestampString != null) {
+                date = timestampString.split(" ")[0]
+                time = timestampString.split(" ")[2]
+            }
+
             energyMetricsAdapter.mData += EnergyMetric(getString(R.string.textLASTCHARGING),
-                if (defaulttime) {
-                    String.format(
-                        "%.1f %s",
-                        carData!!.car_charge_kwhconsumed,
-                        "kWh"
-                    )
-                } else {
-                    String.format(
-                        "%.1f %s  %s  %s %s",
-                        carData!!.car_charge_kwhconsumed,
-                        "kWh",
-                        carData!!.car_charge_timestamp.split(" ")[0],
+                String.format(
+                        "%.1f kWh  %s  %s %s",
+                        kwhconsumed,
+                        date,
                         "⏱",
-                        carData!!.car_charge_timestamp.split(" ")[2]
+                        time
                     )
-                }
                 )
         }
 
         if(carData?.car_type !in listOf("SQ")) {
             energyMetricsAdapter.mData += EnergyMetric(
                 getString(R.string.lb_motor_power),
-                String.format("%2.1f kW", carData?.car_inv_power_motor_kw)
+                String.format("%2.1f kW", carData?.car_inv_power_motor_kw ?: 0.0f)
             )
         }
 
         energyMetricsAdapter.mData += EnergyMetric(getString(R.string.last_trip),
-            String.format("%.1f %s", carData?.car_tripmeter_raw?.div(10), carData?.car_distance_units))
+            String.format("%.1f %s", carData?.car_tripmeter_raw?.div(10) ?: 0.0f, carData?.car_distance_units))
 
-        var consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(100)?.div(carData.car_tripmeter_raw.div(10))
-        if (consumption?.isNaN() == true)
-            consumption = 0f
+        val consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(100)?.div(carData.car_tripmeter_raw.div(10)) ?: 0.0f
+
         if(carData?.car_type in listOf("SQ")) {
             energyMetricsAdapter.mData += EnergyMetric(
                 getString(R.string.consumption),
@@ -196,10 +196,10 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
         }
 
         energyMetricsAdapter.mData += EnergyMetric(getString(R.string.consumed_amount_label),
-            String.format("%2.2f kWh", carData?.car_energyused))
+            String.format("%2.2f kWh", carData?.car_energyused ?: 0.0f))
 
         energyMetricsAdapter.mData += EnergyMetric(getString(R.string.regen_amount_label),
-            String.format("%2.2f kWh", carData?.car_energyrecd))
+            String.format("%2.2f kWh", carData?.car_energyrecd ?: 0.0f))
 
         if(carData?.car_type !in listOf("SQ")) {
             energyMetricsAdapter.mData += EnergyMetric(
@@ -213,7 +213,7 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
         }
 
         energyMetricsAdapter.mData += EnergyMetric(getString(R.string.text12VBATT),
-            String.format("%2.2f V", carData?.car_12vline_voltage))
+            String.format("%2.2f V", carData?.car_12vline_voltage ?: 0.0f))
 
         energyMetricsAdapter.notifyDataSetChanged()
 

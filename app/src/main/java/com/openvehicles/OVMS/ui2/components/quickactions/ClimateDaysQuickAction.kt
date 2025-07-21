@@ -1,3 +1,5 @@
+@file:Suppress("NAME_SHADOWING")
+
 package com.openvehicles.OVMS.ui2.components.quickactions
 
 import android.annotation.SuppressLint
@@ -26,14 +28,14 @@ class ClimateDaysQuickAction(apiServiceGetter: () -> ApiService?, context: Conte
     override fun onAction() {
         val context = context ?: return
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dlg_booster_days, null)
-        val booster_ds = dialogView.findViewById<View>(R.id.booster_ds) as SwitcherView?
-        val booster_de = dialogView.findViewById<View>(R.id.booster_de) as SwitcherView?
+        val booster_ds: SwitcherView = dialogView.findViewById<View>(R.id.booster_ds) as? SwitcherView? ?: return
+        val booster_de: SwitcherView = dialogView.findViewById<View>(R.id.booster_de) as? SwitcherView? ?: return
 
-        val booster_start = String.format("%s",getCarData()?.car_ac_booster_ds)
-        val booster_end = String.format("%s", getCarData()?.car_ac_booster_de?.minus(1))
+        val booster_start = getCarData()?.car_ac_booster_ds ?: 0
+        val booster_end = getCarData()?.car_ac_booster_de?.minus(1) ?: 5
 
-        booster_ds!!.selected = booster_start.toInt()
-        booster_de!!.selected = booster_end.toInt()
+        booster_ds.selected = booster_start
+        booster_de.selected = booster_end
 
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.lb_booster_day_sel)

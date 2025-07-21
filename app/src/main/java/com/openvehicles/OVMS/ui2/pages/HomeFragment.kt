@@ -100,6 +100,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates
+import androidx.core.graphics.drawable.toDrawable
 
 
 /**
@@ -419,7 +420,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             matrix.postRotate(180f)
             val mBitmap =
                 Bitmap.createBitmap(icon, 0, 0, icon.width, iconWidth, matrix, true)
-            val layer1Drawable = BitmapDrawable(resources, mBitmap)
+            val layer1Drawable = mBitmap.toDrawable(resources)
             layer1Drawable.gravity = Gravity.BOTTOM
 
             if (carData?.car_charging == true) {
@@ -547,7 +548,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         // Car image
         val image: ImageView = findViewById(R.id.carStatusImage) as ImageView
 
-        val name_splitted = carData?.sel_vehicle_image?.split("_");
+        val name_splitted = carData?.sel_vehicle_image?.split("_")
         val car_tire_image1 = Ui.getDrawableIdentifier(
             context,
             name_splitted?.minus(name_splitted.last())?.joinToString("_") +"_tireanim"
@@ -772,15 +773,27 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         }
 
         if (carData?.car_type == "SQ") {
+            val kwhconsumed = carData?.car_charge_kwhconsumed ?: 0.0f
+            val voltagecurrent = carData?.car_charge_voltagecurrent ?: "N/A"
+            val lineVoltage = carData?.car_charge_linevoltage ?: "N/A"
+            val efficiency = carData?.car_temp_battery ?: "N/A"
             chargingCardSubtitle.text = String.format(
                 "▾%.1fkWh  ⚡%.1fkW  %s  ⚡%.1f%%",
-                carData?.car_charge_kwhconsumed,
-                carData?.car_charge_power_input_kw_raw,
-                carData?.car_charge_voltagecurrent,
-                carData?.car_charger_efficiency,
+                kwhconsumed,
+                voltagecurrent,
+                lineVoltage,
+                efficiency,
             )
         } else {
-            chargingCardSubtitle.text = String.format("%2.2f kW, %s %s, Battery: %s", chargingPower, carData?.car_charge_linevoltage, carData?.car_charge_current, carData?.car_temp_battery)
+            val lineVoltage = carData?.car_charge_linevoltage ?: "N/A"
+            val current = carData?.car_charge_current ?: "N/A"
+            val batteryTemp = carData?.car_temp_battery ?: "N/A"
+            "%.2f kW, %s %s, Battery: %s".format(
+                chargingPower,
+                lineVoltage,
+                current,
+                batteryTemp
+            )
         }
 
         // Amp limit and slider
@@ -1100,7 +1113,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
         var climateData = ""
         if (carData?.car_temp_cabin != null && carData.car_temp_cabin.isNotEmpty()) {
-            climateData += String.format("%s: %s", getString(R.string.textCABIN), carData.car_temp_cabin)
+            climateData += String.format("%s: %s", getString(R.string.textCABIN), carData?.car_temp_cabin)
         }
         if (carData?.car_temp_ambient != null && carData.car_temp_ambient.isNotEmpty()) {
             if (climateData != "")
@@ -1137,18 +1150,18 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 "%.1f kWh/%s, Con %.1f kWh, Regen %.1f kWh\nTrip %s, 12V Batt %sV",
                 consumption,
                 carData?.car_distance_units,
-                carData?.car_energyused,
-                carData?.car_energyrecd,
-                carData?.car_tripmeter,
-                carData?.car_12vline_voltage
+                carData?.car_energyused ?: 0.0f,
+                carData?.car_energyrecd ?: 0.0f,
+                carData?.car_tripmeter ?: "N/A",
+                carData?.car_12vline_voltage ?: 0.0f
             )
         } else {
             String.format(
                 "%.1f Wh/%s, Regen %.1f kWh, Trip %s",
                 consumption,
                 carData?.car_distance_units,
-                carData?.car_energyrecd?.times(10)?.let { floor(it.toDouble()) }?.div(10) ?: 0,
-                carData?.car_tripmeter
+                carData?.car_energyrecd?.times(10)?.let { floor(it.toDouble()) }?.div(10) ?: 0.0f,
+                carData?.car_tripmeter ?: "N/A"
             )
         }
 
