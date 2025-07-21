@@ -799,8 +799,27 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         // Amp limit and slider
         val ampLimit = findViewById(R.id.ampLimit) as TextView
 
-        ampLimit.text = carData?.car_charge_currentlimit
-        ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw)
+        if (carData?.car_type == "RT") {
+            // Twizy charge power levels:
+            val levelLabels = resources.getStringArray(R.array.twizy_charge_power_limits)
+            ampLimit.text = levelLabels.get(carData?.car_charge_currentlimit_raw?.div(5)?.toInt() ?: 0)
+            ampLimit.minimumWidth = TypedValue.applyDimension(COMPLEX_UNIT_DIP,120f, resources.displayMetrics).toInt()
+            ampLimitSlider.valueFrom = 0f
+            ampLimitSlider.valueTo = 35f
+            ampLimitSlider.stepSize = 5f
+            ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw)
+        } else {
+            ampLimit.text = carData?.car_charge_currentlimit
+            ampLimitSlider.valueFrom = 1.0f
+            if ((carData?.car_charge_currentlimit_raw ?: 0f) > 31f) {
+                // increase limit of seekbar
+                ampLimitSlider.valueTo = carData?.car_charge_currentlimit_raw?.plus(12f) ?: 32f
+            }
+            ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw)
+            if (ampLimitSlider.values.first() < 1.0f)
+                ampLimitSlider.values = listOf(1.0f)
+        }
+
         ampLimitSlider.isEnabled = carData?.car_type !in listOf("SQ")  // SQ does not support amp limit
 
         val touchListener: RangeSlider.OnSliderTouchListener = object :
@@ -826,7 +845,13 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
         ampLimitSlider.clearOnChangeListeners()
         ampLimitSlider.addOnChangeListener { slider, value, fromUser ->
-            ampLimit.text = "${value.toInt()}A"
+            if (carData?.car_type == "RT") {
+                // Twizy charge power levels:
+                val levelLabels = resources.getStringArray(R.array.twizy_charge_power_limits)
+                ampLimit.text = levelLabels.get(value.div(5).toInt())
+            } else {
+                ampLimit.text = "${value.toInt()}A"
+            }
         }
 
         // Action buttons
