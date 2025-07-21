@@ -154,6 +154,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val mBuilder = NotificationCompat.Builder(this, "default")
                 .setAutoCancel(true)
                 .setDefaults(Notification.DEFAULT_ALL)
+                .setPriority(NotificationManager.IMPORTANCE_DEFAULT)
                 .setSmallIcon(R.drawable.ic_notification_icon)
                 .setContentTitle(contentTitle)
                 .setContentText(contentText.replace('\r', '\n'))

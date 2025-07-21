@@ -352,7 +352,8 @@ class ApiService : Service(), ApiTask.ApiTaskListener, ApiObserver {
             .setContentText(getText(R.string.service_notification_text))
             .setTicker(getText(R.string.service_notification_ticker))
             .setSmallIcon(R.drawable.ic_service)
-            .setPriority(Notification.PRIORITY_MIN)
+            .setPriority(NotificationManager.IMPORTANCE_LOW)
+            .setOngoing(true)
             .setContentIntent(pendingIntent)
             .build()
         try {
