@@ -256,11 +256,11 @@ class ApiService : Service(), ApiTask.ApiTaskListener, ApiObserver {
         Log.d(TAG, "onStartCommand: $intent")
 
         // Forward intent to our handler thread:
-        val msg = serviceHandler!!.obtainMessage()
+        val msg = serviceHandler?.obtainMessage()
         if (msg != null) {
             msg.arg1 = startId
             msg.obj = intent
-            serviceHandler!!.sendMessage(msg)
+            serviceHandler?.sendMessage(msg)
         }
         return super.onStartCommand(intent, flags, startId)
     }
