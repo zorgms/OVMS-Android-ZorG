@@ -38,6 +38,7 @@ import com.openvehicles.OVMS.ui.ApiActivity
 import com.openvehicles.OVMS.ui.MainActivity
 import com.openvehicles.OVMS.ui.MapFragment
 import com.openvehicles.OVMS.utils.AppPrefs
+import com.openvehicles.OVMS.utils.Sys.getRandomString
 import java.util.UUID
 
 class MainActivityUI2 : ApiActivity() {
@@ -134,6 +135,7 @@ class MainActivityUI2 : ApiActivity() {
             }
         }
 
+        // get/create App UUID:
         uuid = appPrefs.getData("UUID")
         if (uuid.isEmpty()) {
             uuid = UUID.randomUUID().toString()
@@ -142,6 +144,17 @@ class MainActivityUI2 : ApiActivity() {
         } else {
             Log.d(TAG, "onCreate: using UUID: $uuid")
         }
+
+        // Check/create API key:
+        var apiKey = appPrefs.getData("APIKey")
+        if (apiKey.isEmpty()) {
+            apiKey = getRandomString(25)
+            appPrefs.saveData("APIKey", apiKey)
+            Log.d(TAG, "onCreate: generated new APIKey: $apiKey")
+        } else {
+            Log.d(TAG, "onCreate: using APIKey: $apiKey")
+        }
+
         setContentView(R.layout.activity_main2)
         val toolbar: MaterialToolbar = findViewById(R.id.materialToolbar);
         setSupportActionBar(toolbar)
