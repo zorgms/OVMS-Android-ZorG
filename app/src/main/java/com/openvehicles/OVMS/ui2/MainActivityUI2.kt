@@ -158,6 +158,15 @@ class MainActivityUI2 : ApiActivity() {
         setContentView(R.layout.activity_main2)
         val toolbar: MaterialToolbar = findViewById(R.id.materialToolbar);
         setSupportActionBar(toolbar)
+
+        // Start background ApiService:
+        Log.i(TAG, "onCreate: starting ApiService")
+        try {
+            startService(Intent(this, ApiService::class.java))
+        } catch (e: Exception) {
+            Log.w(TAG, "onCreate: starting ApiService failed: $e")
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(apiEventReceiver, IntentFilter(ApiService.ACTION_APIEVENT),
                 RECEIVER_NOT_EXPORTED)
@@ -464,8 +473,18 @@ class MainActivityUI2 : ApiActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
+        Log.d(TAG, "onDestroy")
+
         if (apiEventReceiver != null)
             unregisterReceiver(apiEventReceiver)
+
+        // Stop background ApiService?
+        val serviceEnabled = appPrefs.getData("option_service_enabled", "0") == "1"
+        if (!serviceEnabled) {
+            Log.i(TAG, "onDestroy: stopping ApiService")
+            stopService(Intent(this, ApiService::class.java))
+        }
+
+        super.onDestroy()
     }
 }
