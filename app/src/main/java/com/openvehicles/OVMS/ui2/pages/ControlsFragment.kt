@@ -135,6 +135,13 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         val staleTPMS = findViewById(R.id.tpmsStale) as TextView
         val tpmsFAB = findViewById(R.id.tpmsToggle) as ExtendedFloatingActionButton
 
+        // Disable TPMS for vehicles not supporting any:
+        if (carData?.car_type in listOf("RT", "EN", "NRJK")) {
+            tpmsFAB.isEnabled = false
+            tpmsFAB.visibility = View.INVISIBLE
+            return
+        }
+
         tpmsFAB.setOnClickListener {
             frTPMS.visibility =
                 if (frTPMS.visibility == View.VISIBLE) View.INVISIBLE else View.VISIBLE
@@ -328,12 +335,6 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                     updateTPMSData(carData)
                 }
                 .show()
-        }
-
-        // Disable TPMS for motorcycles, etc?
-        if (carData?.car_type in listOf("EN", "NRJK")) {
-            tpmsFAB.isEnabled = false
-            return
         }
 
         // Display TPMS wheel values:

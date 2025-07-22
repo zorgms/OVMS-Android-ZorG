@@ -1136,36 +1136,51 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
         tabsAdapter.mData += HomeTab(TAB_CONTROLS, R.drawable.ic_controls_tab, getString(R.string.controls_tab_label), tpms)
 
-        var climateData = ""
-        if (carData?.car_temp_cabin != null && carData.car_temp_cabin.isNotEmpty()) {
-            climateData += String.format("%s: %s", getString(R.string.textCABIN), carData?.car_temp_cabin)
-        }
-        if (carData?.car_temp_ambient != null && carData.car_temp_ambient.isNotEmpty()) {
-            if (climateData != "")
-                climateData+= ", "
-            climateData += String.format("%s: %s", getString(R.string.textAMBIENT), carData.car_temp_ambient)
-        }
-        if (carData?.car_type in listOf("SQ") ) {
-            if (carData?.car_ac_booster_on == "yes" && climateData != "") {
-                val timeraw = carData.car_ac_booster_time.split("")
-                val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
-                val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
+        // Skip Climate Control for vehicles not supporting any:
+        if (carData?.car_type !in listOf("RT")) {
+            var climateData = ""
+            if (carData?.car_temp_cabin != null && carData.car_temp_cabin.isNotEmpty()) {
                 climateData += String.format(
-                    "\nA/C: $time_h:$time_m h"
-                )
-            } else if (carData?.car_ac_booster_on == "yes") {
-                val timeraw = carData.car_ac_booster_time.split("")
-                val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
-                val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
-                climateData += String.format(
-                    "A/C: $time_h:$time_m h"
+                    "%s: %s",
+                    getString(R.string.textCABIN),
+                    carData?.car_temp_cabin
                 )
             }
-        }
+            if (carData?.car_temp_ambient != null && carData.car_temp_ambient.isNotEmpty()) {
+                if (climateData != "")
+                    climateData += ", "
+                climateData += String.format(
+                    "%s: %s",
+                    getString(R.string.textAMBIENT),
+                    carData.car_temp_ambient
+                )
+            }
+            if (carData?.car_type in listOf("SQ")) {
+                if (carData?.car_ac_booster_on == "yes" && climateData != "") {
+                    val timeraw = carData.car_ac_booster_time.split("")
+                    val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
+                    val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
+                    climateData += String.format(
+                        "\nA/C: $time_h:$time_m h"
+                    )
+                } else if (carData?.car_ac_booster_on == "yes") {
+                    val timeraw = carData.car_ac_booster_time.split("")
+                    val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
+                    val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
+                    climateData += String.format(
+                        "A/C: $time_h:$time_m h"
+                    )
+                }
+            }
 
-        tabsAdapter.mData += HomeTab(TAB_CLIMATE, R.drawable.ic_ac,
-            getString(R.string.textAC).lowercase()
-                .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }, climateData)
+            tabsAdapter.mData += HomeTab(
+                TAB_CLIMATE,
+                R.drawable.ic_ac,
+                getString(R.string.textAC).lowercase()
+                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
+                climateData
+            )
+        }
 
         var consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(100)?.div(carData.car_tripmeter_raw.div(10))
         if (consumption?.isNaN() == true)
