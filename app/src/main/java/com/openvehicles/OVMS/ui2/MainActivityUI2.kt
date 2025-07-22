@@ -182,7 +182,23 @@ class MainActivityUI2 : ApiActivity() {
         navController = navHostFragment.navController
         NavigationUI.setupActionBarWithNavController(this, navHostFragment.navController, abc)
 
+        // process Activity startup intent:
+        onNewIntent(intent)
     }
+
+    public override fun onNewIntent(newIntent: Intent?) {
+        if (newIntent == null) {
+            return
+        }
+        Log.d(TAG, "onNewIntent: $newIntent")
+        super.onNewIntent(newIntent)
+
+        // if launched from notification, switch to messages tab:
+        if (newIntent.getBooleanExtra("onNotification", false)) {
+            navController.navigate(R.id.action_navigation_home_to_notificationsFragment)
+        }
+    }
+
 
     /**
      * Check for update, show changes info
