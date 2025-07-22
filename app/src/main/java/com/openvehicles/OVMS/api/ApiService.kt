@@ -347,12 +347,12 @@ class ApiService : Service(), ApiTask.ApiTaskListener, ApiObserver {
             this, 0,
             notificationIntent, Sys.getMutableFlags(0, false)
         )
-        val notification: Notification = NotificationCompat.Builder(this, "default")
+        val notification: Notification = NotificationCompat.Builder(this, "status")
             .setContentTitle(getText(R.string.service_notification_title))
             .setContentText(getText(R.string.service_notification_text))
             .setTicker(getText(R.string.service_notification_ticker))
             .setSmallIcon(R.drawable.ic_service)
-            .setPriority(NotificationManager.IMPORTANCE_LOW)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
             .build()
@@ -611,22 +611,41 @@ class ApiService : Service(), ApiTask.ApiTaskListener, ApiObserver {
     }
 
     /**
-     * Create NotificationChannel "default" for Android >= 8.0
+     * Create notification channels for Android >= 8.0
      * This is done here in ApiService because the service may start
      * on boot, independant of the MainActivity.
      */
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name: CharSequence = getString(R.string.app_name)
-            val description = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel("default", name, importance)
-            channel.description = description
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
             val notificationManager = getSystemService(
                 NotificationManager::class.java
             )
+
+            // Delete the obsolete "default" channel:
+            notificationManager.deleteNotificationChannel("default")
+
+            // Create channel "status":
+            var name: CharSequence = getString(R.string.channel_status_name)
+            var description = getString(R.string.channel_status_description)
+            var importance = NotificationManager.IMPORTANCE_LOW
+            var channel = NotificationChannel("status", name, importance)
+            channel.description = description
+            notificationManager.createNotificationChannel(channel)
+
+            // Create channel "info":
+            name = getString(R.string.channel_info_name)
+            description = getString(R.string.channel_info_description)
+            importance = NotificationManager.IMPORTANCE_HIGH // show as popup by default, user can change this
+            channel = NotificationChannel("info", name, importance)
+            channel.description = description
+            notificationManager.createNotificationChannel(channel)
+
+            // Create channel "alert":
+            name = getString(R.string.channel_alert_name)
+            description = getString(R.string.channel_alert_description)
+            importance = NotificationManager.IMPORTANCE_HIGH
+            channel = NotificationChannel("alert", name, importance)
+            channel.description = description
             notificationManager.createNotificationChannel(channel)
         }
     }

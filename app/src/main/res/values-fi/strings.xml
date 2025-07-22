@@ -570,7 +570,6 @@
  <p>Vihje: <a href="https://github.com/openvehicles/Open-Vehicle-Android/wiki">Wikissä</a> on myös hyödyllistä tietoa.</p>
  <p>Pidä hauskaa!</p>
  ]]></string>
-    <string name="channel_description">Open Vehicle Monitoring System</string>
     <string name="mi_app_about">Tietoja OVMS:stä</string>
     <string name="title_home">Koti</string>
     <string name="parked">Pysäköity</string>

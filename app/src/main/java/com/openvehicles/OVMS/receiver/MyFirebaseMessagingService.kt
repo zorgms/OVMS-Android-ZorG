@@ -151,10 +151,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             }*/
 
             // create Notification builder:
-            val mBuilder = NotificationCompat.Builder(this, "default")
+            val channelId = if (contentType == "I") "info" else "alert"
+            val mBuilder = NotificationCompat.Builder(this, channelId)
                 .setAutoCancel(true)
                 .setDefaults(Notification.DEFAULT_ALL)
-                .setPriority(NotificationManager.IMPORTANCE_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH) // compatibility for Android < 8.0
                 .setSmallIcon(R.drawable.ic_notification_icon)
                 .setContentTitle(contentTitle)
                 .setContentText(contentText.replace('\r', '\n'))

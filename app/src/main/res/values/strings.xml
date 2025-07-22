@@ -670,6 +670,13 @@
     <string name="lb_enter_title">Title/name</string>
     <string name="lb_enter_command">Command</string>
 
+    <string name="channel_status_name">App Status</string>
+    <string name="channel_status_description">OVMS App/Service status</string>
+    <string name="channel_info_name">Vehicle Messages</string>
+    <string name="channel_info_description">General notifications received from the module</string>
+    <string name="channel_alert_name">Vehicle Alerts</string>
+    <string name="channel_alert_description">Alerts and errors received from the module</string>
+
     <string name="service_notification_title">OVMS</string>
     <string name="service_notification_text">Service running</string>
     <string name="service_notification_ticker">OVMS Service started</string>
@@ -711,7 +718,7 @@
         <p>Hint: there is also some useful info in the <a href="https://github.com/openvehicles/Open-Vehicle-Android/wiki">Wiki</a>.</p>
         <p>Have fun!</p>
     ]]></string>
-    <string name="channel_description">Open Vehicle Monitoring System</string>
+
     <string name="mi_app_about">About OVMS</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_home">Home</string>

@@ -647,6 +647,13 @@
     <string name="lb_enter_title">Bezeichnung</string>
     <string name="lb_enter_command">Kommando</string>
 
+    <string name="channel_status_name">App-Status</string>
+    <string name="channel_status_description">OVMS-App/Service-Status</string>
+    <string name="channel_info_name">Fahrzeugnachrichten</string>
+    <string name="channel_info_description">Allgemeine Benachrichtigungen vom Modul</string>
+    <string name="channel_alert_name">Alarm-Meldungen</string>
+    <string name="channel_alert_description">Alarm- und Fehler-Benachrichtigungen vom Modul</string>
+
     <string name="service_notification_title">OVMS</string>
     <string name="service_notification_text">Service läuft</string>
     <string name="service_notification_ticker">OVMS Service gestartet</string>
