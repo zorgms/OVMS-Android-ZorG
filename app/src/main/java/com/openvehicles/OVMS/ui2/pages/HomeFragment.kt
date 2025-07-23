@@ -832,10 +832,27 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 MaterialAlertDialogBuilder(requireActivity())
                     .setTitle(R.string.lb_charger_confirm_amp_change)
                     .setNegativeButton(R.string.Cancel) {_, _ ->}
-                    .setPositiveButton(android.R.string.ok) { dlg, which ->                     sendCommand(
-                        R.string.msg_setting_charge_c, String.format("15,%d", ampLimitSlider.values.first().toInt()),
-                        this@HomeFragment
-                    );dlg.dismiss()}
+                    .setPositiveButton(android.R.string.ok, fun(dlg: DialogInterface, which: Int) {
+                        if (carData?.car_type == "RT") {
+                            // CMD_SetChargeAlerts(<range>,<soc>,<powerlevel>,<stopmode>)
+                            sendCommand(
+                                R.string.msg_setting_charge_c,
+                                String.format("204,%d,%d,%d,%d",
+                                    carData.car_chargelimit_rangelimit_raw,
+                                    carData.car_chargelimit_soclimit,
+                                    ampLimitSlider.values.first().div(5).toInt(),
+                                    carData.car_charge_mode_i_raw),
+                                this@HomeFragment
+                            )
+                        } else {
+                            sendCommand(
+                                R.string.msg_setting_charge_c,
+                                String.format("15,%d", ampLimitSlider.values.first().toInt()),
+                                this@HomeFragment
+                            )
+                        }
+                        dlg.dismiss()
+                    })
                     .show()
             }
         }

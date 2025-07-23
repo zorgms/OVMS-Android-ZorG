@@ -1,6 +1,7 @@
 package com.openvehicles.OVMS.ui2.pages
 
 import android.content.Context
+import android.content.DialogInterface
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Matrix
@@ -22,6 +23,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.get
 import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.progressindicator.LinearProgressIndicator
@@ -412,10 +414,27 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
                 MaterialAlertDialogBuilder(requireActivity())
                     .setTitle(R.string.lb_charger_confirm_amp_change)
                     .setNegativeButton(R.string.Cancel) {_, _ ->}
-                    .setPositiveButton(android.R.string.ok) { dlg, which -> sendCommandWithProgress(
-                        String.format("15,%d", ampLimitSlider.values.first().toInt()),
-                        this@ChargingFragment
-                    );dlg.dismiss()}
+                    .setPositiveButton(android.R.string.ok, fun(dlg: DialogInterface, which: Int) {
+                        if (carData?.car_type == "RT") {
+                            // CMD_SetChargeAlerts(<range>,<soc>,<powerlevel>,<stopmode>)
+                            sendCommand(
+                                R.string.msg_setting_charge_c,
+                                String.format("204,%d,%d,%d,%d",
+                                    chargeSuffRange,
+                                    chargeSuffSOC,
+                                    ampLimitSlider.values.first().div(5).toInt(),
+                                    chargeLimitAction),
+                                this@ChargingFragment
+                            )
+                        } else {
+                            sendCommand(
+                                R.string.msg_setting_charge_c,
+                                String.format("15,%d", ampLimitSlider.values.first().toInt()),
+                                this@ChargingFragment
+                            )
+                        }
+                        dlg.dismiss()
+                    })
                     .show()
             }
         }
@@ -435,6 +454,15 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         }
 
         // Charge mode
+
+        // hide mode card for listed cars
+        val modeCard = findViewById(R.id.chargeModeCard) as MaterialCardView
+        if (carData?.car_type in listOf("RT")) {
+            modeCard.visibility = View.GONE
+        } else {
+            modeCard.visibility = View.VISIBLE
+        }
+
         val modeSwitcher = findViewById(R.id.standard_modeswitch) as MaterialButtonToggleGroup
         val chargingInfo = findViewById(R.id.chargeModeNote) as TextView
         // deactivate mode switcher for listed cars
