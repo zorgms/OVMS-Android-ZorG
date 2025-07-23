@@ -1199,12 +1199,12 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             )
         }
 
-        var consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(100)?.div(carData.car_tripmeter_raw.div(10))
-        if (consumption?.isNaN() == true)
+        var consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(1000)?.div(carData.car_tripmeter_raw.div(10)) ?: 0f
+        if (!consumption.isFinite())
             consumption = 0f
         val st = if(carData?.car_type in listOf("SQ")) {
             String.format(
-                "%.1f kWh/%s, Con %.1f kWh, Regen %.1f kWh\nTrip %s, 12V Batt %sV",
+                "%.1f Wh/%s, Con %.1f kWh, Regen %.1f kWh\nTrip %s, 12V Batt %sV",
                 consumption,
                 carData?.car_distance_units,
                 carData?.car_energyused ?: 0.0f,

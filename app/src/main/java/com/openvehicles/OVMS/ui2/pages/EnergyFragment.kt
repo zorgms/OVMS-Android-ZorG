@@ -181,19 +181,13 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
         energyMetricsAdapter.mData += EnergyMetric(getString(R.string.last_trip),
             String.format("%.1f %s", carData?.car_tripmeter_raw?.div(10) ?: 0.0f, carData?.car_distance_units))
 
-        val consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(100)?.div(carData.car_tripmeter_raw.div(10)) ?: 0.0f
-
-        if(carData?.car_type in listOf("SQ")) {
-            energyMetricsAdapter.mData += EnergyMetric(
-                getString(R.string.consumption),
-                String.format("%.1f kWh/%s", consumption, carData?.car_distance_units)
-            )
-        } else {
-            energyMetricsAdapter.mData += EnergyMetric(
-                getString(R.string.consumption),
-                String.format("%.1f Wh/%s", consumption, carData?.car_distance_units)
-            )
-        }
+        var consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(1000)?.div(carData.car_tripmeter_raw.div(10)) ?: 0f
+        if (!consumption.isFinite())
+            consumption = 0f
+        energyMetricsAdapter.mData += EnergyMetric(
+            getString(R.string.consumption),
+            String.format("%.1f Wh/%s", consumption, carData?.car_distance_units)
+        )
 
         energyMetricsAdapter.mData += EnergyMetric(getString(R.string.consumed_amount_label),
             String.format("%2.2f kWh", carData?.car_energyused ?: 0.0f))
