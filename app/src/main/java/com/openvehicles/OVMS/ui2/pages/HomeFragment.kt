@@ -875,8 +875,17 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         val action1 = findViewById(R.id.charging_action1) as Button
         val action2 = findViewById(R.id.charging_action2) as Button
 
-        action1.isEnabled = carData?.car_charging == false && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115 && carData.car_type !in listOf("SQ")
-        action2.isEnabled = carData?.car_charging == true && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115 && carData.car_type !in listOf("SQ")
+        // hide action buttons for listed cars
+        if (carData?.car_type in listOf("SQ")) {
+            action1.visibility = View.GONE
+            action2.visibility = View.GONE
+        } else {
+            action1.visibility = View.VISIBLE
+            action2.visibility = View.VISIBLE
+        }
+
+        action1.isEnabled = carData?.car_charging == false && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115
+        action2.isEnabled = carData?.car_charging == true && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115
 
         action1.setOnClickListener {
             MaterialAlertDialogBuilder(requireActivity())
