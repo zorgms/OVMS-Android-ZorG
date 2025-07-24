@@ -772,28 +772,25 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 (carData.car_charge_linevoltage_raw.toDouble() * carData.car_charge_current_raw.toDouble()) / -1000.0
         }
 
-        if (carData?.car_type == "SQ") {
-            val kwhconsumed = carData?.car_charge_kwhconsumed ?: 0.0f
-            val voltagecurrent = carData?.car_charge_voltagecurrent ?: "N/A"
-            val lineVoltage = carData?.car_charge_linevoltage ?: "N/A"
-            val efficiency = carData?.car_temp_battery ?: "N/A"
-            chargingCardSubtitle.text = String.format(
-                "▾%.1fkWh  ⚡%.1fkW  %s  ⚡%.1f%%",
-                kwhconsumed,
-                voltagecurrent,
-                lineVoltage,
-                efficiency,
-            )
-        } else {
-            val lineVoltage = carData?.car_charge_linevoltage ?: "N/A"
-            val current = carData?.car_charge_current ?: "N/A"
-            val batteryTemp = carData?.car_temp_battery ?: "N/A"
-            "%.2f kW, %s %s, Battery: %s".format(
-                chargingPower,
-                lineVoltage,
-                current,
-                batteryTemp
-            )
+        when (carData?.car_type) {
+            "SQ" -> {
+                val consumed = carData.car_charge_kwhconsumed
+                val powerinput = carData.car_charge_power_input_kw_raw
+                val lineVoltage = carData.car_charge_linevoltage
+                val current = carData.car_charge_current
+                val efficiency = carData.car_charger_efficiency
+                chargingCardTitle.text = "${getString(R.string.chargingpower)}:  ⚡${powerinput}kW"
+                chargingCardSubtitle.text = "▾${consumed}kWh,  $lineVoltage,  $current,  ${getString(R.string.chargingeff)}: ⚡${efficiency}%"
+            }
+            else -> {
+                val lineVoltage = carData?.car_charge_linevoltage ?: "N/A"
+                val current = carData?.car_charge_current ?: "N/A"
+                val batteryTemp = carData?.car_temp_battery ?: "N/A"
+                chargingCardSubtitle.text = "${"%.2f".format(chargingPower)} kW, $lineVoltage, $current, Battery: $batteryTemp"
+
+                // Optionally, if the title should also be different or cleared for non-"SQ" types:
+                // chargingCardTitle.text = "Default Title or Empty"
+            }
         }
 
         // Amp limit and slider

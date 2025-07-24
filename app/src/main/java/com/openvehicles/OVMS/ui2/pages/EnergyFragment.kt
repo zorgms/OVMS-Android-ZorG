@@ -134,8 +134,8 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
         val battkW = findViewById(R.id.battkW) as TextView
 
         battVolt.text = String.format("%2.1f V", carData?.car_battery_voltage ?: 0.0f)
-        battAmp.text = if(carData?.car_type != "SQ") String.format("%2.1f A", carData?.car_battery_current_raw ?: 0.0f) else String.format("%2.0f Ah", carData?.car_CAC ?: 0.0f)
-        battkW.text = if(carData?.car_type != "SQ") String.format("%2.2f kW", carData?.car_power ?: 0.0f) else String.format("%2.1f kWh", carData?.car_battery_capacity ?: 0.0f)
+        battAmp.text = if(carData?.car_type != "SQ") String.format("%2.1f A", carData?.car_battery_current_raw ?: 0.0f) else String.format("%2.0f Ah", carData.car_CAC)
+        battkW.text = if(carData?.car_type != "SQ") String.format("%2.2f kW", carData?.car_power ?: 0.0f) else String.format("%2.1f kWh", carData.car_battery_capacity)
 
         // Metrics
 
