@@ -878,7 +878,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 ampLimitSlider.isEnabled = false
                 // set Card title and subtitle
                 val consumed = carData?.car_charge_kwhconsumed ?: 0f
-                val powerInput = carData?.car_charge_power_input_kw_raw
+                val powerInput = carData?.car_charge_power_input_kw_raw ?: 0f
                 val lineVoltage = carData?.car_charge_linevoltage ?: "N/A"
                 val current = carData?.car_charge_current ?: "N/A"
                 val efficiency = carData?.car_charger_efficiency ?: 0f
