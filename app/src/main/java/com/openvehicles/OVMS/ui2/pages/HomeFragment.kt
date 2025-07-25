@@ -772,27 +772,6 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 (carData.car_charge_linevoltage_raw.toDouble() * carData.car_charge_current_raw.toDouble()) / -1000.0
         }
 
-        when (carData?.car_type) {
-            "SQ" -> {
-                val consumed = carData.car_charge_kwhconsumed
-                val powerinput = carData.car_charge_power_input_kw_raw
-                val lineVoltage = carData.car_charge_linevoltage
-                val current = carData.car_charge_current
-                val efficiency = carData.car_charger_efficiency
-                chargingCardTitle.text = "${getString(R.string.chargingpower)}:  ⚡${powerinput}kW"
-                chargingCardSubtitle.text = "▾${consumed}kWh,  $lineVoltage,  $current,  ${getString(R.string.chargingeff)}: ⚡${efficiency}%"
-            }
-            else -> {
-                val lineVoltage = carData?.car_charge_linevoltage ?: "N/A"
-                val current = carData?.car_charge_current ?: "N/A"
-                val batteryTemp = carData?.car_temp_battery ?: "N/A"
-                chargingCardSubtitle.text = "${"%.2f".format(chargingPower)} kW, $lineVoltage, $current, Battery: $batteryTemp"
-
-                // Optionally, if the title should also be different or cleared for non-"SQ" types:
-                // chargingCardTitle.text = "Default Title or Empty"
-            }
-        }
-
         // Amp limit and slider
         val ampLimit = findViewById(R.id.ampLimit) as TextView
 
@@ -816,8 +795,6 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             if (ampLimitSlider.values.first() < 1.0f)
                 ampLimitSlider.values = listOf(1.0f)
         }
-
-        ampLimitSlider.isEnabled = carData?.car_type !in listOf("SQ")  // SQ does not support amp limit
 
         val touchListener: RangeSlider.OnSliderTouchListener = object :
             RangeSlider.OnSliderTouchListener {
@@ -872,15 +849,6 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         val action1 = findViewById(R.id.charging_action1) as Button
         val action2 = findViewById(R.id.charging_action2) as Button
 
-        // hide action buttons for listed cars
-        if (carData?.car_type in listOf("SQ")) {
-            action1.visibility = View.GONE
-            action2.visibility = View.GONE
-        } else {
-            action1.visibility = View.VISIBLE
-            action2.visibility = View.VISIBLE
-        }
-
         action1.isEnabled = carData?.car_charging == false && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115
         action2.isEnabled = carData?.car_charging == true && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115
 
@@ -898,6 +866,31 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 .setNegativeButton(R.string.Cancel) {_, _ ->}
                 .setPositiveButton(android.R.string.ok) { dlg, which -> stopCharge() }
                 .show()
+        }
+
+        // adjust charging card according to car_type
+        when (carData?.car_type) {
+            "SQ" -> {
+                // hide charge start/stop button
+                action1.visibility = View.GONE
+                action2.visibility = View.GONE
+                // SQ does not support amp limit
+                ampLimitSlider.isEnabled = false
+                // set Card title and subtitle
+                val consumed = carData?.car_charge_kwhconsumed ?: 0f
+                val powerInput = carData?.car_charge_power_input_kw_raw
+                val lineVoltage = carData?.car_charge_linevoltage ?: "N/A"
+                val current = carData?.car_charge_current ?: "N/A"
+                val efficiency = carData?.car_charger_efficiency ?: 0f
+                chargingCardTitle.text = "${getString(R.string.chargingpower)}:  ⚡${powerInput}kW"
+                chargingCardSubtitle.text = "▾${consumed}kWh,  $lineVoltage,  $current,  ${getString(R.string.chargingeff)}: ⚡${efficiency}%"
+            }
+            else -> {
+                val lineVoltage = carData?.car_charge_linevoltage ?: "N/A"
+                val current = carData?.car_charge_current ?: "N/A"
+                val batteryTemp = carData?.car_temp_battery ?: "N/A"
+                chargingCardSubtitle.text = "${"%.2f".format(chargingPower)} kW, $lineVoltage, $current, Battery: $batteryTemp"
+            }
         }
 
     }
