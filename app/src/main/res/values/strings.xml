@@ -880,6 +880,8 @@
     <string name="lb_rearwiper_off">link rear Wiper off</string>
     <string name="lb_rearwiper_on">link rear Wiper on</string>
     <string name="select_ddt4all_action">DDT4all option</string>
+    <string name="chargingpower">Charging power</string>
+    <string name="chargingeff">efficiency</string>
     <string-array name="lb_booster_mode" translatable="false">
         <item>@string/lb_5min</item>
         <item>@string/lb_10min</item>

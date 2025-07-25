@@ -355,8 +355,8 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         val action1 = findViewById(R.id.startCharging) as Button
         val action2 = findViewById(R.id.stopCharging) as Button
 
-        action1.isEnabled = carData?.car_charging == false && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115 && carData.car_type !in listOf("SQ")
-        action2.isEnabled = carData?.car_charging == true && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115 && carData.car_type !in listOf("SQ")
+        action1.isEnabled = carData?.car_charging == false && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115
+        action2.isEnabled = carData?.car_charging == true && carData.car_charge_state_i_raw != 0x101 && carData.car_charge_state_i_raw != 0x115
 
         action1.setOnClickListener {
             MaterialAlertDialogBuilder(requireActivity())
@@ -372,6 +372,51 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
                 .setNegativeButton(R.string.Cancel) {_, _ ->}
                 .setPositiveButton(android.R.string.ok) { dlg, which -> stopCharge() }
                 .show()
+        }
+
+        // hide action button (notify/stop) for listed cars
+        if (carData?.car_type in listOf("SQ")) {
+            action1.visibility = View.GONE
+            action2.visibility = View.GONE
+        } else {
+            action1.visibility = View.VISIBLE
+            action2.visibility = View.VISIBLE
+        }
+
+        // hide mode card for listed cars
+        val powerLimitModeCard = findViewById(R.id.powerLimitModeCard) as MaterialCardView
+        if (carData?.car_type in listOf("SQ")) {
+            powerLimitModeCard.visibility = View.GONE
+        } else {
+            powerLimitModeCard.visibility = View.VISIBLE
+        }
+
+        val chargeModeCard = findViewById(R.id.chargeModeCard) as MaterialCardView
+        if (carData?.car_type in listOf("RT","SQ")) {
+            chargeModeCard.visibility = View.GONE
+        } else {
+            chargeModeCard.visibility = View.VISIBLE
+        }
+/*
+        val socModeCard = findViewById(R.id.socModeCard) as MaterialCardView
+        if (carData?.car_type in listOf("SQ")) {
+            socModeCard.visibility = View.GONE
+        } else {
+            socModeCard.visibility = View.VISIBLE
+        }
+*/
+        val rangeModeCard = findViewById(R.id.rangeModeCard) as MaterialCardView
+        if (carData?.car_type in listOf("SQ")) {
+            rangeModeCard.visibility = View.GONE
+        } else {
+            rangeModeCard.visibility = View.VISIBLE
+        }
+
+        val actionModeCard = findViewById(R.id.actionModeCard) as MaterialCardView
+        if (carData?.car_type in listOf("SQ")) {
+            actionModeCard.visibility = View.GONE
+        } else {
+            actionModeCard.visibility = View.VISIBLE
         }
 
         // Amp limit
@@ -400,7 +445,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
                 ampLimitSlider.values = listOf(1.0f)
         }
 
-        ampLimitSlider.isEnabled = (carData?.car_chargeport_open != false || carData.car_charge_substate_i_raw != 0x07) && carData?.car_type !in listOf("SQ")
+        ampLimitSlider.isEnabled = (carData?.car_chargeport_open != false || carData.car_charge_substate_i_raw != 0x07)
 
 
         val touchListener: RangeSlider.OnSliderTouchListener = object :
@@ -455,14 +500,6 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
 
         // Charge mode
 
-        // hide mode card for listed cars
-        val modeCard = findViewById(R.id.chargeModeCard) as MaterialCardView
-        if (carData?.car_type in listOf("RT")) {
-            modeCard.visibility = View.GONE
-        } else {
-            modeCard.visibility = View.VISIBLE
-        }
-
         val modeSwitcher = findViewById(R.id.standard_modeswitch) as MaterialButtonToggleGroup
         val chargingInfo = findViewById(R.id.chargeModeNote) as TextView
         // deactivate mode switcher for listed cars
@@ -507,10 +544,10 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
 
         val sufficientSocLimitSwitch = findViewById(R.id.sufficientSocLimitSwitch) as MaterialSwitch
         val sufficientSocSeekbar = findViewById(R.id.seekBar4) as RangeSlider
-        sufficientSocLimitSwitch.isEnabled = carData?.car_type in listOf("RT","VWUP","NL")
-        sufficientSocSeekbar.isEnabled = carData?.car_type in listOf("RT","VWUP","NL")
+        sufficientSocLimitSwitch.isEnabled = carData?.car_type in listOf("RT","VWUP","NL","SQ")
+        sufficientSocSeekbar.isEnabled = carData?.car_type in listOf("RT","VWUP","NL","SQ")
         sufficientSocLimitSwitch.isChecked = chargeSuffSOC > 0
-        sufficientSocSeekbar.isEnabled = sufficientSocLimitSwitch.isChecked && sufficientSocLimitSwitch.isEnabled && carData?.car_type !in listOf("SQ")
+        sufficientSocSeekbar.isEnabled = sufficientSocLimitSwitch.isChecked && sufficientSocLimitSwitch.isEnabled
         // Sanitise value
         if (chargeSuffSOC > 100)
             chargeSuffSOC = 100
@@ -542,6 +579,17 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
                         String.format(
                             "204,%d,%d",
                             chargeSuffRange,
+                            0
+                        ),
+                        this@ChargingFragment
+                    )
+                    return@setOnCheckedChangeListener
+                }
+                if (carData?.car_type == "SQ") {
+                    sendCommandWithProgress(
+                        String.format(
+                            "204,%d,%d",
+                            chargeSuffSOC,
                             0
                         ),
                         this@ChargingFragment
@@ -628,7 +676,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
 
         sufficientRangeLimitSwitch.text = getString(R.string.lb_sufficient_range, carData?.car_distance_units)
         sufficientRangeLimitSwitch.isChecked = chargeSuffRange > 0
-        sufficientRangeSeekbar.isEnabled = sufficientRangeLimitSwitch.isChecked && sufficientRangeLimitSwitch.isEnabled && carData?.car_type !in listOf("SQ")
+        sufficientRangeSeekbar.isEnabled = sufficientRangeLimitSwitch.isChecked && sufficientRangeLimitSwitch.isEnabled
         sufficientRangeSeekbar.values =
             if ((chargeSuffRange) > 0) listOf(chargeSuffRange.toFloat())
             else listOf(1.0f)
@@ -636,7 +684,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         rangeLimit.text = "${sufficientRangeSeekbar.values.first().toInt()} ${carData?.car_distance_units}"
 
         sufficientRangeLimitSwitch.setOnCheckedChangeListener { compoundButton, b ->
-            sufficientRangeSeekbar.isEnabled = sufficientRangeLimitSwitch.isChecked && carData.car_type !in listOf("SQ")
+            sufficientRangeSeekbar.isEnabled = sufficientRangeLimitSwitch.isChecked
             if (!sufficientRangeLimitSwitch.isChecked) {
                 if (carData.car_type == "NL") {
                     // mb: ??? the Leaf does not provide a command 204, where does this originate from?
@@ -752,6 +800,18 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
                         ),
                         this@ChargingFragment
                     )
+                }
+                if (carData.car_type == "SQ") {
+                    // CMD_SetChargeAlerts(<soc limit>)
+                    sendCommandWithProgress(
+                        String.format(
+                            "204,%d,%d",
+                            chargeSuffSOC,
+                            checkedMode
+                        ),
+                        this@ChargingFragment
+                    )
+                    return@addOnButtonCheckedListener
                 }
             }
         }
