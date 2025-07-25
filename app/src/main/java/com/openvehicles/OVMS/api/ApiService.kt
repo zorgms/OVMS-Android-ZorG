@@ -254,6 +254,10 @@ class ApiService : Service(), ApiTask.ApiTaskListener, ApiObserver {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        if (intent == null) {
+            Log.d(TAG, "onStartCommand: no intent")
+            return START_STICKY;
+        }
         Log.d(TAG, "onStartCommand: $intent")
 
         // Forward intent to our handler thread:
