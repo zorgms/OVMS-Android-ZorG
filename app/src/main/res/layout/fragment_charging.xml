@@ -213,7 +213,7 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textView13"
+                        app:layout_constraintTop_toBottomOf="@+id/ampSeekbarTitle"
                         tools:visibility="visible">
 
                         <AutoCompleteTextView
@@ -223,7 +223,7 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <TextView
-                        android:id="@+id/textView13"
+                        android:id="@+id/ampSeekbarTitle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:text="@string/lb_charge_power_limit"
@@ -244,7 +244,7 @@
                         app:layout_constraintBottom_toBottomOf="@+id/textInputLayout"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@+id/ampLimit2"
-                        app:layout_constraintTop_toBottomOf="@+id/textView13" />
+                        app:layout_constraintTop_toBottomOf="@+id/ampSeekbarTitle" />
 
                     <TextView
                         android:id="@+id/ampLimit2"

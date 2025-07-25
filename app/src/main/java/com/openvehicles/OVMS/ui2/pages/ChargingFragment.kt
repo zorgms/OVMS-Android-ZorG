@@ -288,7 +288,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         }
 
         if (carData?.car_type == "SQ") {
-            chargingPower = carData!!.car_charge_power_input_kw_raw.toDouble()
+            chargingPower = (carData?.car_charge_power_input_kw_raw ?: 0f).toDouble()
         }
 
         battkW.text = String.format("%2.2f kW", chargingPower)
@@ -378,71 +378,72 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         if (carData?.car_type in listOf("SQ")) {
             action1.visibility = View.GONE
             action2.visibility = View.GONE
-        } else {
-            action1.visibility = View.VISIBLE
-            action2.visibility = View.VISIBLE
         }
-
+/*
         // hide mode card for listed cars
         val powerLimitModeCard = findViewById(R.id.powerLimitModeCard) as MaterialCardView
         if (carData?.car_type in listOf("SQ")) {
             powerLimitModeCard.visibility = View.GONE
-        } else {
-            powerLimitModeCard.visibility = View.VISIBLE
         }
-
+*/
         val chargeModeCard = findViewById(R.id.chargeModeCard) as MaterialCardView
         if (carData?.car_type in listOf("RT","SQ")) {
             chargeModeCard.visibility = View.GONE
-        } else {
-            chargeModeCard.visibility = View.VISIBLE
         }
-/*
+
         val socModeCard = findViewById(R.id.socModeCard) as MaterialCardView
         if (carData?.car_type in listOf("SQ")) {
             socModeCard.visibility = View.GONE
-        } else {
-            socModeCard.visibility = View.VISIBLE
         }
-*/
+
         val rangeModeCard = findViewById(R.id.rangeModeCard) as MaterialCardView
         if (carData?.car_type in listOf("SQ")) {
             rangeModeCard.visibility = View.GONE
-        } else {
-            rangeModeCard.visibility = View.VISIBLE
         }
 
         val actionModeCard = findViewById(R.id.actionModeCard) as MaterialCardView
         if (carData?.car_type in listOf("SQ")) {
             actionModeCard.visibility = View.GONE
-        } else {
-            actionModeCard.visibility = View.VISIBLE
         }
 
         // Amp limit
 
+        val ampLimitTitle = findViewById(R.id.ampSeekbarTitle) as TextView
         val ampLimitSlider = findViewById(R.id.ampSeekbar) as RangeSlider
         val ampLimit = findViewById(R.id.ampLimit2) as TextView
+        var chargeLimitActionTitle= R.string.lb_charger_confirm_amp_change
 
-        if (carData?.car_type == "RT") {
-            // Twizy charge power levels:
-            val levelLabels = resources.getStringArray(R.array.twizy_charge_power_limits)
-            ampLimit.text = levelLabels.get(carData?.car_charge_currentlimit_raw?.div(5)?.toInt() ?: 0)
-            ampLimit.minimumWidth = TypedValue.applyDimension(COMPLEX_UNIT_DIP,120f, resources.displayMetrics).toInt()
-            ampLimitSlider.valueFrom = 0f
-            ampLimitSlider.valueTo = 35f
-            ampLimitSlider.stepSize = 5f
-            ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw)
-        } else {
-            ampLimit.text = carData?.car_charge_currentlimit
-            ampLimitSlider.valueFrom = 1.0f
-            if ((carData?.car_charge_currentlimit_raw ?: 0f) > 31f) {
-                // increase limit of seekbar
-                ampLimitSlider.valueTo = carData?.car_charge_currentlimit_raw?.plus(12f) ?: 32f
+        when (carData?.car_type) {
+            "RT" -> {
+                // Twizy charge power levels:
+                val levelLabels = resources.getStringArray(R.array.twizy_charge_power_limits)
+                ampLimit.text = levelLabels.get(carData?.car_charge_currentlimit_raw?.div(5)?.toInt() ?: 0)
+                ampLimit.minimumWidth = TypedValue.applyDimension(COMPLEX_UNIT_DIP,120f, resources.displayMetrics).toInt()
+                ampLimitSlider.valueFrom = 0f
+                ampLimitSlider.valueTo = 35f
+                ampLimitSlider.stepSize = 5f
+                ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw)
             }
-            ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw)
-            if (ampLimitSlider.values.first() < 1.0f)
-                ampLimitSlider.values = listOf(1.0f)
+            "SQ" -> {
+                // EQ charge SoC limit
+                ampLimitTitle.text = getString(R.string.lb_sufficient_soc)
+                ampLimit.text = String.format("%d%%",carData?.car_chargelimit_soclimit)
+                ampLimitSlider.valueFrom = 1.0f
+                ampLimitSlider.valueTo = 100.0f
+                ampLimitSlider.setValues(carData?.car_chargelimit_soclimit?.toFloat())
+                chargeLimitActionTitle = R.string.lb_charger_confirm_soc_change
+            }
+            else -> {
+                ampLimit.text = carData?.car_charge_currentlimit
+                ampLimitSlider.valueFrom = 1.0f
+                if ((carData?.car_charge_currentlimit_raw ?: 0f) > 31f) {
+                    // increase limit of seekbar
+                    ampLimitSlider.valueTo = carData?.car_charge_currentlimit_raw?.plus(12f) ?: 32f
+                }
+                ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw)
+                if (ampLimitSlider.values.first() < 1.0f)
+                    ampLimitSlider.values = listOf(1.0f)
+            }
         }
 
         ampLimitSlider.isEnabled = (carData?.car_chargeport_open != false || carData.car_charge_substate_i_raw != 0x07)
@@ -457,7 +458,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
 
             override fun onStopTrackingTouch(slider: RangeSlider) {
                 MaterialAlertDialogBuilder(requireActivity())
-                    .setTitle(R.string.lb_charger_confirm_amp_change)
+                    .setTitle(chargeLimitActionTitle)
                     .setNegativeButton(R.string.Cancel) {_, _ ->}
                     .setPositiveButton(android.R.string.ok, fun(dlg: DialogInterface, which: Int) {
                         if (carData?.car_type == "RT") {
@@ -469,6 +470,14 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
                                     chargeSuffSOC,
                                     ampLimitSlider.values.first().div(5).toInt(),
                                     chargeLimitAction),
+                                this@ChargingFragment
+                            )
+                        } else if (carData?.car_type == "SQ") {
+                            sendCommand(
+                                R.string.lb_sufficient_soc,
+                                String.format(
+                                    "204,%d",
+                                    ampLimitSlider.values.first().toInt()),
                                 this@ChargingFragment
                             )
                         } else {
@@ -489,12 +498,22 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
 
         ampLimitSlider.clearOnChangeListeners()
         ampLimitSlider.addOnChangeListener { slider, value, fromUser ->
-            if (carData?.car_type == "RT") {
-                // Twizy charge power levels:
-                val levelLabels = resources.getStringArray(R.array.twizy_charge_power_limits)
-                ampLimit.text = levelLabels.get(value.div(5).toInt())
-            } else {
-                ampLimit.text = "${value.toInt()}A"
+
+            when (carData?.car_type) {
+                "RT" -> {
+                    // Twizy charge power levels:
+                    val levelLabels = resources.getStringArray(R.array.twizy_charge_power_limits)
+                    ampLimit.text = levelLabels.get(value.div(5).toInt())
+                }
+
+                "SQ" -> {
+                    // EQ charge SoC limit
+                    ampLimit.text = "${value.toInt()}%%"
+                }
+
+                else -> {
+                    ampLimit.text = "${value.toInt()}A"
+                }
             }
         }
 
@@ -544,8 +563,8 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
 
         val sufficientSocLimitSwitch = findViewById(R.id.sufficientSocLimitSwitch) as MaterialSwitch
         val sufficientSocSeekbar = findViewById(R.id.seekBar4) as RangeSlider
-        sufficientSocLimitSwitch.isEnabled = carData?.car_type in listOf("RT","VWUP","NL","SQ")
-        sufficientSocSeekbar.isEnabled = carData?.car_type in listOf("RT","VWUP","NL","SQ")
+        sufficientSocLimitSwitch.isEnabled = carData?.car_type in listOf("RT","VWUP","NL")
+        sufficientSocSeekbar.isEnabled = carData?.car_type in listOf("RT","VWUP","NL")
         sufficientSocLimitSwitch.isChecked = chargeSuffSOC > 0
         sufficientSocSeekbar.isEnabled = sufficientSocLimitSwitch.isChecked && sufficientSocLimitSwitch.isEnabled
         // Sanitise value
@@ -579,17 +598,6 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
                         String.format(
                             "204,%d,%d",
                             chargeSuffRange,
-                            0
-                        ),
-                        this@ChargingFragment
-                    )
-                    return@setOnCheckedChangeListener
-                }
-                if (carData?.car_type == "SQ") {
-                    sendCommandWithProgress(
-                        String.format(
-                            "204,%d,%d",
-                            chargeSuffSOC,
                             0
                         ),
                         this@ChargingFragment
@@ -800,18 +808,6 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
                         ),
                         this@ChargingFragment
                     )
-                }
-                if (carData.car_type == "SQ") {
-                    // CMD_SetChargeAlerts(<soc limit>)
-                    sendCommandWithProgress(
-                        String.format(
-                            "204,%d,%d",
-                            chargeSuffSOC,
-                            checkedMode
-                        ),
-                        this@ChargingFragment
-                    )
-                    return@addOnButtonCheckedListener
                 }
             }
         }

@@ -781,6 +781,7 @@
     <string name="lb_booster_day_end">letzter Tag</string>
     <string name="chargingpower">Ladeleistung</string>
     <string name="chargingeff">Effizienz</string>
+    <string name="lb_charger_confirm_soc_change">SoC limit setzen?</string>
     <string-array name="lb_booster_mode" translatable="false">
         <item>@string/lb_5min</item>
         <item>@string/lb_10min</item>
