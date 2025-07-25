@@ -187,16 +187,10 @@ class MainActivityUI2 : ApiActivity() {
     }
 
     public override fun onNewIntent(newIntent: Intent?) {
-        if (newIntent == null) {
-            return
-        }
         Log.d(TAG, "onNewIntent: $newIntent")
         super.onNewIntent(newIntent)
-
-        // if launched from notification, switch to messages tab:
-        if (newIntent.getBooleanExtra("onNotification", false)) {
-            navController.navigate(R.id.action_navigation_home_to_notificationsFragment)
-        }
+        // we cannot always access the navController here, so store the intent for onResume():
+        intent = newIntent
     }
 
 
@@ -481,6 +475,12 @@ class MainActivityUI2 : ApiActivity() {
     override fun onResume() {
         super.onResume()
         navController.addOnDestinationChangedListener(listener)
+
+        // if launched from notification, switch to messages tab:
+        val startIntent = intent
+        if (startIntent != null && startIntent.getBooleanExtra("onNotification", false) == true) {
+            navController.navigate(R.id.action_global_notificationsFragment)
+        }
     }
 
     override fun onPause() {

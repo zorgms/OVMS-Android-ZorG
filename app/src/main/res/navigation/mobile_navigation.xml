@@ -217,5 +217,9 @@
         android:id="@+id/appUISettingsFragment"
         android:name="com.openvehicles.OVMS.ui2.pages.settings.AppUISettingsFragment"
         android:label="@string/app_settings"/>
+    <action
+        android:id="@+id/action_global_notificationsFragment"
+        app:destination="@id/notificationsFragment"
+        app:popUpTo="@id/navigation_home" />
 
 </navigation>
