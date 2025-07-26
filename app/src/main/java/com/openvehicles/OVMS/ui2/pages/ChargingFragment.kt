@@ -378,32 +378,46 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         if (carData?.car_type in listOf("SQ")) {
             action1.visibility = View.GONE
             action2.visibility = View.GONE
+        } else {
+            action1.visibility = View.VISIBLE
+            action2.visibility = View.VISIBLE
         }
-/*
+
         // hide mode card for listed cars
-        val powerLimitModeCard = findViewById(R.id.powerLimitModeCard) as MaterialCardView
+/*
+        val powerLimitCard = findViewById(R.id.powerLimitCard) as MaterialCardView
         if (carData?.car_type in listOf("SQ")) {
-            powerLimitModeCard.visibility = View.GONE
+            powerLimitCard.visibility = View.GONE
+        } else {
+            powerLimitCard.visibility = View.VISIBLE
         }
 */
         val chargeModeCard = findViewById(R.id.chargeModeCard) as MaterialCardView
         if (carData?.car_type in listOf("RT","SQ")) {
             chargeModeCard.visibility = View.GONE
+        } else {
+            chargeModeCard.visibility = View.VISIBLE
         }
 
-        val socModeCard = findViewById(R.id.socModeCard) as MaterialCardView
+        val socLimitCard = findViewById(R.id.socLimitCard) as MaterialCardView
         if (carData?.car_type in listOf("SQ")) {
-            socModeCard.visibility = View.GONE
+            socLimitCard.visibility = View.GONE
+        } else {
+            socLimitCard.visibility = View.VISIBLE
         }
 
-        val rangeModeCard = findViewById(R.id.rangeModeCard) as MaterialCardView
+        val rangeLimitCard = findViewById(R.id.rangeLimitCard) as MaterialCardView
         if (carData?.car_type in listOf("SQ")) {
-            rangeModeCard.visibility = View.GONE
+            rangeLimitCard.visibility = View.GONE
+        } else {
+            rangeLimitCard.visibility = View.VISIBLE
         }
 
-        val actionModeCard = findViewById(R.id.actionModeCard) as MaterialCardView
+        val actionBtnCard = findViewById(R.id.actionBtnCard) as MaterialCardView
         if (carData?.car_type in listOf("SQ")) {
-            actionModeCard.visibility = View.GONE
+            actionBtnCard.visibility = View.GONE
+        } else {
+            actionBtnCard.visibility = View.VISIBLE
         }
 
         // Amp limit
@@ -427,10 +441,15 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
             "SQ" -> {
                 // EQ charge SoC limit
                 ampLimitTitle.text = getString(R.string.lb_sufficient_soc)
-                ampLimit.text = String.format("%d%%",carData?.car_chargelimit_soclimit)
-                ampLimitSlider.valueFrom = 1.0f
-                ampLimitSlider.valueTo = 100.0f
-                ampLimitSlider.setValues(carData?.car_chargelimit_soclimit?.toFloat())
+                ampLimitSlider.valueFrom = 0f
+                ampLimitSlider.valueTo = 100f
+                if ((carData?.car_chargelimit_soclimit ?: 0) > 0) {
+                    ampLimit.text = String.format("%d%%",carData.car_chargelimit_soclimit)
+                    ampLimitSlider.setValues((carData.car_chargelimit_soclimit).toFloat())
+                } else {
+                    ampLimit.text = "100%"
+                    ampLimitSlider.setValues(100f)
+                }
                 chargeLimitActionTitle = R.string.lb_charger_confirm_soc_change
             }
             else -> {
@@ -508,7 +527,7 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
 
                 "SQ" -> {
                     // EQ charge SoC limit
-                    ampLimit.text = "${value.toInt()}%%"
+                    ampLimit.text = "${value.toInt()}%"
                 }
 
                 else -> {
