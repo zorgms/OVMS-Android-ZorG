@@ -986,10 +986,11 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 appPrefs.getData("quick_actions_"+carData?.sel_vehicleid, "[]"),
                 Array<String>::class.java
             )
+            Log.d(TAG, "initialiseQuickActions: loaded config for ${carData?.sel_vehicleid}: ${savedQuickActionConfig.contentDeepToString()}")
             if (savedQuickActionConfig.isEmpty()) {
                 // Get default config and save most optimised version for the vehicle
                 val defaultIdConfig: Array<String> = when (carData?.sel_vehicleid) {
-                    "RT" -> arrayOf("charging", "valet", "rt_profile_0", "rt_profile_1", "rt_profile_2", "rt_profile_3")
+                    "RT" -> arrayOf("charging", "valet", "rt_profile_-1", "rt_profile_0", "rt_profile_1", "rt_profile_2")
                     "SQ" -> arrayOf(
                         LockQuickAction({null}),
                         ClimateQuickAction({null}),
@@ -1009,6 +1010,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                         Homelink3QuickAction({null})
                     ).filter { it.commandsAvailable() }.map { it.id }.take(6).toTypedArray()
                 }
+                Log.d(TAG, "initialiseQuickActions: init config for ${carData?.sel_vehicleid}: ${defaultIdConfig.contentDeepToString()}")
                 saveQuickActions(null, defaultIdConfig)
                 savedQuickActionConfig = defaultIdConfig
             }
@@ -1038,10 +1040,10 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             else -> {
                 if (id.startsWith("rt_profile_")) {
                     return when (id) {
-                        "rt_profile_0" -> TwizyDriveModeDefaultQuickAction(apiServiceGetter)
-                        "rt_profile_1" -> TwizyDriveMode1QuickAction(apiServiceGetter)
-                        "rt_profile_2" -> TwizyDriveMode2QuickAction(apiServiceGetter)
-                        "rt_profile_3" -> TwizyDriveMode3QuickAction(apiServiceGetter)
+                        "rt_profile_-1" -> TwizyDriveModeDefaultQuickAction(apiServiceGetter)
+                        "rt_profile_0" -> TwizyDriveMode1QuickAction(apiServiceGetter)
+                        "rt_profile_1" -> TwizyDriveMode2QuickAction(apiServiceGetter)
+                        "rt_profile_2" -> TwizyDriveMode3QuickAction(apiServiceGetter)
                         else -> null
                     }
                 }
