@@ -1236,7 +1236,8 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         val regenPercentage =
             if ((carData?.car_energyused ?: 0f) > 0f)
                 (carData?.car_energyrecd?.div(carData.car_energyused)?.times(100f)) ?: 0f
-            else 100f
+            else if ((carData?.car_energyrecd ?: 0f) > 0f) 100f
+            else 0f
         val energyTabDesc = if(carData?.car_type in listOf("SQ")) {
             String.format(
                 "%.1f Wh/%s, Con %.1f kWh, Regen %.1f kWh\nTrip %s, 12V Batt %sV",
