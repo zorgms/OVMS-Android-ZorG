@@ -264,7 +264,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
             ): Boolean {
-                quickActionsAdapter.onRowMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                quickActionsAdapter.onRowMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition())
                 saveQuickActions(quickActionsAdapter.mData)
                 return true
             }
@@ -748,9 +748,6 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             ampLimitSlider.valueTo = carData?.car_charge_currentlimit_raw?.plus(12f) ?: 32f
         }
 
-        //ampLimitSlider.valueFrom = 1.0f
-        ampLimitSlider.setValues(1.0f)
-
         if (chargePortOpen != true) return
 
         val chargingCardTitle = findViewById(R.id.chargingStatus) as TextView
@@ -774,26 +771,43 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
         // Amp limit and slider
         val ampLimit = findViewById(R.id.ampLimit) as TextView
+        var chargeLimitActionTitle= R.string.lb_charger_confirm_amp_change
 
-        if (carData?.car_type == "RT") {
-            // Twizy charge power levels:
-            val levelLabels = resources.getStringArray(R.array.twizy_charge_power_limits)
-            ampLimit.text = levelLabels.get(carData?.car_charge_currentlimit_raw?.div(5)?.toInt() ?: 0)
-            ampLimit.minimumWidth = TypedValue.applyDimension(COMPLEX_UNIT_DIP,120f, resources.displayMetrics).toInt()
-            ampLimitSlider.valueFrom = 0f
-            ampLimitSlider.valueTo = 35f
-            ampLimitSlider.stepSize = 5f
-            ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw)
-        } else {
-            ampLimit.text = carData?.car_charge_currentlimit
-            ampLimitSlider.valueFrom = 1.0f
-            if ((carData?.car_charge_currentlimit_raw ?: 0f) > 31f) {
-                // increase limit of seekbar
-                ampLimitSlider.valueTo = carData?.car_charge_currentlimit_raw?.plus(12f) ?: 32f
+        when (carData?.car_type) {
+            "RT" -> {
+                // Twizy charge power levels:
+                val levelLabels = resources.getStringArray(R.array.twizy_charge_power_limits)
+                ampLimit.text = levelLabels.get(carData?.car_charge_currentlimit_raw?.div(5)?.toInt() ?: 0)
+                ampLimit.minimumWidth = TypedValue.applyDimension(COMPLEX_UNIT_DIP,120f, resources.displayMetrics).toInt()
+                ampLimitSlider.valueFrom = 0f
+                ampLimitSlider.valueTo = 35f
+                ampLimitSlider.stepSize = 5f
+                ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw ?: 0f)
             }
-            ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw)
-            if (ampLimitSlider.values.first() < 1.0f)
-                ampLimitSlider.values = listOf(1.0f)
+            "SQ" -> {
+                // EQ charge SoC limit
+                ampLimitSlider.valueFrom = 0f
+                ampLimitSlider.valueTo = 100f
+                if ((carData?.car_chargelimit_soclimit ?: 0) > 0) {
+                    ampLimit.text = String.format("%d%%",carData.car_chargelimit_soclimit)
+                    ampLimitSlider.setValues((carData.car_chargelimit_soclimit).toFloat())
+                } else {
+                    ampLimit.text = "100%"
+                    ampLimitSlider.setValues(100f)
+                }
+                chargeLimitActionTitle = R.string.lb_charger_confirm_soc_change
+            }
+            else -> {
+                ampLimit.text = carData?.car_charge_currentlimit
+                ampLimitSlider.valueFrom = 1.0f
+                if ((carData?.car_charge_currentlimit_raw ?: 0f) > 31f) {
+                    // increase limit of seekbar
+                    ampLimitSlider.valueTo = carData?.car_charge_currentlimit_raw?.plus(12f) ?: 32f
+                }
+                ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw ?: 1f)
+                if (ampLimitSlider.values.first() < 1.0f)
+                    ampLimitSlider.values = listOf(1.0f)
+            }
         }
 
         val touchListener: RangeSlider.OnSliderTouchListener = object :
@@ -804,7 +818,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
             override fun onStopTrackingTouch(slider: RangeSlider) {
                 MaterialAlertDialogBuilder(requireActivity())
-                    .setTitle(R.string.lb_charger_confirm_amp_change)
+                    .setTitle(chargeLimitActionTitle)
                     .setNegativeButton(R.string.Cancel) {_, _ ->}
                     .setPositiveButton(android.R.string.ok, fun(dlg: DialogInterface, which: Int) {
                         if (carData?.car_type == "RT") {
@@ -816,6 +830,14 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                                     carData.car_chargelimit_soclimit,
                                     ampLimitSlider.values.first().div(5).toInt(),
                                     carData.car_charge_mode_i_raw),
+                                this@HomeFragment
+                            )
+                        } else if (carData?.car_type == "SQ") {
+                            sendCommand(
+                                R.string.lb_sufficient_soc,
+                                String.format(
+                                    "204,%d",
+                                    ampLimitSlider.values.first().toInt()),
                                 this@HomeFragment
                             )
                         } else {
@@ -836,12 +858,21 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
         ampLimitSlider.clearOnChangeListeners()
         ampLimitSlider.addOnChangeListener { slider, value, fromUser ->
-            if (carData?.car_type == "RT") {
-                // Twizy charge power levels:
-                val levelLabels = resources.getStringArray(R.array.twizy_charge_power_limits)
-                ampLimit.text = levelLabels.get(value.div(5).toInt())
-            } else {
-                ampLimit.text = "${value.toInt()}A"
+            when (carData?.car_type) {
+                "RT" -> {
+                    // Twizy charge power levels:
+                    val levelLabels = resources.getStringArray(R.array.twizy_charge_power_limits)
+                    ampLimit.text = levelLabels.get(value.div(5).toInt())
+                }
+
+                "SQ" -> {
+                    // EQ charge SoC limit
+                    ampLimit.text = "${value.toInt()}%"
+                }
+
+                else -> {
+                    ampLimit.text = "${value.toInt()}A"
+                }
             }
         }
 
@@ -874,8 +905,6 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 // hide charge start/stop button
                 action1.visibility = View.GONE
                 action2.visibility = View.GONE
-                // SQ does not support amp limit
-                ampLimitSlider.isEnabled = false
                 // set Card title and subtitle
                 val consumed = carData?.car_charge_kwhconsumed ?: 0f
                 val powerInput = carData?.car_charge_power_input_kw_raw ?: 0f
@@ -886,6 +915,10 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 chargingCardSubtitle.text = "▾${consumed}kWh,  $lineVoltage,  $current,  ${getString(R.string.chargingeff)}: ⚡${efficiency}%"
             }
             else -> {
+                // show charge start/stop button
+                action1.visibility = View.VISIBLE
+                action2.visibility = View.VISIBLE
+                // set Card title and subtitle
                 val lineVoltage = carData?.car_charge_linevoltage ?: "N/A"
                 val current = carData?.car_charge_current ?: "N/A"
                 val batteryTemp = carData?.car_temp_battery ?: "N/A"

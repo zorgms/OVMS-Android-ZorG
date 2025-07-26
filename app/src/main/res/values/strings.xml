@@ -882,6 +882,7 @@
     <string name="select_ddt4all_action">DDT4all option</string>
     <string name="chargingpower">Charging power</string>
     <string name="chargingeff">efficiency</string>
+    <string name="lb_charger_confirm_soc_change">Really change SoC limit?</string>
     <string-array name="lb_booster_mode" translatable="false">
         <item>@string/lb_5min</item>
         <item>@string/lb_10min</item>
