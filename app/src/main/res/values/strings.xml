@@ -127,6 +127,8 @@
         <item translatable="false"></item>
     </string-array>
 
+    <string name="lb_tls_enabled">Use TLS for server connection</string>
+    <string name="lb_tls_trust_all">Ignore TLS certificate errors</string>
 
     <string name="lb_ft_digital_speedo">#%d: Digital Speedo</string>
     <string name="lb_ft_gps_stream">#%d: GPS Stream</string>
