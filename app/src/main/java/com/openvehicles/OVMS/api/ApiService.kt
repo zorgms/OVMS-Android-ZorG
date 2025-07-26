@@ -375,7 +375,11 @@ class ApiService : Service(), ApiTask.ApiTaskListener, ApiObserver {
      */
     private fun disableService() {
         Log.i(TAG, "disableService: stopping foreground mode")
-        stopForeground(true)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(Service.STOP_FOREGROUND_REMOVE)
+        } else {
+            stopForeground(true)
+        }
         isEnabled = false
         sendApiEvent("ServiceDisabled")
     }
