@@ -1189,7 +1189,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             if (carData?.car_temp_cabin != null && carData.car_temp_cabin.isNotEmpty()) {
                 climateData += String.format(
                     "%s: %s",
-                    getString(R.string.textCABIN),
+                    getString(R.string.textCABIN).lowercase().replaceFirstChar { it.titlecase() },
                     carData?.car_temp_cabin
                 )
             }
@@ -1198,7 +1198,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                     climateData += ", "
                 climateData += String.format(
                     "%s: %s",
-                    getString(R.string.textAMBIENT),
+                    getString(R.string.textAMBIENT).lowercase().replaceFirstChar { it.titlecase() },
                     carData.car_temp_ambient
                 )
             }
