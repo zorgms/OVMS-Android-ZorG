@@ -92,6 +92,8 @@
   <string name="lb_cellular_usage">Mobiel Gebruik</string>
   <string name="lb_reset_ovms_module">Herstart OVMS Module</string>
   <string name="lb_center_map">Kaart Centreren</string>
+  <string name="lb_tls_enabled">Gebruik TLS voor de serververbinding</string>
+  <string name="lb_tls_trust_all">Negeer TLS-certificaatfouten</string>
   <string name="lb_ft_digital_speedo">#%d: Digitale Snelheidsmeter</string>
   <string name="lb_ft_gps_stream">#%d: GPS Stream</string>
   <string name="lb_ft_minimum_soc">#%d: Minimum SOC</string>

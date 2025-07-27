@@ -109,6 +109,8 @@
     <string name="lb_reset_ovms_module">Käynnistä OVMS-moduuli uudelleen</string>
     <string name="lb_center_map">Keskitä kartta</string>
     <string name="lb_select_server">Valitse palvelin:</string>
+    <string name="lb_tls_enabled">Käytä TLS:ää palvelinyhteydessä</string>
+    <string name="lb_tls_trust_all">Ohita TLS-varmennevirheet</string>
     <string name="lb_ft_digital_speedo">#%d: Digitaalinen nopeusmittari</string>
     <string name="lb_ft_gps_stream">#%d: GPS-tietolähde</string>
     <string name="lb_ft_minimum_soc">#%d: Akun latauksen vähimmäismäärä</string>

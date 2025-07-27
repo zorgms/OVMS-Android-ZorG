@@ -92,6 +92,8 @@
   <string name="lb_cellular_usage">Usage réseau mobile</string>
   <string name="lb_reset_ovms_module">Réinitialiser le module OVMS</string>
   <string name="lb_center_map">Centrer la carte</string>
+  <string name="lb_tls_enabled">Utiliser TLS pour la connexion au serveur</string>
+  <string name="lb_tls_trust_all">Ignorer les erreurs de certificat TLS</string>
   <string name="lb_ft_digital_speedo">#%d: Tachymètre</string>
   <string name="lb_ft_gps_stream">#%d: GPS temps réel</string>
   <string name="lb_ft_minimum_soc">#%d: Charge batterie minimum</string>

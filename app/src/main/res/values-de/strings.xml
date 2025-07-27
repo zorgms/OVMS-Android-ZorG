@@ -116,6 +116,9 @@
         <item>Eigener Server</item>
     </string-array>
 
+    <string name="lb_tls_enabled">TLS für Serververbindung verwenden</string>
+    <string name="lb_tls_trust_all">TLS-Zertifikatsfehler ignorieren</string>
+
     <string name="lb_ft_digital_speedo">#%d: Digitaler Tacho</string>
     <string name="lb_ft_gps_stream">#%d: GPS Stream</string>
     <string name="lb_ft_minimum_soc">#%d: Minimaler SOC</string>

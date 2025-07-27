@@ -96,6 +96,9 @@
     <string name="lb_reset_ovms_module">Restablecer módulo OVMS</string>
     <string name="lb_center_map">Centrar mapa</string>
 
+    <string name="lb_tls_enabled">Usar TLS para la conexión al servidor</string>
+    <string name="lb_tls_trust_all">Ignorar errores de certificado TLS</string>
+
     <string name="lb_ft_digital_speedo">#%d: Velocímetro digital</string>
     <string name="lb_ft_gps_stream">#%d: Flujo GPS</string>
     <string name="lb_ft_minimum_soc">#%d: SOC mínimo</string>
