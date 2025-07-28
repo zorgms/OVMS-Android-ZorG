@@ -28,11 +28,14 @@ class ClimateDaysQuickAction(apiServiceGetter: () -> ApiService?, context: Conte
     override fun onAction() {
         val context = context ?: return
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dlg_booster_days, null)
-        val booster_ds: SwitcherView = dialogView.findViewById<View>(R.id.booster_ds) as? SwitcherView? ?: return
-        val booster_de: SwitcherView = dialogView.findViewById<View>(R.id.booster_de) as? SwitcherView? ?: return
+        val booster_ds: SwitcherView = dialogView.findViewById<View>(R.id.booster_ds) as? SwitcherView ?: return
+        val booster_de: SwitcherView = dialogView.findViewById<View>(R.id.booster_de) as? SwitcherView ?: return
 
         val booster_start = getCarData()?.car_ac_booster_ds ?: 0
-        val booster_end = getCarData()?.car_ac_booster_de?.minus(1) ?: 5
+        var booster_end = getCarData()?.car_ac_booster_de?.minus(1) ?: 0
+        if (booster_end < 0) {
+            booster_end = 6
+        }
 
         booster_ds.selected = booster_start
         booster_de.selected = booster_end
