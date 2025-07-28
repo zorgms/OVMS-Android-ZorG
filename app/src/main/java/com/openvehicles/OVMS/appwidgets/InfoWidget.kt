@@ -10,6 +10,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.util.Log
 import android.widget.RemoteViews
 import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.entities.CarData
@@ -20,6 +21,7 @@ import com.openvehicles.OVMS.ui2.MainActivityUI2
 import com.openvehicles.OVMS.utils.CarsStorage
 import com.openvehicles.OVMS.utils.Sys
 import java.text.SimpleDateFormat
+import kotlin.math.min
 
 /**
  * InfoWidget: Application Widget providing a SOC gauge.
@@ -70,13 +72,16 @@ class InfoWidget : ApiWidget<InfoWidget>(InfoWidget::class.java) {
 
         // Update widget view:
         val carData = CarsStorage.getSelectedCarData()
-        views.setImageViewBitmap(
-            R.id.info_widget_image,
-            renderWidget(context, carData, width, height)
-        )
-
-        // Instruct the widget manager to update the widget
-        appWidgetManager.updateAppWidget(appWidgetId, views)
+        try {
+            views.setImageViewBitmap(
+                R.id.info_widget_image,
+                renderWidget(context, carData, width, height)
+            )
+            // Instruct the widget manager to update the widget
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        } catch (e : Exception) {
+            Log.e(TAG, "updateWidget: unable to render widget: $e")
+        }
     }
 
     private fun renderWidget(
@@ -86,7 +91,7 @@ class InfoWidget : ApiWidget<InfoWidget>(InfoWidget::class.java) {
         height: Int
     ): Bitmap {
         val displayDensity = context!!.resources.displayMetrics.density
-        val dim = (Math.min(width, height) * displayDensity).toInt()
+        val dim = (min(width, height) * displayDensity).toInt()
         val dps = (dim - 1) / 100f // scaling for coordinates normalized to range 0…100
         //Log.v(TAG, "renderWidget: dim " + width + "x" + height + ", density=" + displayDensity + " => dim=" + dim);
         val bitmap = Bitmap.createBitmap(dim, dim, Bitmap.Config.ARGB_8888)
