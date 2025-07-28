@@ -98,18 +98,22 @@ class ClimateFragment : BaseFragment(), OnResultCommandListener {
             val time_h = String.format("%s%s", timeraw?.get(1), timeraw?.get(2))
             val time_m = String.format("%s%s", timeraw?.get(3), timeraw?.get(4))
             val daysArray = resources.getStringArray(R.array.lb_booster_days)
-
+            val booster_start = carData?.car_ac_booster_ds ?: 0
+            var booster_end = carData?.car_ac_booster_de?.minus(1) ?: 0
+            if (booster_end < 0) {
+                booster_end = 6
+            }
 
             climatetxth.text = String.format(
                 "A/C: $time_h:$time_m h"
             )
 
             climatetxtd.text = String.format(
-                "%s - %s", daysArray.getOrNull(carData!!.car_ac_booster_ds), daysArray.getOrNull(carData.car_ac_booster_de.minus(1))
+                "%s - %s", daysArray.getOrNull(booster_start), daysArray.getOrNull(booster_end)
             )
 
-            climatetxth.visibility = if(carData.car_ac_booster_on == "yes") View.VISIBLE else View.INVISIBLE
-            climatetxtd.visibility = if(carData.car_ac_booster_weekly == "yes") View.VISIBLE else View.INVISIBLE
+            climatetxth.visibility = if(carData?.car_ac_booster_on == "yes") View.VISIBLE else View.INVISIBLE
+            climatetxtd.visibility = if(carData?.car_ac_booster_weekly == "yes") View.VISIBLE else View.INVISIBLE
         }
 
         outsideTempText.alpha = 1f
