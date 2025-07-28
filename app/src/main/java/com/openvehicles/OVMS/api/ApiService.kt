@@ -253,7 +253,7 @@ class ApiService : Service(), ApiTask.ApiTaskListener, ApiObserver {
         super.onDestroy()
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent == null) {
             Log.d(TAG, "onStartCommand: no intent")
             return START_STICKY;
