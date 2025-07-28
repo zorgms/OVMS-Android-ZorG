@@ -78,6 +78,8 @@
     <string name="lb_cellular_usage">Mobil Bruk</string>
     <string name="lb_reset_ovms_module">Reset OVMS Modul</string>
     <string name="lb_center_map">Sentrer kart</string>
+    <string name="lb_tls_enabled">Bruk TLS for servertilkobling</string>
+    <string name="lb_tls_trust_all">Ignorer TLS-sertifikatfeil</string>
     <string name="lb_ft_digital_speedo">#%d: Digitalt Speedometer</string>
     <string name="lb_ft_gps_stream">#%d: GPS Strøm</string>
     <string name="lb_ft_minimum_soc">#%d: Minimum SOC</string>

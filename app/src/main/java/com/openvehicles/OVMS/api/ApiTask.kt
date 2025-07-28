@@ -15,6 +15,7 @@ import java.io.PrintWriter
 import java.math.BigInteger
 import java.net.Socket
 import java.net.UnknownHostException
+import java.security.cert.X509Certificate
 import java.util.Arrays
 import java.util.Date
 import java.util.Locale
@@ -27,6 +28,10 @@ import java.util.concurrent.TimeoutException
 import javax.crypto.Cipher
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocket
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 class ApiTask(
 
@@ -255,6 +260,9 @@ class ApiTask(
         // Get car login credentials:
         val vehicleID = carData.sel_vehicleid
         val sharedSecret = carData.sel_server_password
+        val useTls = carData.sel_tls
+        val trustAllCerts = carData.sel_tls_trust_all
+        val serverPort = if (useTls) 6870 else 6867
 
         // Generate session client token
         val b64tabString = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
@@ -265,8 +273,32 @@ class ApiTask(
         }
         val clientToken = clientTokenString.toByteArray()
         try {
-            // Open TCP connection to server port 6867 (OVMS main port):
-            socket = Socket(carData.sel_server, 6867)
+            // Open TCP connection to server port:
+            if (useTls) {
+                val factory = if (trustAllCerts) {
+                    val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
+                        override fun getAcceptedIssuers(): Array<X509Certificate>? = null
+                        override fun checkClientTrusted(certs: Array<X509Certificate>, authType: String) {}
+                        override fun checkServerTrusted(certs: Array<X509Certificate>, authType: String) {}
+                    })
+                    val sslContext = SSLContext.getInstance("TLS")
+                    sslContext.init(null, trustAllCerts, java.security.SecureRandom())
+                    sslContext.socketFactory
+                } else {
+                    javax.net.ssl.SSLSocketFactory.getDefault()
+                }
+                val sslSocket = factory.createSocket(carData.sel_server, serverPort) as SSLSocket
+                if (!trustAllCerts) {
+                    // Explicitly enable hostname verification for standard TLS connections
+                    val params = sslSocket.sslParameters
+                    params.endpointIdentificationAlgorithm = "HTTPS"
+                    sslSocket.sslParameters = params
+                }
+                socket = sslSocket
+            } else {
+                socket = Socket(carData.sel_server, serverPort)
+            }
+
             outputstream = PrintWriter(
                 BufferedWriter(
                     OutputStreamWriter(

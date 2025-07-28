@@ -30,6 +30,10 @@ class CarData : Serializable {
     @JvmField
     var sel_server = "" // ServerNameOrIP
     @JvmField
+    var sel_tls = false // Use TLS for server connection
+    @JvmField
+    var sel_tls_trust_all = false // Trust all certificates for TLS
+    @JvmField
     var sel_gcm_senderid = "" // GCM sender ID (empty = default OVMS ID)
     @JvmField
     var sel_vehicleid = "" // VehicleID

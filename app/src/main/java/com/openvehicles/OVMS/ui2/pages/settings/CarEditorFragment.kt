@@ -17,6 +17,7 @@ import android.widget.Gallery
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.entities.CarData
@@ -183,6 +184,8 @@ class CarEditorFragment : BaseFragment() {
             carData!!.sel_server =
                 getValidValue(rootView, R.id.txt_server_address, StringValidator())
             carData!!.sel_gcm_senderid = getValue(rootView, R.id.txt_gcm_senderid)
+            carData!!.sel_tls = (rootView.findViewById<View>(R.id.chk_tls_enabled) as SwitchMaterial).isChecked
+            carData!!.sel_tls_trust_all = (rootView.findViewById<View>(R.id.chk_tls_trust_all) as SwitchMaterial).isChecked
             carData!!.sel_vehicle_image = availableColors[galleryCar!!.selectedItemPosition]
         } catch (e: ValidationException) {
             Log.e("Validation", e.message, e)
@@ -224,6 +227,16 @@ class CarEditorFragment : BaseFragment() {
             }
             Log.d(TAG, "load: server=" + carData!!.sel_server + " → position=" + position)
             setSelectedServer(position, false)
+
+            // set TLS options:
+            val chkTlsEnabled = requireView().findViewById<View>(R.id.chk_tls_enabled) as SwitchMaterial
+            val chkTlsTrustAll = requireView().findViewById<View>(R.id.chk_tls_trust_all) as SwitchMaterial
+            chkTlsEnabled.isChecked = carData!!.sel_tls
+            chkTlsTrustAll.isChecked = carData!!.sel_tls_trust_all
+            chkTlsTrustAll.isEnabled = carData!!.sel_tls
+            chkTlsEnabled.setOnClickListener {
+                chkTlsTrustAll.isEnabled = (it as SwitchMaterial).isChecked
+            }
 
             // set car image:
             var index = -1

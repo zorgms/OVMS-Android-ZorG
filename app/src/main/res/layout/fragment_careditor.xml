@@ -81,6 +81,20 @@
 			android:hint="@string/GcmSenderID"
 			android:inputType="number" />
 
+		<CheckBox
+			android:id="@+id/chk_tls_enabled"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="8dp"
+			android:text="@string/lb_tls_enabled" />
+
+		<CheckBox
+			android:id="@+id/chk_tls_trust_all"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginStart="20dp"
+			android:text="@string/lb_tls_trust_all" />
+
 		<TextView
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
