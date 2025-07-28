@@ -7,7 +7,6 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.drawable.AnimationDrawable
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.location.Geocoder
@@ -65,7 +64,6 @@ import com.openvehicles.OVMS.api.OnResultCommandListener
 import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.entities.StoredCommand
 import com.openvehicles.OVMS.ui.BaseFragment
-import com.openvehicles.OVMS.ui.MapFragment
 import com.openvehicles.OVMS.ui.utils.Ui
 import com.openvehicles.OVMS.ui.utils.Ui.getDrawableIdentifier
 import com.openvehicles.OVMS.ui2.MainActivityUI2
@@ -95,8 +93,6 @@ import com.openvehicles.OVMS.utils.CarsStorage
 import com.openvehicles.OVMS.utils.CarsStorage.getStoredCars
 import java.io.IOException
 import java.util.Locale
-import kotlin.math.floor
-import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates
@@ -1193,7 +1189,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             if (carData?.car_temp_cabin != null && carData.car_temp_cabin.isNotEmpty()) {
                 climateData += String.format(
                     "%s: %s",
-                    getString(R.string.textCABIN),
+                    getString(R.string.textCABIN).lowercase().replaceFirstChar { it.titlecase() },
                     carData?.car_temp_cabin
                 )
             }
@@ -1202,7 +1198,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                     climateData += ", "
                 climateData += String.format(
                     "%s: %s",
-                    getString(R.string.textAMBIENT),
+                    getString(R.string.textAMBIENT).lowercase().replaceFirstChar { it.titlecase() },
                     carData.car_temp_ambient
                 )
             }
@@ -1233,10 +1229,16 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             )
         }
 
+        // Prepare energy tab description:
         var consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(1000)?.div(carData.car_tripmeter_raw.div(10)) ?: 0f
         if (!consumption.isFinite())
             consumption = 0f
-        val st = if(carData?.car_type in listOf("SQ")) {
+        val regenPercentage =
+            if ((carData?.car_energyused ?: 0f) > 0f)
+                (carData?.car_energyrecd?.div(carData.car_energyused)?.times(100f)) ?: 0f
+            else if ((carData?.car_energyrecd ?: 0f) > 0f) 100f
+            else 0f
+        val energyTabDesc = if(carData?.car_type in listOf("SQ")) {
             String.format(
                 "%.1f Wh/%s, Con %.1f kWh, Regen %.1f kWh\nTrip %s, 12V Batt %sV",
                 consumption,
@@ -1248,11 +1250,10 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             )
         } else {
             String.format(
-                "%.1f Wh/%s, Regen %.1f kWh, Trip %s",
-                consumption,
-                carData?.car_distance_units,
-                carData?.car_energyrecd?.times(10)?.let { floor(it.toDouble()) }?.div(10) ?: 0.0f,
-                carData?.car_tripmeter ?: "N/A"
+                "Trip %s, %.0f Wh/%s, Regen %.0f%%",
+                carData?.car_tripmeter ?: "N/A",
+                consumption, carData?.car_distance_units,
+                regenPercentage
             )
         }
 
@@ -1294,7 +1295,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         }
 
         tabsAdapter.mData += HomeTab(TAB_CHARGING, R.drawable.ic_charging, getString(R.string.charging_tab_label), chargingNote.joinToString(separator = ", "))
-        tabsAdapter.mData += HomeTab(TAB_ENERGY, R.drawable.ic_energy, getString(R.string.power_energy_description), st)
+        tabsAdapter.mData += HomeTab(TAB_ENERGY, R.drawable.ic_energy, getString(R.string.power_energy_description), energyTabDesc)
 
         tabsAdapter.mData += HomeTab(TAB_SETTINGS, R.drawable.ic_settings, getString(R.string.Settings), null)
 
