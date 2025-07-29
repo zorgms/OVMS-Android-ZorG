@@ -90,15 +90,19 @@ class InfoFragment : BaseFragment(), View.OnClickListener, OnResultCommandListen
                         handler.removeCallbacks(carChanger!!)
                     }
                     carChanger = Runnable {
-                        val carData = carsStorage.getStoredCars()[carSelectPos]
-                        if (carData.sel_vehicleid != this@InfoFragment.carData?.sel_vehicleid) {
-                            Log.d(
-                                TAG,
-                                "onItemSelected: pos=" + carSelectPos + ", id=" + carData.sel_vehicleid
-                            )
-                            changeCar(carData)
-                            carChanger = null // car is changed, allow updates
-                            update(carData) // …and do a first update
+                        try {
+                            val carData = carsStorage.getStoredCars()[carSelectPos]
+                            if (carData.sel_vehicleid != this@InfoFragment.carData?.sel_vehicleid) {
+                                Log.d(
+                                    TAG,
+                                    "onItemSelected: pos=" + carSelectPos + ", id=" + carData.sel_vehicleid
+                                )
+                                changeCar(carData)
+                                carChanger = null // car is changed, allow updates
+                                update(carData) // …and do a first update
+                            }
+                        } catch (error : Exception) {
+                            Log.e(TAG, "carChanger: selecting pos $carSelectPos failed: $error")
                         }
                     }
                     handler.postDelayed(carChanger!!, 750)
