@@ -691,6 +691,7 @@
           <p>· Komplett überarbeitete Benutzeroberfläche (Autor: <a href="https://developerfromjokela.com/">Developer From Jokela</a>)</p>
           <p>· Anpassbare Schnellzugriffs-Buttons inkl. Custom-Kommandos</p>
           <p>· VW e-Up Lade-Einstellungen (Firmware 3.3.004)</p>
+          <p>· TLS-Unterstützung für die Serververbindung</p>
           <p>· Korrekturen &amp; Optimierungen</p>
         <p>Alle Änderungen sind in der
          <a href="https://github.com/openvehicles/Open-Vehicle-Android/wiki/History">Versions-Historie</a>
