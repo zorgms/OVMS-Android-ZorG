@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Matrix
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
@@ -26,7 +25,6 @@ import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.api.OnResultCommandListener
 import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.ui.BaseFragment
-import com.openvehicles.OVMS.ui.utils.Ui.setValue
 import com.openvehicles.OVMS.ui2.components.energymetrics.EnergyMetric
 import com.openvehicles.OVMS.ui2.components.energymetrics.EnergyMetricsAdapter
 import com.openvehicles.OVMS.utils.CarsStorage
@@ -134,12 +132,37 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
         val battkW = findViewById(R.id.battkW) as TextView
 
         battVolt.text = String.format("%2.1f V", carData?.car_battery_voltage ?: 0.0f)
-        battAmp.text = if(carData?.car_type != "SQ") String.format("%2.1f A", carData?.car_battery_current_raw ?: 0.0) else String.format("%2.0f Ah", carData?.car_CAC ?: 0.0)
-        battkW.text = if(carData?.car_type != "SQ") String.format("%2.2f kW", carData?.car_power ?: 0.0) else String.format("%2.1f kWh", carData?.car_battery_capacity ?: 0f)
+
+        if(carData?.car_type in listOf("SQ")) {
+            battAmp.text = String.format("%2.0f Ah", carData?.car_CAC ?: 0.0)
+            battkW.text = String.format("%2.1f kWh", carData?.car_battery_capacity ?: 0f)
+        } else {
+            battAmp.text = String.format("%2.1f A", carData?.car_battery_current_raw ?: 0.0)
+            battkW.text = String.format("%2.2f kW", carData?.car_power ?: 0.0)
+        }
 
         // Metrics
 
-        if(carData?.car_type !in listOf("SQ")) {
+        if(carData?.car_type in listOf("SQ")) {
+            val timestampString = carData?.car_charge_timestamp
+            var date = "N/A"
+            var time = "N/A"
+            val kwhconsumed = carData?.car_charge_kwhconsumed ?: 0.0f
+            if (timestampString != null) {
+                val timestampParts = timestampString.split(" ")
+                if (timestampParts.size > 0) date = timestampParts[0]
+                if (timestampParts.size > 2) time = timestampParts[2]
+            }
+            energyMetricsAdapter.mData += EnergyMetric(getString(R.string.textLASTCHARGING),
+                String.format(
+                    "%.1f kWh  %s  %s %s",
+                    kwhconsumed,
+                    date,
+                    "⏱",
+                    time
+                )
+            )
+        } else {
             energyMetricsAdapter.mData += EnergyMetric(
                 "${
                     getString(R.string.textMOTOR).lowercase()
@@ -150,25 +173,6 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
                 } ${getString(R.string.temp)}",
                 carData?.car_temp_motor
             )
-        } else {
-            val timestampString = carData?.car_charge_timestamp
-            var date = "N/A"
-            var time = "N/A"
-            val kwhconsumed = carData?.car_charge_kwhconsumed ?: 0.0f
-            if (timestampString != null) {
-                date = timestampString.split(" ")[0]
-                time = timestampString.split(" ")[2]
-            }
-
-            energyMetricsAdapter.mData += EnergyMetric(getString(R.string.textLASTCHARGING),
-                String.format(
-                        "%.1f kWh  %s  %s %s",
-                        kwhconsumed,
-                        date,
-                        "⏱",
-                        time
-                    )
-                )
         }
 
         if(carData?.car_type !in listOf("SQ")) {
