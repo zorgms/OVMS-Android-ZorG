@@ -773,12 +773,16 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             "RT" -> {
                 // Twizy charge power levels:
                 val levelLabels = resources.getStringArray(R.array.twizy_charge_power_limits)
-                ampLimit.text = levelLabels.get(carData?.car_charge_currentlimit_raw?.div(5)?.toInt() ?: 0)
+                val powerLevel = carData.car_charge_currentlimit_raw.div(5).toInt()
+                if (powerLevel >= 0 && powerLevel < levelLabels.size)
+                    ampLimit.text = levelLabels[powerLevel]
+                else
+                    ampLimit.text = levelLabels[0]
                 ampLimit.minimumWidth = TypedValue.applyDimension(COMPLEX_UNIT_DIP,120f, resources.displayMetrics).toInt()
                 ampLimitSlider.valueFrom = 0f
                 ampLimitSlider.valueTo = 35f
                 ampLimitSlider.stepSize = 5f
-                ampLimitSlider.setValues(carData?.car_charge_currentlimit_raw ?: 0f)
+                ampLimitSlider.setValues(carData.car_charge_currentlimit_raw)
             }
             "SQ" -> {
                 // EQ charge SoC limit
@@ -858,7 +862,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 "RT" -> {
                     // Twizy charge power levels:
                     val levelLabels = resources.getStringArray(R.array.twizy_charge_power_limits)
-                    ampLimit.text = levelLabels.get(value.div(5).toInt())
+                    ampLimit.text = levelLabels[value.div(5).toInt()]
                 }
 
                 "SQ" -> {
