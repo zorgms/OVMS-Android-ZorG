@@ -295,6 +295,12 @@ class ApiService : Service(), ApiTask.ApiTaskListener, ApiObserver {
         }
     }
 
+    override fun onTimeout(startId: Int, fgsType: Int) {
+        // see https://developer.android.com/develop/background-work/services/fgs/timeout
+        Log.e(TAG, "onTimeout: Android requests stopping the service due to maximum run time limit reached")
+        stopSelf()
+    }
+
     private fun handleIntent(intent: Intent?) {
         Log.d(TAG, "handleIntent: $intent")
         if (intent == null) return
