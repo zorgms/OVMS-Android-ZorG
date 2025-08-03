@@ -203,10 +203,13 @@ class ApiService : Service(), ApiTask.ApiTaskListener, ApiObserver {
 
         // Register action receiver:
         val actionFilter = IntentFilter()
+        actionFilter.addAction(ACTION_PING)
         actionFilter.addAction(ACTION_ENABLE)
         actionFilter.addAction(ACTION_DISABLE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(actionReceiver, actionFilter, RECEIVER_NOT_EXPORTED)
+            // Note: this receiver needs to be "exported", it otherwise does not receive the
+            //          broadcasts sent by the AppUISettingsFragment
+            registerReceiver(actionReceiver, actionFilter, RECEIVER_EXPORTED)
         } else {
             registerReceiver(actionReceiver, actionFilter)
         }

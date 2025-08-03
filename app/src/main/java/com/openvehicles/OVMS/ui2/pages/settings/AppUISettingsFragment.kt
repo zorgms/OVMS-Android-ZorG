@@ -76,8 +76,10 @@ class AppUISettingsFragment: PreferenceFragmentCompat() {
         backgroundConnectionPreference?.onPreferenceChangeListener =
             OnPreferenceChangeListener { preference, newValue ->
                 appPrefs.saveData("option_service_enabled", if (newValue as Boolean) "1" else "0")
+                // Request ApiService foreground mode change:
                 val intent =
                     Intent(if (newValue) ApiService.ACTION_ENABLE else ApiService.ACTION_DISABLE)
+                Log.d(TAG, "backgroundConnectionPreference: sending intent $intent")
                 requireContext().sendBroadcast(intent)
                 true
             }
@@ -170,9 +172,6 @@ class AppUISettingsFragment: PreferenceFragmentCompat() {
         oldUIPreference?.onPreferenceChangeListener =
             OnPreferenceChangeListener { preference, newValue ->
                 appPrefs.saveData("option_oldui_enabled", if (newValue as Boolean) "1" else "0")
-                val intent =
-                    Intent(if (newValue) ApiService.ACTION_ENABLE else ApiService.ACTION_DISABLE)
-                requireContext().sendBroadcast(intent)
                 true
             }
 

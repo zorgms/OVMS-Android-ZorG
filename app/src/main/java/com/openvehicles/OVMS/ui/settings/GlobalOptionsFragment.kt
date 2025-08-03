@@ -92,8 +92,10 @@ class GlobalOptionsFragment : BaseFragment(), View.OnClickListener, OnFocusChang
             R.id.cb_options_service -> {
                 serviceEnabled = (v as CheckBox).isChecked
                 appPrefs!!.saveData("option_service_enabled", if (serviceEnabled) "1" else "0")
+                // Request ApiService foreground mode change:
                 val intent =
                     Intent(if (serviceEnabled) ApiService.ACTION_ENABLE else ApiService.ACTION_DISABLE)
+                Log.d(TAG, "option_service_enabled: sending intent $intent")
                 context.sendBroadcast(intent)
             }
             R.id.cb_options_broadcast -> {
