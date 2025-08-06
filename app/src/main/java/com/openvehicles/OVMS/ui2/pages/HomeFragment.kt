@@ -10,6 +10,7 @@ import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.location.Geocoder
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
@@ -33,6 +34,7 @@ import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.launch
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
@@ -97,6 +99,12 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates
 import androidx.core.graphics.drawable.toDrawable
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
+import android.location.Address
 
 
 /**
@@ -1233,78 +1241,69 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             )
         }
 
-        // Prepare energy tab description:
-        var consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(1000)?.div(carData.car_tripmeter_raw.div(10)) ?: 0f
-        if (!consumption.isFinite())
-            consumption = 0f
-        val regenPercentage =
-            if ((carData?.car_energyused ?: 0f) > 0f)
-                (carData?.car_energyrecd?.div(carData.car_energyused)?.times(100f)) ?: 0f
-            else if ((carData?.car_energyrecd ?: 0f) > 0f) 100f
-            else 0f
-        val energyTabDesc = if(carData?.car_type in listOf("SQ")) {
-            String.format(
-                "%.1f Wh/%s, Con %.1f kWh, Regen %.1f kWh\nTrip %s, 12V Batt %sV",
-                consumption,
-                carData?.car_distance_units,
-                carData?.car_energyused ?: 0.0f,
-                carData?.car_energyrecd ?: 0.0f,
-                carData?.car_tripmeter ?: "N/A",
-                carData?.car_12vline_voltage ?: 0.0f
-            )
-        } else {
-            String.format(
-                "Trip %s, %.0f Wh/%s, Regen %.0f%%",
-                carData?.car_tripmeter ?: "N/A",
-                consumption, carData?.car_distance_units,
-                regenPercentage
-            )
-        }
+        // Launch a coroutine to handle geocoding in the background
+        lifecycleScope.launch {
+            val geocodedLocation = getGeocodedAddress(carData) // Call our new suspend function
 
-        var geocodedLocation = ""
-        if (context != null) {
-            val geocoder = Geocoder(requireContext(), Locale.getDefault())
-            try {
-                val addresses = geocoder.getFromLocation(carData!!.car_latitude, carData!!.car_longitude, 1)
-                if (!addresses.isNullOrEmpty()) {
-                    val returnedAddress = addresses[0]
-                    if (returnedAddress.thoroughfare != null)
-                        geocodedLocation = "${returnedAddress.thoroughfare} ${returnedAddress.subThoroughfare ?: returnedAddress.premises ?: ""}"
-                    else
-                        geocodedLocation = returnedAddress.getAddressLine(0)
-                }
-            } catch (ignored: IOException) {
-                ignored.printStackTrace()
+            // This block will execute on the Main thread after getGeocodedAddress completes
+            tabsAdapter.mData += HomeTab(
+                TAB_LOCATION,
+                R.drawable.ic_navigation,
+                getString(R.string.Location),
+                geocodedLocation // Use the result from our suspend function
+            )
+
+            val etrFull = carData?.car_chargefull_minsremaining ?: 0
+            val suffSOC = carData?.car_chargelimit_soclimit ?: 0
+            val etrSuffSOC = carData?.car_chargelimit_minsremaining_soc ?: 0
+            val suffRange = carData?.car_chargelimit_rangelimit_raw ?: 0
+            val etrSuffRange = carData?.car_chargelimit_minsremaining_range ?: 0
+
+            var chargingNote = emptyList<String>()
+            if (suffSOC > 0 && etrSuffSOC > 0) {
+                chargingNote += String.format("~%s: %d%%", String.format("%02d:%02dh", etrSuffSOC / 60, etrSuffSOC % 60), suffSOC)
             }
+            if (suffRange > 0 && etrSuffRange > 0) {
+                chargingNote += String.format("~%s: %d%s", String.format("%02d:%02dh", etrSuffRange / 60, etrSuffRange % 60), suffRange, carData?.car_distance_units)
+            }
+            if (etrFull > 0) {
+                chargingNote += String.format("~%s: 100%%", String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
+            }
+            tabsAdapter.mData += HomeTab(TAB_CHARGING, R.drawable.ic_charging, getString(R.string.charging_tab_label), chargingNote.joinToString(separator = ", "))
+
+            // Re-calculate energyTabDesc here if needed, or ensure it's accessible
+            var consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(1000)?.div(carData.car_tripmeter_raw.div(10)) ?: 0f
+            if (!consumption.isFinite())
+                consumption = 0f
+            val regenPercentage =
+                if ((carData?.car_energyused ?: 0f) > 0f)
+                    (carData?.car_energyrecd?.div(carData.car_energyused)?.times(100f)) ?: 0f
+                else if ((carData?.car_energyrecd ?: 0f) > 0f) 100f
+                else 0f
+            val energyTabDesc = if(carData?.car_type in listOf("SQ")) {
+                String.format(
+                    "%.1f Wh/%s, Con %.1f kWh, Regen %.1f kWh\nTrip %s, 12V Batt %sV",
+                    consumption,
+                    carData?.car_distance_units,
+                    carData?.car_energyused ?: 0.0f,
+                    carData?.car_energyrecd ?: 0.0f,
+                    carData?.car_tripmeter ?: "N/A",
+                    carData?.car_12vline_voltage ?: 0.0f
+                )
+            } else {
+                String.format(
+                    "Trip %s, %.0f Wh/%s, Regen %.0f%%",
+                    carData?.car_tripmeter ?: "N/A",
+                    consumption, carData?.car_distance_units,
+                    regenPercentage
+                )
+            }
+            tabsAdapter.mData += HomeTab(TAB_ENERGY, R.drawable.ic_energy, getString(R.string.power_energy_description), energyTabDesc)
+
+            tabsAdapter.mData += HomeTab(TAB_SETTINGS, R.drawable.ic_settings, getString(R.string.Settings), null)
+
+            tabsAdapter.notifyDataSetChanged() // Notify adapter after all tabs are potentially added
         }
-
-        tabsAdapter.mData += HomeTab(TAB_LOCATION, R.drawable.ic_navigation, getString(R.string.Location), geocodedLocation)
-
-
-        val etrFull = carData?.car_chargefull_minsremaining ?: 0
-        val suffSOC = carData?.car_chargelimit_soclimit ?: 0
-        val etrSuffSOC = carData?.car_chargelimit_minsremaining_soc ?: 0
-        val suffRange = carData?.car_chargelimit_rangelimit_raw ?: 0
-        val etrSuffRange = carData?.car_chargelimit_minsremaining_range ?: 0
-
-        var chargingNote = emptyList<String>()
-        if (suffSOC > 0 && etrSuffSOC > 0) {
-            chargingNote += String.format("~%s: %d%%", String.format("%02d:%02dh", etrSuffSOC / 60, etrSuffSOC % 60), suffSOC)
-        }
-        if (suffRange > 0 && etrSuffRange > 0) {
-            chargingNote += String.format("~%s: %d%s", String.format("%02d:%02dh", etrSuffRange / 60, etrSuffRange % 60), suffRange, carData?.car_distance_units)
-        }
-        if (etrFull > 0) {
-            chargingNote += String.format("~%s: 100%%", String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
-        }
-
-        tabsAdapter.mData += HomeTab(TAB_CHARGING, R.drawable.ic_charging, getString(R.string.charging_tab_label), chargingNote.joinToString(separator = ", "))
-        tabsAdapter.mData += HomeTab(TAB_ENERGY, R.drawable.ic_energy, getString(R.string.power_energy_description), energyTabDesc)
-
-        tabsAdapter.mData += HomeTab(TAB_SETTINGS, R.drawable.ic_settings, getString(R.string.Settings), null)
-
-
-        tabsAdapter.notifyDataSetChanged()
     }
 
     private fun initialiseBottomInfo(carData: CarData?) {
@@ -1424,6 +1423,85 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             TAB_CHARGING -> findNavController().navigate(R.id.action_navigation_home_to_chargingFragment)
             TAB_SETTINGS -> findNavController().navigate(R.id.action_navigation_home_to_settingsFragment)
             TAB_ENERGY -> findNavController().navigate(R.id.action_navigation_home_to_energyFragment)
+        }
+    }
+
+    private suspend fun getGeocodedAddress(carData: CarData?): String {
+        if (carData == null || carData.car_latitude == 0.0 || carData.car_longitude == 0.0) { // Added check for 0.0 coords
+            Log.w("Geocoding", "carData is null or coordinates are invalid.")
+            return "Location data unavailable" // Or an empty string, or a specific "pending" message
+        }
+
+        // Use requireContext() as you were, assuming it's safe in this Fragment's lifecycle state
+        val geocoder = Geocoder(requireContext(), Locale.getDefault())
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Asynchronous version for API 33+
+            try {
+                suspendCancellableCoroutine { continuation ->
+                    val geocodeListener = object : Geocoder.GeocodeListener {
+                        override fun onGeocode(addresses: List<Address>) {
+                            if (continuation.isActive) {
+                                if (addresses.isNotEmpty()) {
+                                    val addr = addresses[0]
+                                    val result = if (addr.thoroughfare != null) {
+                                        val streetNum = addr.subThoroughfare ?: addr.premises ?: ""
+                                        "${addr.thoroughfare} $streetNum".trim()
+                                    } else {
+                                        addr.getAddressLine(0) ?: ""
+                                    }
+                                    continuation.resume(result) {} // Use resume with a lambda for onCancellation
+                                } else {
+                                    Log.w("Geocoding", "No address found (API 33+)")
+                                    continuation.resume("No address found") {}
+                                }
+                            }
+                        }
+
+                        override fun onError(errorMessage: String?) {
+                            if (continuation.isActive) {
+                                Log.e("Geocoding", "Geocoding error (API 33+): ${errorMessage ?: "Unknown error"}")
+                                continuation.resume("Geocoding unavailable") {}
+                            }
+                        }
+                    }
+                    geocoder.getFromLocation(carData.car_latitude, carData.car_longitude, 1, geocodeListener)
+
+                    continuation.invokeOnCancellation {
+                        // Optional: Clean up if the coroutine is cancelled
+                        // For Geocoder, there isn't a direct cancel method on the listener itself.
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("Geocoding", "Error setting up geocoding (API 33+)", e)
+                "Geocoding setup error"
+            }
+        } else {
+            // Synchronous version for pre-API 33 (run on IO dispatcher)
+            withContext(Dispatchers.IO) {
+                @Suppress("DEPRECATION")
+                try {
+                    val addresses: List<Address>? = geocoder.getFromLocation(carData.car_latitude, carData.car_longitude, 1)
+                    if (!addresses.isNullOrEmpty()) {
+                        val returnedAddress = addresses[0]
+                        if (returnedAddress.thoroughfare != null) {
+                            val streetNumber = returnedAddress.subThoroughfare ?: returnedAddress.premises ?: ""
+                            "${returnedAddress.thoroughfare} $streetNumber".trim()
+                        } else {
+                            returnedAddress.getAddressLine(0) ?: "Address line unavailable"
+                        }
+                    } else {
+                        Log.w("Geocoding", "No address found (pre-API 33)")
+                        "No address found"
+                    }
+                } catch (e: IOException) {
+                    Log.e("Geocoding", "Geocoding I/O error (pre-API 33)", e)
+                    "Geocoding unavailable"
+                } catch (e: Exception) {
+                    Log.e("Geocoding", "Geocoding general error (pre-API 33)", e)
+                    "Geocoding error"
+                }
+            }
         }
     }
 
