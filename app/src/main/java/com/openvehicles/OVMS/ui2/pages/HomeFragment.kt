@@ -1152,105 +1152,112 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
     }
 
     private fun initialiseTabs(carData: CarData?) {
+        val newTabsList = mutableListOf<HomeTab>()
+
+
         tabsAdapter.mData = emptyList()
-
-        var tpms = ""
-        if(appPrefs.getData("showtpmscontrol", "off") == "on"){
-            var pressure = carData?.car_tpms_pressure
-            if (pressure != null && pressure.size == 4) {
-                tpms = String.format(
-                    "%s %s | %s %s\n%s %s | %s %s",
-                    getString(R.string.fl_tpms),
-                    pressure?.get(
-                        (appPrefs.getData("tpms_fl_" + carData?.sel_vehicleid, "0")!!.toInt())
-                    ) ?: "",
-                    getString(R.string.fr_tpms),
-                    pressure?.get(
-                        (appPrefs.getData("tpms_fr_" + carData?.sel_vehicleid, "1")!!.toInt())
-                    ) ?: "",
-                    getString(R.string.rl_tpms),
-                    pressure?.get(
-                        (appPrefs.getData("tpms_rl_" + carData?.sel_vehicleid, "2")!!.toInt())
-                    ) ?: "",
-                    getString(R.string.rr_tpms),
-                    pressure?.get(
-                        (appPrefs.getData("tpms_rr_" + carData?.sel_vehicleid, "3")!!.toInt())
-                    ) ?: ""
-                )
-            }
-            if (pressure != null && pressure.size == 2) {
-                tpms = String.format(
-                    "%s %s | %s %s",
-                    getString(R.string.front_tpms),
-                    pressure?.get(
-                        (appPrefs.getData("tpms_fl_" + carData?.sel_vehicleid, "0")!!.toInt())
-                    ) ?: "",
-                    getString(R.string.rear_tpms),
-                    pressure?.get(
-                        (appPrefs.getData("tpms_fr_" + carData?.sel_vehicleid, "1")!!.toInt())
-                    ) ?: ""
-                )
-            }
-        }
-
-        tabsAdapter.mData += HomeTab(TAB_CONTROLS, R.drawable.ic_controls_tab, getString(R.string.controls_tab_label), tpms)
-
-        // Skip Climate Control for vehicles not supporting any:
-        if (carData?.car_type !in listOf("RT")) {
-            var climateData = ""
-            if (carData?.car_temp_cabin != null && carData.car_temp_cabin.isNotEmpty()) {
-                climateData += String.format(
-                    "%s: %s",
-                    getString(R.string.textCABIN).lowercase().replaceFirstChar { it.titlecase() },
-                    carData?.car_temp_cabin
-                )
-            }
-            if (carData?.car_temp_ambient != null && carData.car_temp_ambient.isNotEmpty()) {
-                if (climateData != "")
-                    climateData += ", "
-                climateData += String.format(
-                    "%s: %s",
-                    getString(R.string.textAMBIENT).lowercase().replaceFirstChar { it.titlecase() },
-                    carData.car_temp_ambient
-                )
-            }
-            if (carData?.car_type in listOf("SQ")) {
-                if (carData?.car_ac_booster_on == "yes" && climateData != "") {
-                    val timeraw = carData.car_ac_booster_time.split("")
-                    val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
-                    val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
-                    climateData += String.format(
-                        "\nA/C: $time_h:$time_m h"
+        lifecycleScope.launch {
+            // TPMS Tab (synchron)
+            var tpms = ""
+            if(appPrefs.getData("showtpmscontrol", "off") == "on"){
+                var pressure = carData?.car_tpms_pressure
+                if (pressure != null && pressure.size == 4) {
+                    tpms = String.format(
+                        "%s %s | %s %s\n%s %s | %s %s",
+                        getString(R.string.fl_tpms),
+                        pressure?.get(
+                            (appPrefs.getData("tpms_fl_" + carData?.sel_vehicleid, "0")!!.toInt())
+                        ) ?: "",
+                        getString(R.string.fr_tpms),
+                        pressure?.get(
+                            (appPrefs.getData("tpms_fr_" + carData?.sel_vehicleid, "1")!!.toInt())
+                        ) ?: "",
+                        getString(R.string.rl_tpms),
+                        pressure?.get(
+                            (appPrefs.getData("tpms_rl_" + carData?.sel_vehicleid, "2")!!.toInt())
+                        ) ?: "",
+                        getString(R.string.rr_tpms),
+                        pressure?.get(
+                            (appPrefs.getData("tpms_rr_" + carData?.sel_vehicleid, "3")!!.toInt())
+                        ) ?: ""
                     )
-                } else if (carData?.car_ac_booster_on == "yes") {
-                    val timeraw = carData.car_ac_booster_time.split("")
-                    val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
-                    val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
-                    climateData += String.format(
-                        "A/C: $time_h:$time_m h"
+                }
+                if (pressure != null && pressure.size == 2) {
+                    tpms = String.format(
+                        "%s %s | %s %s",
+                        getString(R.string.front_tpms),
+                        pressure?.get(
+                            (appPrefs.getData("tpms_fl_" + carData?.sel_vehicleid, "0")!!.toInt())
+                        ) ?: "",
+                        getString(R.string.rear_tpms),
+                        pressure?.get(
+                            (appPrefs.getData("tpms_fr_" + carData?.sel_vehicleid, "1")!!.toInt())
+                        ) ?: ""
                     )
                 }
             }
 
-            tabsAdapter.mData += HomeTab(
-                TAB_CLIMATE,
-                R.drawable.ic_ac,
-                getString(R.string.textAC).lowercase()
-                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
-                climateData
-            )
-        }
+            newTabsList.add(HomeTab(TAB_CONTROLS, R.drawable.ic_controls_tab, getString(R.string.controls_tab_label), tpms))
+
+            // Skip Climate Control for vehicles not supporting any:
+            if (carData?.car_type !in listOf("RT")) {
+                var climateData = ""
+                if (carData?.car_temp_cabin != null && carData.car_temp_cabin.isNotEmpty()) {
+                    climateData += String.format(
+                        "%s: %s",
+                        getString(R.string.textCABIN).lowercase().replaceFirstChar { it.titlecase() },
+                        carData?.car_temp_cabin
+                    )
+                }
+                if (carData?.car_temp_ambient != null && carData.car_temp_ambient.isNotEmpty()) {
+                    if (climateData != "")
+                        climateData += ", "
+                    climateData += String.format(
+                        "%s: %s",
+                        getString(R.string.textAMBIENT).lowercase().replaceFirstChar { it.titlecase() },
+                        carData.car_temp_ambient
+                    )
+                }
+                if (carData?.car_type in listOf("SQ")) {
+                    if (carData?.car_ac_booster_on == "yes" && climateData != "") {
+                        val timeraw = carData.car_ac_booster_time.split("")
+                        val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
+                        val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
+                        climateData += String.format(
+                            "\nA/C: $time_h:$time_m h"
+                        )
+                    } else if (carData?.car_ac_booster_on == "yes") {
+                        val timeraw = carData.car_ac_booster_time.split("")
+                        val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
+                        val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
+                        climateData += String.format(
+                            "A/C: $time_h:$time_m h"
+                        )
+                    }
+                }
+
+                newTabsList.add(
+                    HomeTab(
+                    TAB_CLIMATE,
+                    R.drawable.ic_ac,
+                    getString(R.string.textAC).lowercase()
+                        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
+                    climateData
+                    )
+                )
+            }
 
         // Launch a coroutine to handle geocoding in the background
-        lifecycleScope.launch {
             val geocodedLocation = getGeocodedAddress(carData) // Call our new suspend function
 
             // This block will execute on the Main thread after getGeocodedAddress completes
-            tabsAdapter.mData += HomeTab(
-                TAB_LOCATION,
-                R.drawable.ic_navigation,
-                getString(R.string.Location),
-                geocodedLocation // Use the result from our suspend function
+            newTabsList.add(
+                HomeTab(
+                    TAB_LOCATION,
+                    R.drawable.ic_navigation,
+                    getString(R.string.Location),
+                    geocodedLocation
+                )
             )
 
             val etrFull = carData?.car_chargefull_minsremaining ?: 0
@@ -1269,7 +1276,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             if (etrFull > 0) {
                 chargingNote += String.format("~%s: 100%%", String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
             }
-            tabsAdapter.mData += HomeTab(TAB_CHARGING, R.drawable.ic_charging, getString(R.string.charging_tab_label), chargingNote.joinToString(separator = ", "))
+            newTabsList.add(HomeTab(TAB_CHARGING, R.drawable.ic_charging, getString(R.string.charging_tab_label), chargingNote.joinToString(separator = ", ")))
 
             // Re-calculate energyTabDesc here if needed, or ensure it's accessible
             var consumption = (carData?.car_energyused?.minus(carData.car_energyrecd))?.times(1000)?.div(carData.car_tripmeter_raw.div(10)) ?: 0f
@@ -1298,10 +1305,11 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                     regenPercentage
                 )
             }
-            tabsAdapter.mData += HomeTab(TAB_ENERGY, R.drawable.ic_energy, getString(R.string.power_energy_description), energyTabDesc)
+            newTabsList.add(HomeTab(TAB_ENERGY, R.drawable.ic_energy, getString(R.string.power_energy_description), energyTabDesc))
 
-            tabsAdapter.mData += HomeTab(TAB_SETTINGS, R.drawable.ic_settings, getString(R.string.Settings), null)
+            newTabsList.add(HomeTab(TAB_SETTINGS, R.drawable.ic_settings, getString(R.string.Settings), null))
 
+            tabsAdapter.mData = newTabsList
             tabsAdapter.notifyDataSetChanged() // Notify adapter after all tabs are potentially added
         }
     }
