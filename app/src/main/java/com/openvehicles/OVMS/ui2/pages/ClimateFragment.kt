@@ -119,13 +119,17 @@ class ClimateFragment : BaseFragment(), OnResultCommandListener {
         outsideTempText.alpha = 1f
         insideTempText.alpha = 1f
 
-        outsideTempText.text =
-            if (carData?.stale_ambient_temp == CarData.DataStale.NoValue) "--" else DecimalFormat("##.##").format((carData?.car_temp_ambient_raw ?: 0.0))
-        insideTempText.text =
-            if (carData?.stale_car_temps == CarData.DataStale.NoValue) "--" else DecimalFormat("##.##").format((carData?.car_temp_cabin_raw ?: 0.0))
+        val tempCabin = carData?.car_temp_cabin?.split("°")?.first()
+        val tempAmbient = carData?.car_temp_ambient?.split("°")?.first()
+        val tempFormat = carData?.car_temp_cabin?.split("°")?.last()
 
-        insideTempUnitText.text = "°"+carData?.car_temp_cabin?.split("°")?.last()
-        outsideTempUnitText.text = "°"+carData?.car_temp_ambient?.split("°")?.last()
+        outsideTempText.text =
+            if (carData?.stale_ambient_temp == CarData.DataStale.NoValue) "--" else tempCabin
+        insideTempText.text =
+            if (carData?.stale_car_temps == CarData.DataStale.NoValue) "--" else tempAmbient
+
+        insideTempUnitText.text = "°"+tempFormat
+        outsideTempUnitText.text = "°"+tempFormat
 
         var dataStale: CarData.DataStale = CarData.DataStale.Good
 
