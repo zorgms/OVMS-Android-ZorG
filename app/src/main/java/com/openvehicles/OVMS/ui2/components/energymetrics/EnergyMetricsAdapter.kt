@@ -28,6 +28,10 @@ class EnergyMetricsAdapter internal constructor(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val metric = mData[position]
+        if (position.and(1) == 0)
+            holder.itemView.setBackgroundResource(R.color.material_dynamic_secondary20)
+        else
+            holder.itemView.setBackgroundResource(R.color.material_dynamic_secondary10)
         holder.metricName.text = metric.metricName
         holder.metricValue.text = metric.metricValue
         holder.clickListener = mClickListener
