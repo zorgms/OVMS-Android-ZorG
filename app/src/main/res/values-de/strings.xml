@@ -738,6 +738,9 @@
 
     <string name="controls_tab_label">Steuerung</string>
     <string name="charging_tab_label">Laden</string>
+
+    <string name="cartype_unknown">Fahrzeugtyp Code %s</string>
+
     <string name="select_an_action">smart EQ Option</string>
     <string name="lb_indicator_on">Blinker an</string>
     <string name="lb_open_trunk">Heckklappe auf</string>

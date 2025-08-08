@@ -586,7 +586,7 @@
     <string name="connected">Yhdistetty</string>
     <string name="controls_tab_label">Ohjaus</string>
     <string name="charging_tab_label">Lataus</string>
-    <string name="cartype_unknown">Tuntematon automalli</string>
+    <string name="cartype_unknown">Automalli koodi %s</string>
     <string name="pilot_signal_present">Pilottisignaali havaittu</string>
     <string name="charging_estimation_soc">~%s latausrajoitukseen</string>
     <string name="charging_estimation_range">~%s riittävään kantamaan</string>

@@ -1318,13 +1318,69 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         val carModelText = findViewById(R.id.carModel) as TextView
         val carDetails = findViewById(R.id.carInformation) as TextView
 
-        val carModel = carData?.car_type
+        val carModel = carData?.car_type ?: "UNKNOWN"
 
-        val carNameResource = Ui.getStringIdentifier(
-            context,
-            "cartype_$carModel"
-        )
-        carModelText.setText(if (carNameResource > 0) carNameResource else R.string.cartype_unknown)
+        // Model map from module command "vehicle list":
+        val modelMap = mapOf(
+            "ATTO3"           to "BYD Atto 3",
+            "BMWI3"           to "BMW i3, i3s",
+            "C2CTS"           to "Cadillac 2nd gen CTS",
+            "C6CORVETTE"      to "Chevrolet C6 Corvette",
+            "CBOLT"           to "Chevrolet Bolt EV/Ampera-e",
+            "DBC"             to "DBC-based Vehicle",
+            "DEMO"            to "Demonstration Vehicle",
+            "FT5E"            to "Fiat 500e",
+            "HIONVFL"         to "Hyundai Ioniq vFL",
+            "I5"              to "Hyundai Ioniq 5 EV/KIA EV6",
+            "JLRI"            to "Jaguar Ipace",
+            "KN"              to "Kia Niro / Hyundai Kona EV",
+            "KS"              to "Kia Soul EV",
+            "MB"              to "Mercedes-Benz B250E, W242",
+            "ME56"            to "Maxus Euniq 5 6-seats",
+            "ME6"             to "Maxus Euniq 6",
+            "MED3"            to "Maxus eDeliver3",
+            "MG4"             to "MG 4",
+            "MG5"             to "MG 5 (2020-2023)",
+            "MGA"             to "MG ZS EV (UK/EU)",
+            "MGB"             to "MG ZS EV (AU/TH)",
+            "MGD"             to "MG ZS EV (SR) (2023-)",
+            "MI"              to "Trio",
+            "MINISE"          to "Mini Cooper SE",
+            "MPL60S"          to "Maple 60S",
+            "NEVO"            to "NIU MQi GT EVO/100",
+            "NL"              to "Nissan Leaf",
+            "NONE"            to "Empty Vehicle",
+            "NR"              to "Energica",
+            "O2"              to "OBDII",
+            "RT"              to "Renault Twizy",
+            "RZ"              to "Renault Zoe/Kangoo",
+            "RZ2"             to "Renault Zoe Ph2",
+            "SE"              to "Smart ED 3.Gen",
+            "SQ"              to "smart 453 4.Gen",
+            "T3"              to "Tesla Model 3",
+            "TGTC"            to "Think City",
+            "TR"              to "Tesla Roadster",
+            "TS"              to "Tesla Model S",
+            "TYR4"            to "Toyota RAV4 EV",
+            "VA"              to "Chevrolet Volt/Ampera",
+            "VWUP"            to "VW e-Up",
+            "XX"              to "TRACK",
+            "ZEVA"            to "ZEVA BMS",
+            "ZOM"             to "ZOMBIE VCU",
+            )
+        // Find best type prefix fit:
+        var matchLength = 0
+        var modelName = ""
+        modelMap.forEach{ (type, name) ->
+            if (carModel.startsWith(type) && type.length > matchLength) {
+                matchLength = type.length
+                modelName = name
+            }
+        }
+        if (matchLength == 0)
+            modelName = String.format(getString(R.string.cartype_unknown), carModel)
+
+        carModelText.text = modelName
 
         var carInfo = ""
         if (carData?.car_odometer?.isNotEmpty() == true) {
