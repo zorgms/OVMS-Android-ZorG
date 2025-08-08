@@ -143,26 +143,43 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
 
         // Metrics
 
-        if(carData?.car_type in listOf("SQ")) {
+        energyMetricsAdapter.mData += EnergyMetric(getString(R.string.CAC),
+            String.format("%.1f Ah", carData?.car_CAC ?: 0.0f))
+
+        val kwhconsumed = carData?.car_charge_kwhconsumed ?: 0.0f
+        if(kwhconsumed > 0f) {
+            var date = ""
+            var time = ""
             val timestampString = carData?.car_charge_timestamp
-            var date = "N/A"
-            var time = "N/A"
-            val kwhconsumed = carData?.car_charge_kwhconsumed ?: 0.0f
             if (timestampString != null) {
                 val timestampParts = timestampString.split(" ")
                 if (timestampParts.size > 0) date = timestampParts[0]
                 if (timestampParts.size > 2) time = timestampParts[2]
             }
-            energyMetricsAdapter.mData += EnergyMetric(getString(R.string.textLASTCHARGING),
-                String.format(
-                    "%.1f kWh  %s  %s %s",
-                    kwhconsumed,
-                    date,
-                    "⏱",
-                    time
-                )
+            var value =String.format("%.1f kWh", kwhconsumed)
+            if (date != "")
+                value += " " + date
+            if (time != "")
+                value += " " + time
+            energyMetricsAdapter.mData += EnergyMetric(
+                getString(R.string.textLASTCHARGING),
+                value
             )
-        } else {
+        }
+
+        if(carData?.car_type !in listOf("SQ")) {
+            energyMetricsAdapter.mData += EnergyMetric(
+                getString(R.string.lb_motor_power),
+                String.format("%2.1f kW", carData?.car_inv_power_motor_kw ?: 0.0f)
+            )
+        }
+
+        energyMetricsAdapter.mData += EnergyMetric(
+            "${getString(R.string.textPEM)} ${getString(R.string.temp)}",
+            carData?.car_temp_pem
+        )
+
+        if(carData?.car_type !in listOf("SQ")) {
             energyMetricsAdapter.mData += EnergyMetric(
                 "${
                     getString(R.string.textMOTOR).lowercase()
@@ -172,13 +189,6 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
                         }
                 } ${getString(R.string.temp)}",
                 carData?.car_temp_motor
-            )
-        }
-
-        if(carData?.car_type !in listOf("SQ")) {
-            energyMetricsAdapter.mData += EnergyMetric(
-                getString(R.string.lb_motor_power),
-                String.format("%2.1f kW", carData?.car_inv_power_motor_kw ?: 0.0f)
             )
         }
 

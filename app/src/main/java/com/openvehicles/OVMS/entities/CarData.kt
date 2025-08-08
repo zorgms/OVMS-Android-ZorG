@@ -756,7 +756,10 @@ class CarData : Serializable {
                 } else {
                     DateTimeFormatter.ofPattern("MM/dd yy  hh:mm").withZone(ZoneId.systemDefault())
                 }
-                car_charge_timestamp = timestamp_formater.format(Instant.ofEpochSecond(charge_timestamp_raw.toLong()))
+                if (charge_timestamp_raw > 0)
+                    car_charge_timestamp = timestamp_formater.format(Instant.ofEpochSecond(charge_timestamp_raw.toLong()))
+                else
+                    car_charge_timestamp = ""
             }
         } catch (e: Exception) {
             Log.e(TAG, "processStatus: ERROR", e)
