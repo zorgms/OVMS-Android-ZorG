@@ -74,7 +74,7 @@ class InfoFragment : BaseFragment(), View.OnClickListener, OnResultCommandListen
         carSelect.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
-                view: View,
+                view: View?,
                 position: Int,
                 id: Long
             ) {
