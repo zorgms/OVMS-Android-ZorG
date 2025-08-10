@@ -15,6 +15,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
+import java.util.Locale
 import kotlin.collections.contains
 
 class CarData : Serializable {
@@ -751,15 +752,29 @@ class CarData : Serializable {
 
                 val dateFormat = appPrefs!!.getData("showfahrenheit", "off") == "on"
                 val charge_timestamp_raw = dataParts[41].toInt()
-                val timestamp_formater = if(!dateFormat) {
-                    DateTimeFormatter.ofPattern("dd.MM.yy  HH:mm").withZone(ZoneId.systemDefault())
-                } else {
-                    DateTimeFormatter.ofPattern("MM/dd yy  hh:mm").withZone(ZoneId.systemDefault())
-                }
-                if (charge_timestamp_raw > 0)
-                    car_charge_timestamp = timestamp_formater.format(Instant.ofEpochSecond(charge_timestamp_raw.toLong()))
-                else
+                if (charge_timestamp_raw <= 0) {
                     car_charge_timestamp = ""
+                }
+                else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    val timestamp_formater = if (!dateFormat) {
+                        DateTimeFormatter.ofPattern("dd.MM.yy  HH:mm")
+                            .withZone(ZoneId.systemDefault())
+                    } else {
+                        DateTimeFormatter.ofPattern("MM/dd yy  hh:mm")
+                            .withZone(ZoneId.systemDefault())
+                    }
+                    car_charge_timestamp =
+                        timestamp_formater.format(Instant.ofEpochSecond(charge_timestamp_raw.toLong()))
+                }
+                else {
+                    val timestamp_formater = if (!dateFormat) {
+                        SimpleDateFormat("dd.MM.yy  HH:mm")
+                    } else {
+                        SimpleDateFormat("MM/dd yy  HH:mm")
+                    }
+                    car_charge_timestamp =
+                        timestamp_formater.format(Instant.ofEpochSecond(charge_timestamp_raw.toLong()))
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "processStatus: ERROR", e)
