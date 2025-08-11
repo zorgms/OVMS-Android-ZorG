@@ -1480,7 +1480,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         }
         val tabItem = tabsAdapter.getItem(position)
 
-        when (tabItem.tabId) {
+        when (tabItem?.tabId) {
             TAB_CONTROLS -> findNavController().navigate(R.id.action_navigation_home_to_controlsFragment)
             TAB_CLIMATE -> findNavController().navigate(R.id.action_navigation_home_to_climateFragment)
             TAB_LOCATION -> findNavController().navigate(R.id.action_navigation_home_to_mapFragment)

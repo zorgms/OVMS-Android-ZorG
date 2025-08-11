@@ -55,8 +55,11 @@ class HomeTabsAdapter internal constructor(
         }
     }
 
-    fun getItem(id: Int): HomeTab {
-        return mData[id]
+    fun getItem(id: Int): HomeTab? {
+        if (id >= 0 && id < mData.size)
+            return mData[id]
+        else
+            return null
     }
 
     fun setClickListener(itemClickListener: ItemClickListener?) {
