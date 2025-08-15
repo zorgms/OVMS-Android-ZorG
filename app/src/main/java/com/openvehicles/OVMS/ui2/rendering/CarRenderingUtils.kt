@@ -6,7 +6,12 @@ import androidx.core.content.ContextCompat
 import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.ui.utils.Ui
-import java.io.File
+import android.graphics.drawable.VectorDrawable
+import android.graphics.Color
+import android.util.Log
+import androidx.core.graphics.toColorInt
+
+
 object CarRenderingUtils {
     fun getTopDownCarLayers(carData: CarData, context: Context, climate: Boolean = false, heat: Boolean = false): List<Drawable> {
         var layers = emptyList<Drawable>()
@@ -281,13 +286,22 @@ object CarRenderingUtils {
 
         //TODO: maybe something needs to be adjusted because of Fahrenheit
         val tempCabin = carData?.car_temp_cabin_raw ?: 0f
-        if(heat) {
-            if (tempCabin < 20f) {
-                layers =
-                    layers.plus(ContextCompat.getDrawable(context, R.drawable.topview_ac_heat)!!)
+        if (heat) {
+            val acArrowsDrawable = ContextCompat.getDrawable(context, R.drawable.topview_ac_arrows)
+            if (acArrowsDrawable != null) {
+                val vectorDrawable = acArrowsDrawable.mutate() as VectorDrawable
+                val warmColor = "#7d1506".toColorInt()
+                val coolColor = "#5d7f9b".toColorInt()
+
+                val tintColor = when {
+                    tempCabin < 20f -> warmColor
+                    else -> coolColor
+                }
+                vectorDrawable.setTint(tintColor)
+
+                layers = layers.plus(vectorDrawable) // Use add for MutableList
             } else {
-                layers =
-                    layers.plus(ContextCompat.getDrawable(context, R.drawable.topview_ac_cool)!!)
+                Log.e("DrawableError", "Could not load R.drawable.topview_ac_arrows")
             }
         }
 
