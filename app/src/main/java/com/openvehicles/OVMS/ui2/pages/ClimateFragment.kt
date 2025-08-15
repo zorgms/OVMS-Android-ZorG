@@ -124,9 +124,9 @@ class ClimateFragment : BaseFragment(), OnResultCommandListener {
         val tempFormat = carData?.car_temp_cabin?.split("°")?.last()
 
         outsideTempText.text =
-            if (carData?.stale_ambient_temp == CarData.DataStale.NoValue) "--" else tempCabin
+            if (carData?.stale_ambient_temp == CarData.DataStale.NoValue) "--" else tempAmbient
         insideTempText.text =
-            if (carData?.stale_car_temps == CarData.DataStale.NoValue) "--" else tempAmbient
+            if (carData?.stale_car_temps == CarData.DataStale.NoValue) "--" else tempCabin
 
         insideTempUnitText.text = "°"+tempFormat
         outsideTempUnitText.text = "°"+tempFormat

@@ -6,6 +6,11 @@ import androidx.core.content.ContextCompat
 import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.ui.utils.Ui
+import android.graphics.drawable.VectorDrawable
+import android.graphics.Color
+import android.util.Log
+import androidx.core.graphics.toColorInt
+
 
 object CarRenderingUtils {
     fun getTopDownCarLayers(carData: CarData, context: Context, climate: Boolean = false, heat: Boolean = false): List<Drawable> {
@@ -17,25 +22,21 @@ object CarRenderingUtils {
 
         val name_splitted = carData.sel_vehicle_image.split("_");
 
-
-
-        if (carData.sel_vehicle_image.startsWith("car_imiev_")
+        when {
+            carData.sel_vehicle_image.startsWith("car_imiev_")
             || carData.sel_vehicle_image.startsWith("car_i3_")
             || carData.sel_vehicle_image.startsWith("car_ampera_")
             || carData.sel_vehicle_image.startsWith("car_twizy_")
             || carData.sel_vehicle_image.startsWith("car_kangoo_")
-            || carData.sel_vehicle_image.startsWith("car_nrjk")) {
-            // Mitsubishi i-MiEV: one ol image for all colors:
-            overlayResource = name_splitted.minus(name_splitted.last())
-                .joinToString("_")
-        } else if (carData.sel_vehicle_image.startsWith("car_holdenvolt_")) {
-            // Holdenvolt: one ol image for all colors (same as ampera):
-            overlayResource = "car_ampera"
-        } else if (carData.sel_vehicle_image.startsWith("car_kianiro_")) {
-            overlayResource = "car_kianiro_grey"
-        } else if (carData.sel_vehicle_image.startsWith("car_smart_")) {
-            // Smart ED & EQ share a single image
-            overlayResource = "car_smart"
+            || carData.sel_vehicle_image.startsWith("car_nrjk") -> {
+                // Mitsubishi i-MiEV: one ol image for all colors:
+                overlayResource = name_splitted.minus(name_splitted.last())
+                    .joinToString("_")
+            }
+            carData.sel_vehicle_image.startsWith("car_holdenvolt_") -> overlayResource = "car_ampera" // Holdenvolt: one ol image for all colors (same as ampera)
+            carData.sel_vehicle_image.startsWith("car_kianiro_") -> overlayResource = "car_kianiro_grey"
+            carData.sel_vehicle_image.startsWith("car_smart_44") -> overlayResource = "car_vwup_silver" // Smart forfour share a single image
+            carData.sel_vehicle_image.startsWith("car_smart_") -> overlayResource = "car_smart" // Smart fortwo share a single image
         }
 
         var otherResName = overlayResource.split("_").minus(name_splitted.last())
@@ -283,8 +284,25 @@ object CarRenderingUtils {
 
         }
 
+        //TODO: maybe something needs to be adjusted because of Fahrenheit
+        val tempCabin = carData?.car_temp_cabin_raw ?: 0f
         if (heat) {
-            layers = layers.plus(ContextCompat.getDrawable(context, R.drawable.topview_ac_heat)!!)
+            val acArrowsDrawable = ContextCompat.getDrawable(context, R.drawable.topview_ac_arrows)
+            if (acArrowsDrawable != null) {
+                val vectorDrawable = acArrowsDrawable.mutate() as VectorDrawable
+                val warmColor = "#7d1506".toColorInt()
+                val coolColor = "#5d7f9b".toColorInt()
+
+                val tintColor = when {
+                    tempCabin < 20f -> warmColor
+                    else -> coolColor
+                }
+                vectorDrawable.setTint(tintColor)
+
+                layers = layers.plus(vectorDrawable) // Use add for MutableList
+            } else {
+                Log.e("DrawableError", "Could not load R.drawable.topview_ac_arrows")
+            }
         }
 
         return layers
