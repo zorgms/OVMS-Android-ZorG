@@ -9,6 +9,9 @@ import android.graphics.Matrix
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
+import android.icu.util.Calendar
+import android.icu.util.TimeUnit
+import android.icu.util.TimeZone
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
@@ -105,7 +108,9 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import android.location.Address
-
+import androidx.appcompat.view.ActionMode
+import com.openvehicles.OVMS.utils.Base64
+import java.text.SimpleDateFormat
 
 /**
  * A simple [Fragment] subclass.
@@ -134,7 +139,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
     private var showEditAction = false
         set(value) {
             quickActionsAdapter.editMode = value
-            findViewById(R.id.modifyQuickActions).visibility = if (value) View.VISIBLE else View.GONE
+            findViewById(R.id.modifyQuickActions).visibility = if (value) VISIBLE else View.GONE
             field = value
         }
 
@@ -223,17 +228,17 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 if (actionState == 2 && !quickActionsAdapter.editMode) {
                     showEditAction = true
                     quickActionsAdapter.notifyDataSetChanged()
-                    (activity as MainActivityUI2?)?.startSupportActionMode(object : androidx.appcompat.view.ActionMode.Callback {
+                    (activity as MainActivityUI2?)?.startSupportActionMode(object : ActionMode.Callback {
 
                         override fun onCreateActionMode(
-                            mode: androidx.appcompat.view.ActionMode?,
+                            mode: ActionMode?,
                             menu: Menu?
                         ): Boolean {
                             return true
                         }
 
                         override fun onPrepareActionMode(
-                            mode: androidx.appcompat.view.ActionMode?,
+                            mode: ActionMode?,
                             menu: Menu?
                         ): Boolean {
                             mode?.title = getString(R.string.modify_quick_actions)
@@ -241,13 +246,13 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                         }
 
                         override fun onActionItemClicked(
-                            mode: androidx.appcompat.view.ActionMode?,
+                            mode: ActionMode?,
                             item: MenuItem?
                         ): Boolean {
                             return true
                         }
 
-                        override fun onDestroyActionMode(mode: androidx.appcompat.view.ActionMode?) {
+                        override fun onDestroyActionMode(mode: ActionMode?) {
                             showEditAction = false
                             quickActionsAdapter.notifyDataSetChanged()
                         }
@@ -378,7 +383,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 row = convertView
             }
             row?.findViewById<TextView>(R.id.txt_title)?.text = getItem(position)?.carName
-            row?.findViewById<ImageView>(R.id.img_car)?.setImageResource(Ui.getDrawableIdentifier(context, getItem(position)?.carData?.sel_vehicle_image))
+            row?.findViewById<ImageView>(R.id.img_car)?.setImageResource(getDrawableIdentifier(context, getItem(position)?.carData?.sel_vehicle_image))
             row?.findViewById<TextView>(R.id.menuRange)?.text = String.format("%s, %s: %s, %s: %s",  getItem(position)?.carData?.car_soc, context.getString(R.string.IdealShort).split(" ").first(), getItem(position)?.carData?.car_range_ideal, context.getString(R.string.EstimatedShort).split(" ").first(), getItem(position)?.carData?.car_range_estimated)
             return row!!
         }
@@ -396,6 +401,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
      *
      * @param carData
      */
+
     private fun setupVisualisation(carData: CarData?) {
         // Car name
         (activity as MainActivityUI2?)?.supportActionBar?.title = carData?.sel_vehicle_label
@@ -477,10 +483,10 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         val statusProgressBar = findViewById(R.id.carUpdatingProgress) as CircularProgressIndicator
 
         val now = System.currentTimeMillis()
-        var seconds = (now - (carData?.car_lastupdated?.time ?: 0)) / 1000
-        var minutes = seconds / 60
-        var hours = minutes / 60
-        var days = minutes / (60 * 24)
+        val seconds = (now - (carData?.car_lastupdated?.time ?: 0)) / 1000
+        val minutes = seconds / 60
+        val hours = minutes / 60
+        val days = minutes / (60 * 24)
 
         if (minutes == 0L) {
             statusProgressBar.visibility = View.GONE
@@ -498,12 +504,58 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 val suffRange = carData.car_chargelimit_rangelimit_raw
                 val etrSuffRange = carData.car_chargelimit_minsremaining_range
 
-                if (suffSOC > 0 && etrSuffSOC > 0) {
-                    statusText.text = String.format(getString(R.string.charging_estimation_soc), String.format("%02d:%02dh", etrSuffSOC / 60, etrSuffSOC % 60))
-                } else if (suffRange > 0 && etrSuffRange > 0) {
-                    statusText.text = String.format(getString(R.string.charging_estimation_range), String.format("%02d:%02dh", etrSuffRange / 60, etrSuffRange % 60))
-                } else if (etrFull > 0) {
-                    statusText.text = String.format(getString(R.string.charging_estimation_full), String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
+                var pastTime = 0L
+                val timestampString = carData.car_charge_timestamp // "2025-08-18 18:55:00 CEST"
+
+                // needed API 24+, but minSdk 21 is configured
+                if ((timestampString.isNotEmpty()) && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)) {
+                    try {
+                        val fullFormatter =
+                            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                        val dateObject = fullFormatter.parse(timestampString)
+                        val calendar = Calendar.getInstance()
+
+                        // current charge time
+                        val nowHours = calendar.get(Calendar.HOUR_OF_DAY)
+                        val nowMinutes = calendar.get(Calendar.MINUTE)
+                        val nowSeconds = calendar.get(Calendar.SECOND)
+
+                        // timestamp started charge time
+                        calendar.time = dateObject
+                        val tsHours = calendar.get(Calendar.HOUR_OF_DAY)
+                        val tsMinutes = calendar.get(Calendar.MINUTE)
+                        val tsSeconds = calendar.get(Calendar.SECOND)
+
+                        val secondsSinceMidnight = (nowHours * 3600L) + (nowMinutes * 60L) + nowSeconds      // time now
+                        val tsSecondsSinceMidnight = (tsHours * 3600L) + (tsMinutes * 60L) + tsSeconds       // timestamp started charge time
+
+                        pastTime = if(tsSecondsSinceMidnight > secondsSinceMidnight) {
+                            (secondsSinceMidnight + 86400L - tsSecondsSinceMidnight) / 60L
+                        } else {
+                            (secondsSinceMidnight - tsSecondsSinceMidnight) / 60L
+                        }
+
+                    } catch (e: Exception) {
+                        pastTime = 0L
+                    }
+                }
+
+                if (pastTime > 0L) {
+                    if (suffSOC > 0 && etrSuffSOC > 0) {
+                        statusText.text = String.format(getString(R.string.charging_estimation_soc_2), String.format("%02d:%02dh", pastTime / 60, pastTime % 60), String.format("%02d:%02dh", etrSuffSOC / 60, etrSuffSOC % 60))
+                    } else if (suffRange > 0 && etrSuffRange > 0) {
+                        statusText.text = String.format(getString(R.string.charging_estimation_range_2), String.format("%02d:%02dh", pastTime / 60, pastTime % 60), String.format("%02d:%02dh", etrSuffRange / 60, etrSuffRange % 60))
+                    } else if (etrFull > 0) {
+                        statusText.text = String.format(getString(R.string.charging_estimation_full_2), String.format("%02d:%02dh", pastTime / 60, pastTime % 60), String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
+                    }
+                } else {
+                    if (suffSOC > 0 && etrSuffSOC > 0) {
+                        statusText.text = String.format(getString(R.string.charging_estimation_soc), String.format("%02d:%02dh", etrSuffSOC / 60, etrSuffSOC % 60))
+                    } else if (suffRange > 0 && etrSuffRange > 0) {
+                        statusText.text = String.format(getString(R.string.charging_estimation_range), String.format("%02d:%02dh", etrSuffRange / 60, etrSuffRange % 60))
+                    } else if (etrFull > 0) {
+                        statusText.text = String.format(getString(R.string.charging_estimation_full), String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
+                    }
                 }
 
                 var chargeStateInfo = 0
@@ -512,7 +564,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                     2 -> chargeStateInfo = R.string.state_topping_off_label
                     4 -> chargeStateInfo = R.string.state_done_label
                     14 -> chargeStateInfo = R.string.timedcharge
-                    21 -> chargeStateInfo = R.string.state_stopped_label
+                    211 -> chargeStateInfo = R.string.state_stopped_label
                 }
 
                 if (chargeStateInfo != 0) {
@@ -521,7 +573,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
             }
         } else {
-            statusProgressBar.visibility = View.VISIBLE
+            statusProgressBar.visibility = VISIBLE
             val periodText: CharSequence?
             if (minutes == 1L) {
                 periodText = getText(R.string.min1)
@@ -553,7 +605,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         val image: ImageView = findViewById(R.id.carStatusImage) as ImageView
 
         val name_splitted = carData?.sel_vehicle_image?.split("_")
-        val car_tire_image1 = Ui.getDrawableIdentifier(
+        val car_tire_image1 = getDrawableIdentifier(
             context,
             name_splitted?.minus(name_splitted.last())?.joinToString("_") +"_tireanim"
         )
@@ -561,7 +613,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         var layers = emptyList<Drawable>()
 
         if (carData?.car_rearleftdoor_open == true || CAR_RENDER_TEST_MODE_D) {
-            val modeResource = Ui.getDrawableIdentifier(
+            val modeResource = getDrawableIdentifier(
                 context,
                 carData?.sel_vehicle_image+"_rld"
             )
@@ -570,7 +622,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         }
 
         if (carData?.car_frontleftdoor_open == true || CAR_RENDER_TEST_MODE_D) {
-            val modeResource = Ui.getDrawableIdentifier(
+            val modeResource = getDrawableIdentifier(
                 context,
                 carData?.sel_vehicle_image+"_fld"
             )
@@ -578,10 +630,11 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 layers = layers.plus(ContextCompat.getDrawable(requireContext(), modeResource)!!)
         }
 
-        layers = layers.plus(ContextCompat.getDrawable(requireContext(), Ui.getDrawableIdentifier(
+        layers = layers.plus(ContextCompat.getDrawable(requireContext(), getDrawableIdentifier(
             context,
             carData?.sel_vehicle_image
-        ))!!)
+        )
+        )!!)
 
         val speedShownInUI = car_tire_image1 > 0 && (carData?.car_started == true||CAR_RENDER_TEST_MODE_D)
 
@@ -608,7 +661,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         }
 
         if (carData?.car_headlights_on == true || CAR_RENDER_TEST_MODE_HD) {
-            val modeResource = Ui.getDrawableIdentifier(
+            val modeResource = getDrawableIdentifier(
                 context,
                 name_splitted?.minus(name_splitted.last())?.joinToString("_") +"_hd"
             )
@@ -617,7 +670,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         }
 
         if (carData?.car_rearrightdoor_open == true || CAR_RENDER_TEST_MODE_D) {
-            val modeResource = Ui.getDrawableIdentifier(
+            val modeResource = getDrawableIdentifier(
                 context,
                 carData?.sel_vehicle_image+"_rrd"
             )
@@ -626,7 +679,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         }
 
         if (carData?.car_frontrightdoor_open == true || CAR_RENDER_TEST_MODE_D) {
-            val modeResource = Ui.getDrawableIdentifier(
+            val modeResource = getDrawableIdentifier(
                 context,
                 carData?.sel_vehicle_image+"_frd"
             )
@@ -636,14 +689,14 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
 
         if (carData?.car_trunk_open == true || CAR_RENDER_TEST_MODE_T) {
-            val modeResource = Ui.getDrawableIdentifier(
+            val modeResource = getDrawableIdentifier(
                 context,
                 carData?.sel_vehicle_image+"_t"
             )
             if (modeResource > 0)
                 layers = layers.plus(ContextCompat.getDrawable(requireContext(), modeResource)!!)
             else {
-                val modeResource = Ui.getDrawableIdentifier(
+                val modeResource = getDrawableIdentifier(
                     context,
                     name_splitted?.minus(name_splitted.last())?.joinToString("_")+"_t"
                 )
@@ -653,14 +706,14 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         }
 
         if (carData?.car_bonnet_open == true || CAR_RENDER_TEST_MODE_T) {
-            val modeResource = Ui.getDrawableIdentifier(
+            val modeResource = getDrawableIdentifier(
                 context,
                 carData?.sel_vehicle_image+"_b"
             )
             if (modeResource > 0)
                 layers = layers.plus(ContextCompat.getDrawable(requireContext(), modeResource)!!)
             else {
-                val modeResource = Ui.getDrawableIdentifier(
+                val modeResource = getDrawableIdentifier(
                     context,
                     name_splitted?.minus(name_splitted.last())?.joinToString("_")+"_b"
                 )
@@ -679,7 +732,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
 
         if (chargePortOpen || CAR_RENDER_TEST_MODE_CHG) {
-            val modeResource = Ui.getDrawableIdentifier(
+            val modeResource = getDrawableIdentifier(
                 context,
                 name_splitted?.minus(name_splitted.last())?.joinToString("_") +"_cp"
             )
@@ -697,7 +750,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
 
         if (carData?.car_charge_timer == true || rawTimerStatus) {
-            val modeResource = Ui.getDrawableIdentifier(
+            val modeResource = getDrawableIdentifier(
                 context,
                 chargingResName +"_cw"
             )
@@ -707,7 +760,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
 
         if (carData?.car_charge_state_i_raw == 0x01 || carData?.car_charge_state_i_raw == 0x02 || carData?.car_charge_state_i_raw == 0x0f || carData?.car_charging == true || CAR_RENDER_TEST_MODE_CHG) {
-            val modeResource = Ui.getDrawableIdentifier(
+            val modeResource = getDrawableIdentifier(
                 context,
                 chargingResName +"_chg"
             )
@@ -743,7 +796,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         val chargingCard = findViewById(R.id.chargingCard) as MaterialCardView
         // Nissan Leaf shows charging port as always open when parked
         val chargePortOpen = if (carData?.car_type == "NL") (carData.car_charging || carData.car_charge_timer) else carData?.car_chargeport_open == true
-        chargingCard.visibility = if (chargePortOpen == true) View.VISIBLE else View.GONE
+        chargingCard.visibility = if (chargePortOpen == true) VISIBLE else View.GONE
 
         val ampLimitSlider = findViewById(R.id.seekBar) as RangeSlider
 
@@ -924,8 +977,8 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             }
             else -> {
                 // show charge start/stop button
-                action1.visibility = View.VISIBLE
-                action2.visibility = View.VISIBLE
+                action1.visibility = VISIBLE
+                action2.visibility = VISIBLE
                 // set Card title and subtitle
                 val lineVoltage = carData?.car_charge_linevoltage ?: "N/A"
                 val current = carData?.car_charge_current ?: "N/A"
@@ -1065,7 +1118,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 }
                 if (id.startsWith("custom_")) {
                     try {
-                        val customCommand: StoredCommand? = com.openvehicles.OVMS.utils.Base64.decodeToObject(id.removePrefix("custom_"), 0, StoredCommand::class.java.classLoader) as StoredCommand?
+                        val customCommand: StoredCommand? = Base64.decodeToObject(id.removePrefix("custom_"), 0, StoredCommand::class.java.classLoader) as StoredCommand?
                         return iconDialogIconPack?.getIcon(customCommand?.title?.toInt() ?: -1)?.drawable?.let {icon ->
                             return CustomCommandQuickAction(id, icon, customCommand!!.command, {getService()})
                         }
@@ -1141,7 +1194,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 }
                 val iconId = icons.first().id.toString()
                 val customCommand = StoredCommand(iconId, cmd)
-                getActionFromId("custom_${com.openvehicles.OVMS.utils.Base64.encodeObject(customCommand)}") { getService() }?.let {
+                getActionFromId("custom_${Base64.encodeObject(customCommand)}") { getService() }?.let {
                     quickActionsAdapter.mData.add(it)
                     quickActionsAdapter.notifyItemInserted(quickActionsAdapter.mData.size-1)
                     updateQuickActionEditorItems()
@@ -1431,7 +1484,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         // GSM Bar
         if (appPrefs.getData("gsm_icon", "off") == "on") {
             val gsmimg = findViewById(R.id.gsmView) as ImageView
-            gsmimg.visibility = View.VISIBLE
+            gsmimg.visibility = VISIBLE
             gsmimg.setImageResource(
                 getDrawableIdentifier(
                     activity,
@@ -1445,7 +1498,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         // GPS Bar
         if (appPrefs.getData("gps_icon", "off") == "on") {
             val gpsimg = findViewById(R.id.gpsView) as ImageView
-            gpsimg.visibility = if(carData?.car_gpslock == true) View.VISIBLE else View.INVISIBLE
+            gpsimg.visibility = if(carData?.car_gpslock == true) VISIBLE else View.INVISIBLE
         }
     }
 
@@ -1468,7 +1521,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         val statusProgressBar = findViewById(R.id.carUpdatingProgress) as CircularProgressIndicator
         if (!isLoggedIn) {
             statusText.text = getString(R.string.connecting)
-            statusProgressBar.visibility = View.VISIBLE
+            statusProgressBar.visibility = VISIBLE
         } else {
             update(carData)
         }

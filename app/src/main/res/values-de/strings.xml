@@ -705,6 +705,9 @@
     <string name="charging_estimation_soc">~%s bis SoC limit</string>
     <string name="charging_estimation_range">~%s bis Reichweiten limit</string>
     <string name="charging_estimation_full">~%s bis voll</string>
+    <string name="charging_estimation_soc_2">seit %s, SoC limit in ~%s</string>
+    <string name="charging_estimation_range_2">seit %s, Reichweiten limit in ~%s</string>
+    <string name="charging_estimation_full_2">seit %s, voll in ~%s</string>
     <string name="start_charging_label">Ladung starten</string>
     <string name="stop_charging_label">Ladung stoppen</string>
     <string name="charge_limit_action">Aktion bei Ladegrenze</string>

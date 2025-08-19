@@ -2,13 +2,14 @@ package com.openvehicles.OVMS.ui2.rendering
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.Animatable
+import android.graphics.drawable.VectorDrawable
 import androidx.core.content.ContextCompat
 import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.ui.utils.Ui
-import android.graphics.drawable.VectorDrawable
-import android.graphics.Color
 import android.util.Log
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.toColorInt
 
 
@@ -285,23 +286,35 @@ object CarRenderingUtils {
         }
 
         //TODO: maybe something needs to be adjusted because of Fahrenheit
-        val tempCabin = carData?.car_temp_cabin_raw ?: 0f
         if (heat) {
-            val acArrowsDrawable = ContextCompat.getDrawable(context, R.drawable.topview_ac_arrows)
-            if (acArrowsDrawable != null) {
-                val vectorDrawable = acArrowsDrawable.mutate() as VectorDrawable
-                val warmColor = "#7d1506".toColorInt()
-                val coolColor = "#5d7f9b".toColorInt()
+            val animatedAcArrowsDrawable = ContextCompat.getDrawable(context, R.drawable.avd_animated_ac_arrows)
+            val tempCabin = carData?.car_temp_cabin_raw ?: 0f
+            val warmColor = "#7d1506".toColorInt()
+            val coolColor = "#5d7f9b".toColorInt()
+            val temperature_threshold = 20f
 
-                val tintColor = when {
-                    tempCabin < 20f -> warmColor
-                    else -> coolColor
+            val tintColor = when {
+                tempCabin < temperature_threshold -> coolColor
+                else -> warmColor
+            }
+
+            if (animatedAcArrowsDrawable != null) {
+                val finalDrawable = animatedAcArrowsDrawable.mutate()
+                DrawableCompat.setTint(finalDrawable, tintColor)
+
+                if (finalDrawable is Animatable) {
+                   finalDrawable.start()
                 }
-                vectorDrawable.setTint(tintColor)
 
-                layers = layers.plus(vectorDrawable) // Use add for MutableList
+                layers = layers.plus(finalDrawable)
             } else {
-                Log.e("DrawableError", "Could not load R.drawable.topview_ac_arrows")
+                Log.e("DrawableError", "Could not load R.drawable.avd_animated_ac_arrows")
+                val staticArrows = ContextCompat.getDrawable(context, R.drawable.topview_ac_arrows)
+                val vectorDrawable = staticArrows.mutate() as VectorDrawable
+                vectorDrawable.setTint(tintColor)
+                if (staticArrows != null) {
+                    layers = layers.plus(vectorDrawable)
+                }
             }
         }
 
