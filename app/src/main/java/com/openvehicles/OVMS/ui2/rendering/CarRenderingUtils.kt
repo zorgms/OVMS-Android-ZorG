@@ -294,7 +294,7 @@ object CarRenderingUtils {
             val temperature_threshold = 20f
 
             val tintColor = when {
-                tempCabin < temperature_threshold -> coolColor
+                tempCabin > temperature_threshold -> coolColor
                 else -> warmColor
             }
 
