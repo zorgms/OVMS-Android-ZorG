@@ -277,11 +277,10 @@ class ChargingFragment : BaseFragment(), OnResultCommandListener {
         if ((carData?.car_charge_power_input_kw_raw ?: 0f) > 0) {
             chargingPower = carData!!.car_charge_power_input_kw_raw.toDouble()
         }
-        if ((carData?.car_charge_power_kw_raw ?: 0.0) > 0) {
+        else if ((carData?.car_charge_power_kw_raw ?: 0.0) > 0) {
             chargingPower = carData!!.car_charge_power_kw_raw
         }
-
-        if (carData?.car_charge_linevoltage_raw != null) {
+        else if (carData?.car_charge_linevoltage_raw != null) {
             // Divide by -1000, because current is negative when charging
             chargingPower =
                 (carData.car_charge_linevoltage_raw.toDouble() * carData.car_charge_current_raw.toDouble()) / -1000.0
