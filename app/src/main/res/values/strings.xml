@@ -751,6 +751,7 @@
     <string name="charging_estimation_soc_2">elapsed %s, charge limit in ~%s</string>
     <string name="charging_estimation_range_2">elapsed %s, sufficient range in ~%s</string>
     <string name="charging_estimation_full_2">elapsed %s, full charge in ~%s</string>
+    <string name="charging_estimation_full_3">fully charged since %s</string>
     <string name="tpms">TPMS</string>
     <string name="nopower">No power</string>
     <string name="charge_limit_action">Charge limit action</string>

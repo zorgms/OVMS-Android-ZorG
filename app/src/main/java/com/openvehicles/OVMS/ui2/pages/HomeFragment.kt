@@ -505,7 +505,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 val etrSuffRange = carData.car_chargelimit_minsremaining_range
 
                 var pastTime = 0L
-                val timestampString = carData.car_charge_timestamp // "2025-08-18 18:55:00 CEST"
+                val timestampString = carData.car_charge_timestamp_raw // like "2025-08-18 18:55:00 CEST"
 
                 // needed API 24+, but minSdk 21 is configured
                 if ((timestampString.isNotEmpty()) && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)) {
@@ -542,11 +542,11 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
                 if (pastTime > 0L) {
                     if (suffSOC > 0 && etrSuffSOC > 0) {
-                        statusText.text = String.format(getString(R.string.charging_estimation_soc_2), String.format("%02d:%02dh", pastTime / 60, pastTime % 60), String.format("%02d:%02dh", etrSuffSOC / 60, etrSuffSOC % 60))
+                        statusText.text = String.format(getString(R.string.charging_estimation_soc_2), String.format("%02d:%02dh", pastTime / 60L, pastTime % 60L), String.format("%02d:%02dh", etrSuffSOC / 60, etrSuffSOC % 60))
                     } else if (suffRange > 0 && etrSuffRange > 0) {
-                        statusText.text = String.format(getString(R.string.charging_estimation_range_2), String.format("%02d:%02dh", pastTime / 60, pastTime % 60), String.format("%02d:%02dh", etrSuffRange / 60, etrSuffRange % 60))
+                        statusText.text = String.format(getString(R.string.charging_estimation_range_2), String.format("%02d:%02dh", pastTime / 60L, pastTime % 60L), String.format("%02d:%02dh", etrSuffRange / 60, etrSuffRange % 60))
                     } else if (etrFull > 0) {
-                        statusText.text = String.format(getString(R.string.charging_estimation_full_2), String.format("%02d:%02dh", pastTime / 60, pastTime % 60), String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
+                        statusText.text = String.format(getString(R.string.charging_estimation_full_2), String.format("%02d:%02dh", pastTime / 60L, pastTime % 60L), String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
                     }
                 } else {
                     if (suffSOC > 0 && etrSuffSOC > 0) {
@@ -567,10 +567,11 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                     211 -> chargeStateInfo = R.string.state_stopped_label
                 }
 
-                if (chargeStateInfo != 0) {
+                if(carData.car_type in listOf("SQ") && (pastTime > 0L) && carData.car_charge_state_i_raw == 4) {
+                    statusText.text = String.format(getString(R.string.charging_estimation_full_3), String.format("%02d:%02dh", pastTime / 60L, pastTime % 60L))
+                } else if (chargeStateInfo != 0) {
                     statusText.setText(chargeStateInfo)
                 }
-
             }
         } else {
             statusProgressBar.visibility = VISIBLE

@@ -169,6 +169,7 @@ class CarData : Serializable {
     var car_chargelimit_rangelimit = ""
     var car_max_idealrange = ""
     var car_charge_timestamp = ""
+    var car_charge_timestamp_raw = ""
     var stale_chargetimer = DataStale.NoValue
     var stale_status = DataStale.NoValue
 
@@ -751,8 +752,8 @@ class CarData : Serializable {
                 car_battery_capacity = dataParts[40].toFloat()
 
                 val dateFormat = appPrefs!!.getData("showfahrenheit", "off") == "on"
-                val charge_timestamp_raw = dataParts[41].toInt()
-                if (charge_timestamp_raw <= 0) {
+                val charge_timestamp_int = dataParts[41].toInt()
+                if (charge_timestamp_int <= 0) {
                     car_charge_timestamp = ""
                 }
                 else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -764,7 +765,7 @@ class CarData : Serializable {
                             .withZone(ZoneId.systemDefault())
                     }
                     car_charge_timestamp =
-                        timestamp_formater.format(Instant.ofEpochSecond(charge_timestamp_raw.toLong()))
+                        timestamp_formater.format(Instant.ofEpochSecond(charge_timestamp_int.toLong()))
                 }
                 else {
                     val timestamp_formater = if (!dateFormat) {
@@ -773,8 +774,11 @@ class CarData : Serializable {
                         SimpleDateFormat("MM/dd yy  HH:mm")
                     }
                     car_charge_timestamp =
-                        timestamp_formater.format(Instant.ofEpochSecond(charge_timestamp_raw.toLong()))
+                        timestamp_formater.format(Instant.ofEpochSecond(charge_timestamp_int.toLong()))
                 }
+                val timestamp_raw_formater = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
+                car_charge_timestamp_raw =
+                    timestamp_raw_formater.format(Instant.ofEpochSecond(charge_timestamp_int.toLong()))
             }
         } catch (e: Exception) {
             Log.e(TAG, "processStatus: ERROR", e)
@@ -1235,6 +1239,8 @@ class CarData : Serializable {
             b.putFloat("car_charge_kwh_grid_total", car_charge_kwh_grid_total)
             b.putFloat("car_battery_capacity", car_battery_capacity)
             b.putString("car_charge_timestamp", car_charge_timestamp)
+            b.putString("car_charge_timestamp_raw", car_charge_timestamp_raw)
+
 
             //
             // Location (msgCode 'L')
