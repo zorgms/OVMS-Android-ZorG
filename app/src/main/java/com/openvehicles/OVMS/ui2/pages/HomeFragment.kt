@@ -34,7 +34,6 @@ import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.launch
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
@@ -105,10 +104,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import android.location.Address
-import java.util.Calendar
 import androidx.appcompat.view.ActionMode
 import com.openvehicles.OVMS.utils.Base64
-import java.text.SimpleDateFormat
 
 /**
  * A simple [Fragment] subclass.
