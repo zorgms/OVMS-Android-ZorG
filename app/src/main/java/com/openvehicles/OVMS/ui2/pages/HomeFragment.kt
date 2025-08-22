@@ -9,9 +9,6 @@ import android.graphics.Matrix
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
-import android.icu.util.Calendar
-import android.icu.util.TimeUnit
-import android.icu.util.TimeZone
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
@@ -108,6 +105,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import android.location.Address
+import java.util.Calendar
 import androidx.appcompat.view.ActionMode
 import com.openvehicles.OVMS.utils.Base64
 import java.text.SimpleDateFormat
@@ -495,7 +493,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             if (carData?.car_started == true) {
                 statusText.text = carData.car_speed
             }
-            if (carData?.car_charging == true || carData?.car_charge_state_i_raw == 14) {
+            if (carData?.car_charging == false || carData?.car_charge_state_i_raw == 14) {
                 statusText.setText(R.string.state_charging_label)
 
                 val etrFull = carData.car_chargefull_minsremaining
@@ -505,36 +503,13 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 val etrSuffRange = carData.car_chargelimit_minsremaining_range
 
                 var pastTime = 0L
-                val timestampString = carData.car_charge_timestamp_raw // like "2025-08-18 18:55:00 CEST"
+                val timestampSec = carData.car_charge_timestamp_sec
+                val currentTimeSec = System.currentTimeMillis() / 1000
 
-                // needed API 24+, but minSdk 21 is configured
-                if ((timestampString.isNotEmpty()) && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)) {
+                if (timestampSec > 0) {
                     try {
-                        val fullFormatter =
-                            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                        val dateObject = fullFormatter.parse(timestampString)
-                        val calendar = Calendar.getInstance()
-
-                        // current charge time
-                        val nowHours = calendar.get(Calendar.HOUR_OF_DAY)
-                        val nowMinutes = calendar.get(Calendar.MINUTE)
-                        val nowSeconds = calendar.get(Calendar.SECOND)
-
-                        // timestamp started charge time
-                        calendar.time = dateObject
-                        val tsHours = calendar.get(Calendar.HOUR_OF_DAY)
-                        val tsMinutes = calendar.get(Calendar.MINUTE)
-                        val tsSeconds = calendar.get(Calendar.SECOND)
-
-                        val secondsSinceMidnight = (nowHours * 3600L) + (nowMinutes * 60L) + nowSeconds      // time now
-                        val tsSecondsSinceMidnight = (tsHours * 3600L) + (tsMinutes * 60L) + tsSeconds       // timestamp started charge time
-
-                        pastTime = if(tsSecondsSinceMidnight > secondsSinceMidnight) {
-                            (secondsSinceMidnight + 86400L - tsSecondsSinceMidnight) / 60L
-                        } else {
-                            (secondsSinceMidnight - tsSecondsSinceMidnight) / 60L
-                        }
-
+                        val differenceSec = currentTimeSec - timestampSec
+                        pastTime = differenceSec / 60
                     } catch (e: Exception) {
                         pastTime = 0L
                     }
