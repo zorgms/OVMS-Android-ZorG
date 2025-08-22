@@ -493,7 +493,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             if (carData?.car_started == true) {
                 statusText.text = carData.car_speed
             }
-            if (carData?.car_charging == false || carData?.car_charge_state_i_raw == 14) {
+            if (carData?.car_charging == true || carData?.car_charge_state_i_raw == 14) {
                 statusText.setText(R.string.state_charging_label)
 
                 val etrFull = carData.car_chargefull_minsremaining
