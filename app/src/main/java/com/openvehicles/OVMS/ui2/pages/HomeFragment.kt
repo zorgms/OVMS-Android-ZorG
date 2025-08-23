@@ -9,9 +9,6 @@ import android.graphics.Matrix
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
-import android.icu.util.Calendar
-import android.icu.util.TimeUnit
-import android.icu.util.TimeZone
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
@@ -37,7 +34,6 @@ import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.launch
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
@@ -110,7 +106,6 @@ import kotlinx.coroutines.launch
 import android.location.Address
 import androidx.appcompat.view.ActionMode
 import com.openvehicles.OVMS.utils.Base64
-import java.text.SimpleDateFormat
 
 /**
  * A simple [Fragment] subclass.
@@ -505,36 +500,13 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 val etrSuffRange = carData.car_chargelimit_minsremaining_range
 
                 var pastTime = 0L
-                val timestampString = carData.car_charge_timestamp // "2025-08-18 18:55:00 CEST"
+                val timestampSec = carData.car_charge_timestamp_sec
+                val currentTimeSec = System.currentTimeMillis() / 1000
 
-                // needed API 24+, but minSdk 21 is configured
-                if ((timestampString.isNotEmpty()) && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)) {
+                if (timestampSec > 0) {
                     try {
-                        val fullFormatter =
-                            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                        val dateObject = fullFormatter.parse(timestampString)
-                        val calendar = Calendar.getInstance()
-
-                        // current charge time
-                        val nowHours = calendar.get(Calendar.HOUR_OF_DAY)
-                        val nowMinutes = calendar.get(Calendar.MINUTE)
-                        val nowSeconds = calendar.get(Calendar.SECOND)
-
-                        // timestamp started charge time
-                        calendar.time = dateObject
-                        val tsHours = calendar.get(Calendar.HOUR_OF_DAY)
-                        val tsMinutes = calendar.get(Calendar.MINUTE)
-                        val tsSeconds = calendar.get(Calendar.SECOND)
-
-                        val secondsSinceMidnight = (nowHours * 3600L) + (nowMinutes * 60L) + nowSeconds      // time now
-                        val tsSecondsSinceMidnight = (tsHours * 3600L) + (tsMinutes * 60L) + tsSeconds       // timestamp started charge time
-
-                        pastTime = if(tsSecondsSinceMidnight > secondsSinceMidnight) {
-                            (secondsSinceMidnight + 86400L - tsSecondsSinceMidnight) / 60L
-                        } else {
-                            (secondsSinceMidnight - tsSecondsSinceMidnight) / 60L
-                        }
-
+                        val differenceSec = currentTimeSec - timestampSec
+                        pastTime = differenceSec / 60
                     } catch (e: Exception) {
                         pastTime = 0L
                     }
@@ -542,11 +514,11 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
                 if (pastTime > 0L) {
                     if (suffSOC > 0 && etrSuffSOC > 0) {
-                        statusText.text = String.format(getString(R.string.charging_estimation_soc_2), String.format("%02d:%02dh", pastTime / 60, pastTime % 60), String.format("%02d:%02dh", etrSuffSOC / 60, etrSuffSOC % 60))
+                        statusText.text = String.format(getString(R.string.charging_estimation_soc_2), String.format("%02d:%02dh", pastTime / 60L, pastTime % 60L), String.format("%02d:%02dh", etrSuffSOC / 60, etrSuffSOC % 60))
                     } else if (suffRange > 0 && etrSuffRange > 0) {
-                        statusText.text = String.format(getString(R.string.charging_estimation_range_2), String.format("%02d:%02dh", pastTime / 60, pastTime % 60), String.format("%02d:%02dh", etrSuffRange / 60, etrSuffRange % 60))
+                        statusText.text = String.format(getString(R.string.charging_estimation_range_2), String.format("%02d:%02dh", pastTime / 60L, pastTime % 60L), String.format("%02d:%02dh", etrSuffRange / 60, etrSuffRange % 60))
                     } else if (etrFull > 0) {
-                        statusText.text = String.format(getString(R.string.charging_estimation_full_2), String.format("%02d:%02dh", pastTime / 60, pastTime % 60), String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
+                        statusText.text = String.format(getString(R.string.charging_estimation_full_2), String.format("%02d:%02dh", pastTime / 60L, pastTime % 60L), String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
                     }
                 } else {
                     if (suffSOC > 0 && etrSuffSOC > 0) {
@@ -567,10 +539,11 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                     211 -> chargeStateInfo = R.string.state_stopped_label
                 }
 
-                if (chargeStateInfo != 0) {
+                if(carData.car_type in listOf("SQ") && (pastTime > 0L) && carData.car_charge_state_i_raw == 4) {
+                    statusText.text = String.format(getString(R.string.charging_estimation_full_3), String.format("%02d:%02dh", pastTime / 60L, pastTime % 60L))
+                } else if (chargeStateInfo != 0) {
                     statusText.setText(chargeStateInfo)
                 }
-
             }
         } else {
             statusProgressBar.visibility = VISIBLE
