@@ -161,7 +161,7 @@ class CarData : Serializable {
     var car_range_ideal = ""
     @JvmField
     var car_range_estimated = ""
-    var car_charge_time = ""
+    var car_charge_time = 0
     @JvmField
     var car_distance_units = ""
     @JvmField
@@ -270,7 +270,7 @@ class CarData : Serializable {
     var car_range_estimated_raw = 0f
     @JvmField
     var car_charge_currentlimit_raw = 0f
-    var car_charge_duration_raw = 0
+    //var car_charge_duration_raw = 0
     var car_charge_b4byte_raw = 0
     @JvmField
     var car_charge_kwhconsumed = 0f
@@ -665,7 +665,8 @@ class CarData : Serializable {
             if (dataParts.size >= 15) {
                 car_charge_currentlimit_raw = dataParts[8].toFloat()
                 car_charge_currentlimit = String.format("%.0f%s", car_charge_currentlimit_raw, "A")
-                car_charge_duration_raw = dataParts[9].toInt()
+                // car_charge_duration_raw = dataParts[9].toInt() // incorrect variable for this DataPart
+                car_charge_time = dataParts[9].toInt()
                 car_charge_b4byte_raw = dataParts[10].toInt()
                 car_charge_kwhconsumed = dataParts[11].toFloat() / 10f
                 car_charge_substate_i_raw = dataParts[12].toInt()
@@ -676,7 +677,6 @@ class CarData : Serializable {
                 car_charge_timermode_raw = dataParts[15].toInt()
                 car_charge_timer = car_charge_timermode_raw > 0
                 car_charge_timerstart_raw = dataParts[16].toInt()
-                car_charge_time = "" // TODO: Implement later
                 car_stale_chargetimer_raw = dataParts[17].toInt()
                 stale_chargetimer =
                     if (car_stale_chargetimer_raw < 0) DataStale.NoValue else if (car_stale_chargetimer_raw == 0) DataStale.Stale else DataStale.Good
@@ -1204,7 +1204,8 @@ class CarData : Serializable {
             b.putFloat("car_charge_linevoltage", car_charge_linevoltage_raw)
             b.putFloat("car_charge_current", car_charge_current_raw)
             b.putFloat("car_charge_currentlimit", car_charge_currentlimit_raw)
-            b.putInt("car_charge_duration", car_charge_duration_raw)
+            //b.putInt("car_charge_duration", car_charge_duration_raw)
+            b.putInt("car_charge_time", car_charge_time)
             b.putInt("car_charge_plugtype", car_charge_plugtype)
             b.putDouble("car_charge_power_kw", car_charge_power_kw_raw)
             b.putDouble("car_battery_current", car_battery_current_raw)

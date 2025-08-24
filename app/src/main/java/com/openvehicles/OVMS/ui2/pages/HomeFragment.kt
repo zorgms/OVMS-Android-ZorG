@@ -493,32 +493,32 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             if (carData?.car_charging == true || carData?.car_charge_state_i_raw == 14) {
                 statusText.setText(R.string.state_charging_label)
 
-                val etrFull = carData.car_chargefull_minsremaining
+                val etrFull = carData.car_chargefull_minsremaining /60
                 val suffSOC = carData.car_chargelimit_soclimit
-                val etrSuffSOC = carData.car_chargelimit_minsremaining_soc
+                val etrSuffSOC = carData.car_chargelimit_minsremaining_soc / 60
                 val suffRange = carData.car_chargelimit_rangelimit_raw
-                val etrSuffRange = carData.car_chargelimit_minsremaining_range
+                val etrSuffRange = carData.car_chargelimit_minsremaining_range /60
 
                 var pastTime = 0L
+                val chargeTime = carData.car_charge_time / 60
                 val timestampSec = carData.car_charge_timestamp_sec
-                val currentTimeSec = System.currentTimeMillis() / 1000
+                val currentTimeSec = now / 1000
 
                 if (timestampSec > 0) {
                     try {
-                        val differenceSec = currentTimeSec - timestampSec
-                        pastTime = differenceSec / 60
+                        pastTime = (currentTimeSec - timestampSec) / 60
                     } catch (e: Exception) {
                         pastTime = 0L
                     }
                 }
 
-                if (pastTime > 0L) {
+                if (chargeTime > 0) {
                     if (suffSOC > 0 && etrSuffSOC > 0) {
-                        statusText.text = String.format(getString(R.string.charging_estimation_soc_2), String.format("%02d:%02dh", pastTime / 60L, pastTime % 60L), String.format("%02d:%02dh", etrSuffSOC / 60, etrSuffSOC % 60))
+                        statusText.text = String.format(getString(R.string.charging_estimation_soc_2), String.format("%02d:%02dh", chargeTime / 60, chargeTime % 60), String.format("%02d:%02dh", etrSuffSOC / 60, etrSuffSOC % 60))
                     } else if (suffRange > 0 && etrSuffRange > 0) {
-                        statusText.text = String.format(getString(R.string.charging_estimation_range_2), String.format("%02d:%02dh", pastTime / 60L, pastTime % 60L), String.format("%02d:%02dh", etrSuffRange / 60, etrSuffRange % 60))
+                        statusText.text = String.format(getString(R.string.charging_estimation_range_2), String.format("%02d:%02dh", chargeTime / 60, chargeTime % 60), String.format("%02d:%02dh", etrSuffRange / 60, etrSuffRange % 60))
                     } else if (etrFull > 0) {
-                        statusText.text = String.format(getString(R.string.charging_estimation_full_2), String.format("%02d:%02dh", pastTime / 60L, pastTime % 60L), String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
+                        statusText.text = String.format(getString(R.string.charging_estimation_full_2), String.format("%02d:%02dh", chargeTime / 60, chargeTime % 60), String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
                     }
                 } else {
                     if (suffSOC > 0 && etrSuffSOC > 0) {
