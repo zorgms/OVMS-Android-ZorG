@@ -493,11 +493,11 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             if (carData?.car_charging == true || carData?.car_charge_state_i_raw == 14) {
                 statusText.setText(R.string.state_charging_label)
 
-                val etrFull = carData.car_chargefull_minsremaining /60
-                val suffSOC = carData.car_chargelimit_soclimit
-                val etrSuffSOC = carData.car_chargelimit_minsremaining_soc / 60
-                val suffRange = carData.car_chargelimit_rangelimit_raw
-                val etrSuffRange = carData.car_chargelimit_minsremaining_range /60
+                val etrFull = carData?.car_chargefull_minsremaining ?: 0
+                val suffSOC = carData?.car_chargelimit_soclimit ?: 0
+                val etrSuffSOC = carData?.car_chargelimit_minsremaining_soc ?: 0
+                val suffRange = carData?.car_chargelimit_rangelimit_raw ?: 0
+                val etrSuffRange = carData?.car_chargelimit_minsremaining_range ?: 0
 
                 var pastTime = 0L
                 val chargeTime = carData.car_charge_time / 60
@@ -519,6 +519,8 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                         statusText.text = String.format(getString(R.string.charging_estimation_range_2), String.format("%02d:%02dh", chargeTime / 60, chargeTime % 60), String.format("%02d:%02dh", etrSuffRange / 60, etrSuffRange % 60))
                     } else if (etrFull > 0) {
                         statusText.text = String.format(getString(R.string.charging_estimation_full_2), String.format("%02d:%02dh", chargeTime / 60, chargeTime % 60), String.format("%02d:%02dh", etrFull / 60, etrFull % 60))
+                    } else if (etrFull == 0) {
+                        statusText.text = String.format(getString(R.string.charging_estimation_full_3), String.format("%02d:%02dh", pastTime / 60L, pastTime % 60L))
                     }
                 } else {
                     if (suffSOC > 0 && etrSuffSOC > 0) {
