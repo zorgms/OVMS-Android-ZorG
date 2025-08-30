@@ -500,7 +500,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 val etrSuffRange = carData?.car_chargelimit_minsremaining_range ?: 0
 
                 var pastTime = 0L
-                val chargeTime = carData.car_charge_time / 60
+                val chargeTime = carData.car_charge_duration_raw / 60
                 val timestampSec = carData.car_charge_timestamp_sec
                 val currentTimeSec = now / 1000
 
