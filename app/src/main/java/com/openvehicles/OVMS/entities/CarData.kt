@@ -1205,6 +1205,7 @@ class CarData : Serializable {
             b.putFloat("car_charge_current", car_charge_current_raw)
             b.putFloat("car_charge_currentlimit", car_charge_currentlimit_raw)
             b.putInt("car_charge_duration", car_charge_duration_raw)
+            b.putString("car_charge_time", car_charge_time)
             b.putInt("car_charge_plugtype", car_charge_plugtype)
             b.putDouble("car_charge_power_kw", car_charge_power_kw_raw)
             b.putDouble("car_battery_current", car_battery_current_raw)
