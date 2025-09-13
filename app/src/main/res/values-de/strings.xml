@@ -322,7 +322,7 @@
     <string name="logs_btn_get">Abrufen</string>
     <string name="logs_btn_reset">Löschen</string>
     <!-- Home tabs customization -->
-    <string name="more">ausgeblendete Tabs</string>
+    <string name="hidden_tabs">Ausgeblendete Tabs</string>
     <string name="logs_lb_alerts">Alarm</string>
     <string name="logs_lb_counter">Zähler</string>
     <string name="logs_lb_events">Logbuch</string>

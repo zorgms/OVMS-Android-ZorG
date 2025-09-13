@@ -1730,7 +1730,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         if (hiddenTabs.isEmpty()) return
         val items = hiddenTabs.map { it.tabName.ifBlank { getString(R.string.app_name) } }.toTypedArray()
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.more)
+            .setTitle(R.string.hidden_tabs)
             .setItems(items) { _, which ->
                 val tab = hiddenTabs[which]
                 when (tab.tabId) {

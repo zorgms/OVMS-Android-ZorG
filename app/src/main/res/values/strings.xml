@@ -352,7 +352,7 @@
     <string name="logs_btn_get">Get logs</string>
     <string name="logs_btn_reset">Reset logs</string>
     <!-- Home tabs customization -->
-    <string name="more">hided tabs</string>
+    <string name="hidden_tabs">Hidden tabs</string>
     <string name="hidden_items_count">%1$d hidden</string>
     <string name="reset">Reset</string>
     <string name="hint_long_press_hide">Long-press a tab to hide/show</string>
