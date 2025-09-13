@@ -68,6 +68,11 @@
     <string name="App">App</string>
     <string name="CAC">Kapazität</string>
     <string name="Options">Optionen</string>
+    <string name="hint_long_press_hide">Lange auf einen Tab drücken zum Aus-/Einblenden</string>
+    <string name="action_hide_tab">Tab ausblenden</string>
+    <string name="action_unhide_tab">Tab einblenden</string>
+    <string name="action_reset_tabs">Tabs zurücksetzen</string>
+    <string name="drag_handle_description">Ziehen zum Sortieren</string>
 
     <string name="lb_wakeup_car">Auto aufwecken</string>
 
@@ -316,7 +321,8 @@
     <string name="logs_title">Diagnose-Logs</string>
     <string name="logs_btn_get">Abrufen</string>
     <string name="logs_btn_reset">Löschen</string>
-
+    <!-- Home tabs customization -->
+    <string name="more">ausgeblendete Tabs</string>
     <string name="logs_lb_alerts">Alarm</string>
     <string name="logs_lb_counter">Zähler</string>
     <string name="logs_lb_events">Logbuch</string>
@@ -362,6 +368,15 @@
     <string name="logs_msg_fetch_events">Logbuch abrufen&#8230;</string>
     <string name="logs_msg_fetch_counter">Zähler abrufen&#8230;</string>
     <string name="logs_msg_fetch_minmax">Min/Max abrufen&#8230;</string>
+
+    <!-- Home tab settings (added) -->
+    <string name="home_tab_settings">Tabs</string>
+    <string name="home_tab_manage_hidden">Ausgeblendete Tabs verwalten</string>
+    <string name="home_tab_none_hidden">Keine ausgeblendeten Tabs</string>
+    <string name="pref_show_footer">Footer anzeigen</string>
+    <string name="pref_show_footer_desc">Fahrzeug- und App-Info unten einblenden</string>
+    <string name="footer_hidden">Footer ausgeblendet</string>
+    <string name="footer_show">Einblenden</string>
 
     <string name="logs_msg_reset_faults">Fehler löschen&#8230;</string>
     <string name="logs_msg_reset_events">Logbuch löschen&#8230;</string>

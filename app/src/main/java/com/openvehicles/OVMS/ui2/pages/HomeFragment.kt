@@ -113,6 +113,8 @@ import com.openvehicles.OVMS.utils.Base64
  * create an instance of this fragment.
  */
 class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.ItemClickListener,  ActionBar.OnNavigationListener, IconDialog.Callback {
+    // Footer expanded state (persisted per vehicle via pref_show_footer_<vid>)
+    private var footerExpanded = true
 
     private var carData: CarData? = null
     private var lastPresentCarId: String? = null
@@ -137,6 +139,9 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             findViewById(R.id.modifyQuickActions).visibility = if (value) VISIBLE else View.GONE
             field = value
         }
+    private var tabsItemTouchHelper: ItemTouchHelper? = null
+    private var longPressHintShown = false
+    private var lastFullTabs: List<HomeTab> = emptyList()
 
     companion object {
         private const val TAG = "HomeFragment"
@@ -192,11 +197,15 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.home_menu, menu)
+                updateHomeTabSettingsMenuVisibility(menu)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId) {
                     R.id.notifications -> findNavController().navigate(R.id.action_navigation_home_to_notificationsFragment)
+                    R.id.home_tab_settings -> {
+                        showHiddenTabsDialog()
+                    }
                 }
                 return true
             }
@@ -296,8 +305,56 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         val homeTabsRecyclerView = findViewById(R.id.menuItems) as RecyclerView
         tabsAdapter = HomeTabsAdapter(context)
         tabsAdapter.setClickListener(this)
+        tabsAdapter.setLongClickListener(object: HomeTabsAdapter.ItemLongClickListener {
+            override fun onItemLongClick(position: Int) {
+                val tab = tabsAdapter.getItem(position) ?: return
+                if (!longPressHintShown) {
+                    longPressHintShown = appPrefs.getData("home_tabs_hint_shown", "0") == "1"
+                    if (!longPressHintShown) {
+                        longPressHintShown = true
+                        appPrefs.saveData("home_tabs_hint_shown", "1")
+                        try {
+                            // Use fragment root view if available, else fall back to the activity content view
+                            val parentView = view ?: requireActivity().findViewById(android.R.id.content)
+                            val snackbar = com.google.android.material.snackbar.Snackbar.make(
+                                parentView,
+                                getString(R.string.hint_long_press_hide),
+                                com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+                            )
+                            snackbar.setTextMaxLines(2)
+                            snackbar.show()
+                        } catch (e: Exception) {
+                            // As a last resort fall back to a Toast if Snackbar construction fails
+                            Toast.makeText(requireContext(), getString(R.string.hint_long_press_hide), Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                showTabContextMenu(position, tab)
+            }
+        })
         homeTabsRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         homeTabsRecyclerView.adapter = tabsAdapter
+        // Enable drag & drop reordering for home tabs
+        val tabsTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+        tabsAdapter.onRowMoved(viewHolder.adapterPosition, target.adapterPosition)
+        // Persist order for current vehicle
+        saveHomeTabsOrder(carData?.sel_vehicleid)
+                return true
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                // no-op
+            }
+
+            override fun isLongPressDragEnabled(): Boolean = true
+        })
+        tabsTouchHelper.attachToRecyclerView(homeTabsRecyclerView)
+        tabsItemTouchHelper = tabsTouchHelper
 
         val swipeRefresh = findViewById(R.id.swipeRefreshHome) as SwipeRefreshLayout
         val statusProgressBar = findViewById(R.id.carUpdatingProgress) as CircularProgressIndicator
@@ -320,6 +377,96 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         initialiseTabs(carData)
         initialiseBottomInfo(carData)
         initialiseCarDropDown()
+    }
+
+    private fun applyFooterVisibility() {
+        val root = view ?: return
+        val footerAppBlock = root.findViewById<View>(R.id.footerAppBlock)
+        val restoreHint = root.findViewById<View>(R.id.footerRestoreHint)
+        val vehicleId = carData?.sel_vehicleid
+        val baseKey = "pref_show_footer"
+        // Try vehicle specific key first, then legacy global key, default visible
+        val stored = if (vehicleId != null) appPrefs.getData("${baseKey}_${vehicleId}", null) else null
+        val legacy = appPrefs.getData(baseKey, null)
+        val showFooter = (stored ?: legacy ?: "1") != "0"
+        // We now treat showFooter as the expanded/collapsed state instead of removing the whole block.
+        footerExpanded = showFooter
+        footerAppBlock.post {
+            setFooterExpanded(footerAppBlock, restoreHint, showFooter, animate = false)
+        }
+
+        val toggleClickListener = View.OnClickListener {
+            val vId = carData?.sel_vehicleid
+            footerExpanded = !footerExpanded
+            if (vId != null) appPrefs.saveData("${baseKey}_${vId}", if (footerExpanded) "1" else "0") else appPrefs.saveData(baseKey, if (footerExpanded) "1" else "0")
+            setFooterExpanded(footerAppBlock, restoreHint, footerExpanded, animate = false)
+        }
+        footerAppBlock.setOnClickListener(toggleClickListener)
+        restoreHint?.setOnClickListener(toggleClickListener)
+    }
+
+    private fun setFooterExpanded(footerAppBlock: View, restoreHint: View?, expanded: Boolean, animate: Boolean) {
+        // restoreHint acts as collapsed handle (↕); no animation version
+        if (expanded) {
+            footerAppBlock.visibility = View.VISIBLE
+            footerAppBlock.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
+            restoreHint?.visibility = View.GONE
+            populateFooterInfo(carData)
+        } else {
+            footerAppBlock.visibility = View.GONE
+            restoreHint?.visibility = View.VISIBLE
+        }
+    }
+
+    private fun populateFooterInfo(carData: CarData?) {
+        if (!isAdded) return
+        val root = view ?: return
+        val footerBlock = root.findViewById<ViewGroup>(R.id.footerAppBlock) ?: return
+        // Reuse existing TextView with tag footerInfo or create a new one
+        var footerTextView: TextView? = (0 until footerBlock.childCount)
+            .map { footerBlock.getChildAt(it) }
+            .filterIsInstance<TextView>()
+            .firstOrNull { it.tag == "footerInfo" }
+        if (footerTextView == null) {
+            footerTextView = TextView(requireContext())
+            footerTextView.tag = "footerInfo"
+            footerTextView.alpha = 0.6f
+            footerTextView.setTextIsSelectable(true)
+            footerBlock.addView(footerTextView, 0)
+        }
+        // Ensure clicking the footer info toggles expand/collapse as well
+        footerTextView.setOnClickListener {
+            root.findViewById<View>(R.id.footerAppBlock)?.performClick()
+        }
+        // Also allow toggling by clicking car model / base info above
+        root.findViewById<View>(R.id.carModel)?.setOnClickListener {
+            root.findViewById<View>(R.id.footerAppBlock)?.performClick()
+        }
+        root.findViewById<View>(R.id.carInformation)?.setOnClickListener {
+            root.findViewById<View>(R.id.footerAppBlock)?.performClick()
+        }
+        val footerInfo = StringBuilder()
+        try {
+            val pi = context?.packageManager?.getPackageInfo(context?.packageName ?: "", 0)
+            footerInfo.append("${getString(R.string.App)}: ${pi?.versionName} (${pi?.versionCode})")
+        } catch (_: PackageManager.NameNotFoundException) { }
+        if (carData?.car_firmware?.isNotEmpty() == true) {
+            if (footerInfo.isNotEmpty()) footerInfo.append("\n")
+            footerInfo.append("${getString(R.string.lb_ovms_firmware)} ${carData.car_firmware}")
+        }
+        if (carData?.server_firmware?.isNotEmpty() == true) {
+            if (footerInfo.isNotEmpty()) footerInfo.append("\n")
+            footerInfo.append("${getString(R.string.lb_ovms_firmware).replace("OVMS", "OVMS ${getString(R.string.Server)}")} ${carData.server_firmware}")
+        }
+        if (carData?.sel_server?.isNotEmpty() == true) {
+            if (footerInfo.isNotEmpty()) footerInfo.append("\n")
+            footerInfo.append("${getString(R.string.Server)}: ${carData.sel_server}")
+        }
+        if ((carData?.car_soh ?: 0f) > 0) {
+            if (footerInfo.isNotEmpty()) footerInfo.append("\n")
+            footerInfo.append("SOH: ${carData?.car_soh ?: 0f}%")
+        }
+        footerTextView.text = footerInfo.toString()
     }
 
     private fun initialiseCarDropDown() {
@@ -1180,9 +1327,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
     private fun initialiseTabs(carData: CarData?) {
         val newTabsList = mutableListOf<HomeTab>()
-
-
-        tabsAdapter.mData = emptyList()
+        tabsAdapter.mData.clear()
         lifecycleScope.launch {
             // TPMS Tab (synchron)
             var tpms = ""
@@ -1336,9 +1481,52 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
             newTabsList.add(HomeTab(TAB_SETTINGS, R.drawable.ic_settings, getString(R.string.Settings), null))
 
-            tabsAdapter.mData = newTabsList
+            // Keep a snapshot of the complete (unfiltered) list for the More dialog
+            lastFullTabs = newTabsList.toList()
+
+            // Hidden tabs filtering & More tab
+            val vehicleId = carData?.sel_vehicleid
+            val hiddenIds = (appPrefs.getData("home_tabs_hidden_$vehicleId", "") ?: "")
+                .split(",").filter { it.isNotBlank() }.mapNotNull { it.toIntOrNull() }.toSet()
+            val visibleList = newTabsList.filter { !hiddenIds.contains(it.tabId) }.toMutableList()
+            // Hidden count no longer shown as a special tab; managed via gear menu
+
+            // Apply persisted order if available
+            val ordered = loadHomeTabsOrder(carData?.sel_vehicleid, visibleList)
+            tabsAdapter.mData.clear()
+            tabsAdapter.mData.addAll(ordered)
             tabsAdapter.notifyDataSetChanged() // Notify adapter after all tabs are potentially added
+            activity?.invalidateOptionsMenu()
         }
+    }
+
+    private fun saveHomeTabsOrder(vehicleId: String?) {
+        if (vehicleId.isNullOrBlank()) return
+        val ids = tabsAdapter.mData.map { it.tabId }.joinToString(",")
+        appPrefs.saveData("home_tabs_order_$vehicleId", ids)
+    }
+
+    private fun loadHomeTabsOrder(vehicleId: String?, generated: List<HomeTab>): List<HomeTab> {
+        if (vehicleId.isNullOrBlank()) return generated
+        val stored = appPrefs.getData("home_tabs_order_$vehicleId", "")
+        if (stored.isNullOrBlank()) return generated
+        val idOrder = stored.split(",").mapNotNull { it.toIntOrNull() }
+        if (idOrder.isEmpty()) return generated
+        val map = generated.associateBy { it.tabId }
+        val ordered = mutableListOf<HomeTab>()
+        idOrder.forEach { id -> map[id]?.let { ordered.add(it) } }
+        // Append any new tabs not yet stored
+        generated.forEach { if (ordered.find { o -> o.tabId == it.tabId } == null) ordered.add(it) }
+        return ordered
+    }
+
+    private fun updateHomeTabSettingsMenuVisibility(menu: Menu) {
+        // Determine if there are hidden tabs for current vehicle
+        val vehicleId = carData?.sel_vehicleid
+        val hiddenIds = (appPrefs.getData("home_tabs_hidden_$vehicleId", "") ?: "")
+            .split(",").filter { it.isNotBlank() }.mapNotNull { it.toIntOrNull() }
+        val item = menu.findItem(R.id.home_tab_settings)
+        item?.isVisible = hiddenIds.isNotEmpty()
     }
 
     private fun initialiseBottomInfo(carData: CarData?) {
@@ -1409,44 +1597,23 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
         carModelText.text = modelName
 
-        var carInfo = ""
-        if (carData?.car_odometer?.isNotEmpty() == true) {
-            carInfo += carData.car_odometer
+        // Base car info (always visible above collapsible footer)
+        val baseInfoBuilder = StringBuilder()
+        if (carData?.car_odometer?.isNotEmpty() == true) baseInfoBuilder.append(carData.car_odometer)
+
+        if (carData?.car_gsmlock?.isNotEmpty() == true) {
+            if (baseInfoBuilder.isNotEmpty()) baseInfoBuilder.append("\n")
+            baseInfoBuilder.append("GSM: ${carData.car_gsmlock} ${carData.car_mdm_mode}")
         }
 
         if (carData?.car_vin?.isNotEmpty() == true) {
-            carInfo += "\nVIN: ${carData.car_vin}"
+            if (baseInfoBuilder.isNotEmpty()) baseInfoBuilder.append("\n")
+            baseInfoBuilder.append("VIN: ${carData.car_vin}\n")
         }
+        carDetails.text = baseInfoBuilder.toString()
 
-        if (carData?.car_gsmlock?.isNotEmpty() == true) {
-            carInfo += "\nGSM: ${carData.car_gsmlock} ${carData.car_mdm_mode}\n"
-        }
-
-        try {
-            val pi = context?.packageManager?.getPackageInfo(context?.packageName ?: "", 0)
-            carInfo += "\n${getString(R.string.App)}: ${pi?.versionName} (${pi?.versionCode})"
-        } catch (e: PackageManager.NameNotFoundException) {
-        }
-
-        if (carData?.car_firmware?.isNotEmpty() == true) {
-            carInfo += "\n${getString(R.string.lb_ovms_firmware)} ${carData.car_firmware}"
-        }
-
-        if (carData?.server_firmware?.isNotEmpty() == true) {
-            carInfo += "\n${getString(R.string.lb_ovms_firmware).replace("OVMS", "OVMS ${getString(R.string.Server)}")} ${carData.server_firmware}"
-        }
-
-        if (carData?.sel_server?.isNotEmpty() == true) {
-            carInfo += "\n${getString(R.string.Server)}: ${carData.sel_server}"
-        }
-
-        if ((carData?.car_soh ?: 0f) > 0) {
-            carInfo += "\nSOH: ${carData?.car_soh ?: 0f}%"
-        }
-
-
-        carDetails.text = carInfo
-
+        // Populate collapsible footer content (app / firmware / server / SOH)
+        applyFooterVisibility()
     }
 
     private fun updateQuickActions(carData: CarData?) {
@@ -1515,6 +1682,77 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             TAB_SETTINGS -> findNavController().navigate(R.id.action_navigation_home_to_settingsFragment)
             TAB_ENERGY -> findNavController().navigate(R.id.action_navigation_home_to_energyFragment)
         }
+    }
+
+    private fun toggleTabHidden(tab: HomeTab) {
+        val vehicleId = carData?.sel_vehicleid ?: return
+        val key = "home_tabs_hidden_$vehicleId"
+        val current = appPrefs.getData(key, "") ?: ""
+        val set = current.split(",").filter { it.isNotBlank() }.toMutableSet()
+        if (set.contains(tab.tabId.toString())) set.remove(tab.tabId.toString()) else set.add(tab.tabId.toString())
+        appPrefs.saveData(key, set.joinToString(","))
+        initialiseTabs(carData)
+    }
+
+    private fun showTabContextMenu(position: Int, tab: HomeTab) {
+        val recycler = view?.findViewById<RecyclerView>(R.id.menuItems) ?: return
+        val vh = recycler.findViewHolderForAdapterPosition(position) ?: return
+        val anchor = vh.itemView
+        val popup = android.widget.PopupMenu(requireContext(), anchor)
+        val vehicleId = carData?.sel_vehicleid
+        val hidden = isTabHidden(tab.tabId, vehicleId)
+        popup.menu.add(0, 1, 0, if (hidden) R.string.action_unhide_tab else R.string.action_hide_tab)
+        popup.menu.add(0, 2, 1, R.string.action_reset_tabs)
+        popup.menu.add(0, 3, 2, R.string.drag_handle_description)
+        popup.setOnMenuItemClickListener {
+            when (it.itemId) {
+                1 -> toggleTabHidden(tab)
+                2 -> vehicleId?.let { vid -> resetTabsForVehicle(vid) }
+                3 -> tabsItemTouchHelper?.startDrag(vh)
+            }
+            true
+        }
+        popup.show()
+    }
+
+    private fun isTabHidden(tabId: Int, vehicleId: String?): Boolean {
+        if (vehicleId.isNullOrBlank()) return false
+        val current = appPrefs.getData("home_tabs_hidden_$vehicleId", "") ?: return false
+        if (current.isBlank()) return false
+        return current.split(",").any { it == tabId.toString() }
+    }
+
+    private fun showHiddenTabsDialog() {
+        val vehicleId = carData?.sel_vehicleid ?: return
+        val hiddenIds = (appPrefs.getData("home_tabs_hidden_$vehicleId", "") ?: "")
+            .split(",").filter { it.isNotBlank() }.mapNotNull { it.toIntOrNull() }.toSet()
+        val hiddenTabs = lastFullTabs.filter { hiddenIds.contains(it.tabId) }
+        if (hiddenTabs.isEmpty()) return
+        val items = hiddenTabs.map { it.tabName.ifBlank { getString(R.string.app_name) } }.toTypedArray()
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.more)
+            .setItems(items) { _, which ->
+                val tab = hiddenTabs[which]
+                when (tab.tabId) {
+                    TAB_CONTROLS -> findNavController().navigate(R.id.action_navigation_home_to_controlsFragment)
+                    TAB_CLIMATE -> findNavController().navigate(R.id.action_navigation_home_to_climateFragment)
+                    TAB_LOCATION -> findNavController().navigate(R.id.action_navigation_home_to_mapFragment)
+                    TAB_CHARGING -> findNavController().navigate(R.id.action_navigation_home_to_chargingFragment)
+                    TAB_SETTINGS -> findNavController().navigate(R.id.action_navigation_home_to_settingsFragment)
+                    TAB_ENERGY -> findNavController().navigate(R.id.action_navigation_home_to_energyFragment)
+                }
+            }
+            .setNegativeButton(R.string.Close, null)
+            .setNeutralButton(R.string.reset) { _, _ ->
+                resetTabsForVehicle(vehicleId)
+            }
+            .show()
+    }
+
+    private fun resetTabsForVehicle(vehicleId: String) {
+        appPrefs.saveData("home_tabs_order_$vehicleId", "")
+        appPrefs.saveData("home_tabs_hidden_$vehicleId", "")
+        initialiseTabs(carData)
     }
 
     private suspend fun getGeocodedAddress(carData: CarData?): String {
