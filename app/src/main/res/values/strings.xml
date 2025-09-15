@@ -352,8 +352,8 @@
     <string name="logs_btn_get">Get logs</string>
     <string name="logs_btn_reset">Reset logs</string>
     <!-- Home tabs customization -->
-    <string name="hidden_tabs">Hidden tabs</string>
-    <string name="hidden_items_count">%1$d hidden</string>
+    <string name="hided_tabs">Hided tabs</string>
+    <string name="hided_items_count">%1$d hided</string>
     <string name="reset">Reset</string>
     <string name="hint_long_press_hide">Long-press a tab to hide/show</string>
     <string name="action_hide_tab">Hide tab</string>
@@ -361,11 +361,11 @@
     <string name="action_reset_tabs">Reset tabs</string>
     <string name="drag_handle_description">Drag to reorder</string>
     <string name="home_tab_settings">Tabs</string>
-    <string name="home_tab_manage_hidden">Manage hidden tabs</string>
-    <string name="home_tab_none_hidden">No hidden tabs</string>
+    <string name="home_tab_manage_hided">Manage hided tabs</string>
+    <string name="home_tab_none_hided">No hided tabs</string>
     <string name="pref_show_footer">Show footer info</string>
     <string name="pref_show_footer_desc">Display car und app info block at bottom</string>
-    <string name="footer_hidden">Footer hidden</string>
+    <string name="footer_hided">Footer hided</string>
     <string name="footer_show">Show</string>
 
     <string name="logs_lb_alerts">Alerts</string>
@@ -871,6 +871,9 @@
     <string name="chargingpower">Charging power</string>
     <string name="chargingeff">efficiency</string>
     <string name="lb_charger_confirm_soc_change">Really change SoC limit?</string>
+    <string name="action_set_tab_color">Set tab color</string>
+    <string name="action_reset_tab_color">Reset tab color</string>
+    <string name="dialog_choose_color">Choose a color</string>
     <string-array name="lb_booster_mode" translatable="false">
         <item>@string/lb_5min</item>
         <item>@string/lb_10min</item>

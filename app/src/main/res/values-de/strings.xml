@@ -322,7 +322,7 @@
     <string name="logs_btn_get">Abrufen</string>
     <string name="logs_btn_reset">Löschen</string>
     <!-- Home tabs customization -->
-    <string name="hidden_tabs">Ausgeblendete Tabs</string>
+    <string name="hided_tabs">Ausgeblendete Tabs</string>
     <string name="logs_lb_alerts">Alarm</string>
     <string name="logs_lb_counter">Zähler</string>
     <string name="logs_lb_events">Logbuch</string>
@@ -371,11 +371,11 @@
 
     <!-- Home tab settings (added) -->
     <string name="home_tab_settings">Tabs</string>
-    <string name="home_tab_manage_hidden">Ausgeblendete Tabs verwalten</string>
-    <string name="home_tab_none_hidden">Keine ausgeblendeten Tabs</string>
+    <string name="home_tab_manage_hided">Ausgeblendete Tabs verwalten</string>
+    <string name="home_tab_none_hided">Keine ausgeblendeten Tabs</string>
     <string name="pref_show_footer">Footer anzeigen</string>
     <string name="pref_show_footer_desc">Fahrzeug- und App-Info unten einblenden</string>
-    <string name="footer_hidden">Footer ausgeblendet</string>
+    <string name="footer_hided">Footer ausgeblendet</string>
     <string name="footer_show">Einblenden</string>
 
     <string name="logs_msg_reset_faults">Fehler löschen&#8230;</string>
@@ -808,6 +808,9 @@
     <string name="chargingpower">Ladeleistung</string>
     <string name="chargingeff">Effizienz</string>
     <string name="lb_charger_confirm_soc_change">SoC limit setzen?</string>
+    <string name="action_set_tab_color">Tab-Farbe festlegen</string>
+    <string name="action_reset_tab_color">Tab-Farbe zurücksetzen</string>
+    <string name="dialog_choose_color">Farbe auswählen</string>
     <string-array name="lb_booster_mode" translatable="false">
         <item>@string/lb_5min</item>
         <item>@string/lb_10min</item>

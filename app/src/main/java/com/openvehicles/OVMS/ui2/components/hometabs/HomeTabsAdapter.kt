@@ -1,12 +1,16 @@
 package com.openvehicles.OVMS.ui2.components.hometabs
 
 import android.content.Context
+import android.content.res.ColorStateList
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.graphics.ColorUtils
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.card.MaterialCardView
 import com.openvehicles.OVMS.R
 import java.util.Collections
 
@@ -18,6 +22,11 @@ class HomeTabsAdapter internal constructor(
     private val mInflater: LayoutInflater
     private var mClickListener: ItemClickListener? = null
     private var mLongClickListener: ItemLongClickListener? = null
+    private var colorProvider: ((HomeTab) -> Int?)? = null
+
+    // default theme-derived colors
+    private var defaultCardColor: Int? = null
+    private var defaultOnCardColor: Int? = null
 
     init {
         mInflater = LayoutInflater.from(context)
@@ -32,6 +41,15 @@ class HomeTabsAdapter internal constructor(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val action = mData[position]
+        val context = holder.itemView.context
+        if (defaultCardColor == null || defaultOnCardColor == null) {
+            val tv = TypedValue()
+            val theme = context.theme
+            theme.resolveAttribute(com.google.android.material.R.attr.colorSecondaryContainer, tv, true)
+            defaultCardColor = tv.data
+            theme.resolveAttribute(com.google.android.material.R.attr.colorOnSecondaryContainer, tv, true)
+            defaultOnCardColor = tv.data
+        }
         holder.tabName.text = action.tabName
         holder.tabIcon.setImageResource(action.tabIcon)
         holder.tabSubTitle.visibility = if (action.tabDesc == null || action.tabDesc!!.isEmpty()) View.GONE else View.VISIBLE
@@ -39,7 +57,33 @@ class HomeTabsAdapter internal constructor(
         holder.clickListener = mClickListener
         holder.longClickListener = mLongClickListener
         // hideIndicator & drag handle optional external control via tags
-        holder.hideIndicator.visibility = if (action.tabDesc == "__HIDDEN__") View.VISIBLE else View.GONE
+        holder.hideIndicator.visibility = if (action.tabDesc == "__hided__") View.VISIBLE else View.GONE
+
+        // Apply custom color if provided
+        val card = holder.itemView as MaterialCardView
+        val customColor = colorProvider?.invoke(action)
+        if (customColor != null) {
+            card.setCardBackgroundColor(customColor)
+            val isDark = ColorUtils.calculateLuminance(customColor) < 0.5
+            val fg = if (isDark) 0xFFFFFFFF.toInt() else 0xFF000000.toInt()
+            holder.tabName.setTextColor(fg)
+            holder.tabSubTitle.setTextColor(fg)
+            holder.tabIcon.imageTintList = ColorStateList.valueOf(fg)
+            holder.hideIndicator.imageTintList = ColorStateList.valueOf(fg)
+            val chevron = card.findViewById<ImageView>(R.id.imageView4)
+            chevron.imageTintList = ColorStateList.valueOf(fg)
+        } else {
+            // reset to defaults from theme
+            defaultCardColor?.let { card.setCardBackgroundColor(it) }
+            defaultOnCardColor?.let { c ->
+                holder.tabName.setTextColor(c)
+                holder.tabSubTitle.setTextColor(c)
+                holder.tabIcon.imageTintList = ColorStateList.valueOf(c)
+                holder.hideIndicator.imageTintList = ColorStateList.valueOf(c)
+                val chevron = card.findViewById<ImageView>(R.id.imageView4)
+                chevron.imageTintList = ColorStateList.valueOf(c)
+            }
+        }
     }
 
     override fun getItemCount(): Int {
@@ -85,6 +129,11 @@ class HomeTabsAdapter internal constructor(
 
     fun setLongClickListener(itemLongClickListener: ItemLongClickListener?) {
         mLongClickListener = itemLongClickListener
+    }
+
+    fun setColorProvider(provider: (HomeTab) -> Int?) {
+        this.colorProvider = provider
+        notifyDataSetChanged()
     }
 
     fun onRowMoved(fromPosition: Int, toPosition: Int) {
