@@ -57,7 +57,7 @@ class HomeTabsAdapter internal constructor(
         holder.clickListener = mClickListener
         holder.longClickListener = mLongClickListener
         // hideIndicator & drag handle optional external control via tags
-        holder.hideIndicator.visibility = if (action.tabDesc == "__hided__") View.VISIBLE else View.GONE
+        holder.hideIndicator.visibility = if (action.tabDesc == "__hidden__") View.VISIBLE else View.GONE
 
         // Apply custom color if provided
         val card = holder.itemView as MaterialCardView
