@@ -219,7 +219,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 when(menuItem.itemId) {
                     R.id.notifications -> findNavController().navigate(R.id.action_navigation_home_to_notificationsFragment)
                     R.id.home_tab_settings -> {
-                        showhiddenTabsDialog()
+                        showHiddenTabsDialog()
                     }
                 }
                 return true
@@ -1705,7 +1705,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         }
     }
 
-    private fun toggleTabhidden(tab: HomeTab) {
+    private fun toggleTabHidden(tab: HomeTab) {
         val vehicleId = carData?.sel_vehicleid ?: return
         val key = "home_tabs_hidden_$vehicleId"
         val current = appPrefs.getData(key, "") ?: ""
@@ -1721,7 +1721,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         val anchor = vh.itemView
         val popup = android.widget.PopupMenu(requireContext(), anchor)
         val vehicleId = carData?.sel_vehicleid
-        val hidden = isTabhidden(tab.tabId, vehicleId)
+        val hidden = isTabHidden(tab.tabId, vehicleId)
         popup.menu.add(0, 1, 0, if (hidden) R.string.action_unhide_tab else R.string.action_hide_tab)
         popup.menu.add(0, 2, 1, R.string.action_reset_tabs)
         popup.menu.add(0, 4, 3, R.string.action_set_tab_color)
@@ -1729,7 +1729,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         popup.menu.add(0, 3, 2, R.string.drag_handle_description)
         popup.setOnMenuItemClickListener {
             when (it.itemId) {
-                1 -> toggleTabhidden(tab)
+                1 -> toggleTabHidden(tab)
                 2 -> vehicleId?.let { vid -> resetTabsForVehicle(vid) }
                 4 -> showColorChooser(tab)
                 5 -> {
@@ -1845,14 +1845,14 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         return try { Color.parseColor(s) } catch (e: Exception) { null }
     }
 
-    private fun isTabhidden(tabId: Int, vehicleId: String?): Boolean {
+    private fun isTabHidden(tabId: Int, vehicleId: String?): Boolean {
         if (vehicleId.isNullOrBlank()) return false
         val current = appPrefs.getData("home_tabs_hidden_$vehicleId", "") ?: return false
         if (current.isBlank()) return false
         return current.split(",").any { it == tabId.toString() }
     }
 
-    private fun showhiddenTabsDialog() {
+    private fun showHiddenTabsDialog() {
         val vehicleId = carData?.sel_vehicleid ?: return
         val hiddenIds = (appPrefs.getData("home_tabs_hidden_$vehicleId", "") ?: "")
             .split(",").filter { it.isNotBlank() }.mapNotNull { it.toIntOrNull() }.toSet()
