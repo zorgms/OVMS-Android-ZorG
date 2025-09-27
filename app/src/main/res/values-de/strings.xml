@@ -808,6 +808,9 @@
     <string name="chargingpower">Ladeleistung</string>
     <string name="chargingeff">Effizienz</string>
     <string name="lb_charger_confirm_soc_change">SoC limit setzen?</string>
+    <string name="action_set_tab_color">Tab-Farbe festlegen</string>
+    <string name="action_reset_tab_color">Tab-Farbe zurücksetzen</string>
+    <string name="dialog_choose_color">Farbe auswählen</string>
     <string-array name="lb_booster_mode" translatable="false">
         <item>@string/lb_5min</item>
         <item>@string/lb_10min</item>

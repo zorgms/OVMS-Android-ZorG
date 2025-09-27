@@ -5,6 +5,7 @@ class HomeTab {
     var tabIcon: Int
     var tabName: String
     var tabDesc: String? = null
+    var tabColor: Int? = null
 
     constructor(tabId: Int, tabIcon: Int, tabName: String, tabDesc: String?) {
         this.tabId = tabId

@@ -871,6 +871,9 @@
     <string name="chargingpower">Charging power</string>
     <string name="chargingeff">efficiency</string>
     <string name="lb_charger_confirm_soc_change">Really change SoC limit?</string>
+    <string name="action_set_tab_color">Set tab color</string>
+    <string name="action_reset_tab_color">Reset tab color</string>
+    <string name="dialog_choose_color">Choose a color</string>
     <string-array name="lb_booster_mode" translatable="false">
         <item>@string/lb_5min</item>
         <item>@string/lb_10min</item>

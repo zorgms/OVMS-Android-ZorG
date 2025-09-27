@@ -142,6 +142,21 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
     private var tabsItemTouchHelper: ItemTouchHelper? = null
     private var longPressHintShown = false
     private var lastFullTabs: List<HomeTab> = emptyList()
+    // Material-like tonal palettes (10 tones per base hue)
+    private val tonalPalettes: List<Pair<String, IntArray>> by lazy {
+        listOf(
+            "Blue" to intArrayOf(0xFFE3F2FD.toInt(),0xFFBBDEFB.toInt(),0xFF90CAF9.toInt(),0xFF64B5F6.toInt(),0xFF42A5F5.toInt(),0xFF2196F3.toInt(),0xFF1E88E5.toInt(),0xFF1976D2.toInt(),0xFF1565C0.toInt(),0xFF0D47A1.toInt()),
+            "Green" to intArrayOf(0xFFE8F5E9.toInt(),0xFFC8E6C9.toInt(),0xFFA5D6A7.toInt(),0xFF81C784.toInt(),0xFF66BB6A.toInt(),0xFF4CAF50.toInt(),0xFF43A047.toInt(),0xFF388E3C.toInt(),0xFF2E7D32.toInt(),0xFF1B5E20.toInt()),
+            "Amber" to intArrayOf(0xFFFFF8E1.toInt(),0xFFFFECB3.toInt(),0xFFFFE082.toInt(),0xFFFFD54F.toInt(),0xFFFFCA28.toInt(),0xFFFFC107.toInt(),0xFFFFB300.toInt(),0xFFFFA000.toInt(),0xFFFF8F00.toInt(),0xFFFF6F00.toInt()),
+            "Red" to intArrayOf(0xFFFFEBEE.toInt(),0xFFFFCDD2.toInt(),0xFFEF9A9A.toInt(),0xFFE57373.toInt(),0xFFEF5350.toInt(),0xFFF44336.toInt(),0xFFE53935.toInt(),0xFFD32F2F.toInt(),0xFFC62828.toInt(),0xFFB71C1C.toInt()),
+            "Purple" to intArrayOf(0xFFF3E5F5.toInt(),0xFFE1BEE7.toInt(),0xFFCE93D8.toInt(),0xFFBA68C8.toInt(),0xFFAB47BC.toInt(),0xFF9C27B0.toInt(),0xFF8E24AA.toInt(),0xFF7B1FA2.toInt(),0xFF6A1B9A.toInt(),0xFF4A148C.toInt()),
+            "Teal" to intArrayOf(0xFFE0F2F1.toInt(),0xFFB2DFDB.toInt(),0xFF80CBC4.toInt(),0xFF4DB6AC.toInt(),0xFF26A69A.toInt(),0xFF009688.toInt(),0xFF00897B.toInt(),0xFF00796B.toInt(),0xFF00695C.toInt(),0xFF004D40.toInt()),
+            "Indigo" to intArrayOf(0xFFE8EAF6.toInt(),0xFFC5CAE9.toInt(),0xFF9FA8DA.toInt(),0xFF7986CB.toInt(),0xFF5C6BC0.toInt(),0xFF3F51B5.toInt(),0xFF3949AB.toInt(),0xFF303F9F.toInt(),0xFF283593.toInt(),0xFF1A237E.toInt()),
+            "Cyan" to intArrayOf(0xFFE0F7FA.toInt(),0xFFB2EBF2.toInt(),0xFF80DEEA.toInt(),0xFF4DD0E1.toInt(),0xFF26C6DA.toInt(),0xFF00BCD4.toInt(),0xFF00ACC1.toInt(),0xFF0097A7.toInt(),0xFF00838F.toInt(),0xFF006064.toInt()),
+            "Pink" to intArrayOf(0xFFFCE4EC.toInt(),0xFFF8BBD0.toInt(),0xFFF48FB1.toInt(),0xFFF06292.toInt(),0xFFEC407A.toInt(),0xFFE91E63.toInt(),0xFFD81B60.toInt(),0xFFC2185B.toInt(),0xFFAD1457.toInt(),0xFF880E4F.toInt()),
+            "Lime" to intArrayOf(0xFFF9FBE7.toInt(),0xFFF0F4C3.toInt(),0xFFE6EE9C.toInt(),0xFFDCE775.toInt(),0xFFD4E157.toInt(),0xFFCDDC39.toInt(),0xFFC0CA33.toInt(),0xFFAFB42B.toInt(),0xFF9E9D24.toInt(),0xFF827717.toInt())
+        )
+    }
 
     companion object {
         private const val TAG = "HomeFragment"
@@ -377,6 +392,12 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         initialiseTabs(carData)
         initialiseBottomInfo(carData)
         initialiseCarDropDown()
+
+        // Provide color provider to tabs adapter
+        tabsAdapter.setColorProvider { tab ->
+            val vid = carData?.sel_vehicleid
+            loadTabColor(vid, tab.tabId)
+        }
     }
 
     private fun applyFooterVisibility() {
@@ -1484,12 +1505,12 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             // Keep a snapshot of the complete (unfiltered) list for the More dialog
             lastFullTabs = newTabsList.toList()
 
-            // Hidden tabs filtering & More tab
+            // hidden tabs filtering & More tab
             val vehicleId = carData?.sel_vehicleid
             val hiddenIds = (appPrefs.getData("home_tabs_hidden_$vehicleId", "") ?: "")
                 .split(",").filter { it.isNotBlank() }.mapNotNull { it.toIntOrNull() }.toSet()
             val visibleList = newTabsList.filter { !hiddenIds.contains(it.tabId) }.toMutableList()
-            // Hidden count no longer shown as a special tab; managed via gear menu
+            // hidden count no longer shown as a special tab; managed via gear menu
 
             // Apply persisted order if available
             val ordered = loadHomeTabsOrder(carData?.sel_vehicleid, visibleList)
@@ -1703,16 +1724,125 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         val hidden = isTabHidden(tab.tabId, vehicleId)
         popup.menu.add(0, 1, 0, if (hidden) R.string.action_unhide_tab else R.string.action_hide_tab)
         popup.menu.add(0, 2, 1, R.string.action_reset_tabs)
+        popup.menu.add(0, 4, 3, R.string.action_set_tab_color)
+        popup.menu.add(0, 5, 4, R.string.action_reset_tab_color)
         popup.menu.add(0, 3, 2, R.string.drag_handle_description)
         popup.setOnMenuItemClickListener {
             when (it.itemId) {
                 1 -> toggleTabHidden(tab)
                 2 -> vehicleId?.let { vid -> resetTabsForVehicle(vid) }
+                4 -> showColorChooser(tab)
+                5 -> {
+                    vehicleId?.let { vid -> saveTabColor(vid, tab.tabId, null) }
+                    tabsAdapter.notifyItemChanged(position)
+                }
                 3 -> tabsItemTouchHelper?.startDrag(vh)
             }
             true
         }
         popup.show()
+    }
+
+    private fun showColorChooser(tab: HomeTab) {
+        val context = requireContext()
+        val density = resources.displayMetrics.density
+        val scroll = android.widget.ScrollView(context).apply {
+            isFillViewport = true
+        }
+        val container = android.widget.LinearLayout(context).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding((8*density).toInt(), (8*density).toInt(), (8*density).toInt(), (8*density).toInt())
+        }
+        scroll.addView(container)
+
+        val corner = 12f
+        val currentSelectedColor = loadTabColor(carData?.sel_vehicleid, tab.tabId)
+    tonalPalettes.forEach { (name, tones) ->
+            // Optional label
+            val label = TextView(context).apply {
+                text = name
+                alpha = 0.8f
+                setPadding((4*density).toInt(), (6*density).toInt(), 0, (2*density).toInt())
+            }
+            container.addView(label)
+            val rowScroll = android.widget.HorizontalScrollView(context).apply {
+                isHorizontalScrollBarEnabled = false
+                layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            }
+            val row = android.widget.LinearLayout(context).apply {
+                orientation = android.widget.LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding((4*density).toInt(), 0, (4*density).toInt(), 0)
+            }
+            // Buttons will be wired after dialog is built to allow dismiss()
+            tones.forEach { colorInt ->
+                val v = View(context)
+                val size = (40 * density).toInt()
+                val lp = ViewGroup.MarginLayoutParams(size, size)
+                lp.setMargins((8*density).toInt(), (8*density).toInt(), (8*density).toInt(), (8*density).toInt())
+                v.layoutParams = lp
+                v.background = com.google.android.material.shape.MaterialShapeDrawable().apply {
+                    fillColor = android.content.res.ColorStateList.valueOf(colorInt)
+                    setCornerSize(corner)
+                    if (currentSelectedColor != null && currentSelectedColor == colorInt) {
+                        val strokeColor = com.google.android.material.color.MaterialColors.getColor(v, com.google.android.material.R.attr.colorPrimary)
+                        setStroke(2f * density, strokeColor)
+                    }
+                }
+                v.tag = colorInt
+                row.addView(v)
+            }
+            rowScroll.addView(row)
+            container.addView(rowScroll)
+        }
+        val dialogRef = MaterialAlertDialogBuilder(context)
+            .setTitle(R.string.dialog_choose_color)
+            .setView(scroll)
+            .setNeutralButton(R.string.reset) { dlg, _ ->
+                val vid = carData?.sel_vehicleid
+                if (vid != null) {
+                    saveTabColor(vid, tab.tabId, null)
+                    tabsAdapter.notifyDataSetChanged()
+                }
+                dlg.dismiss()
+            }
+            .setNegativeButton(R.string.Cancel, null)
+            .create()
+        dialogRef.show()
+        // Now that dialog exists, wire click listeners to dismiss on pick
+        for (i in 0 until container.childCount) {
+            val child = container.getChildAt(i)
+            val rowLayout: android.widget.LinearLayout? = when (child) {
+                is android.widget.HorizontalScrollView -> child.getChildAt(0) as? android.widget.LinearLayout
+                is android.widget.LinearLayout -> child
+                else -> null
+            }
+            rowLayout?.let { rowLL ->
+                for (j in 0 until rowLL.childCount) {
+                    val swatch = rowLL.getChildAt(j)
+                    swatch?.setOnClickListener { v ->
+                        val colorInt = (v.tag as? Int) ?: return@setOnClickListener
+                        val vid = carData?.sel_vehicleid ?: return@setOnClickListener
+                        saveTabColor(vid, tab.tabId, colorInt)
+                        tabsAdapter.notifyDataSetChanged()
+                        dialogRef.dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun saveTabColor(vehicleId: String, tabId: Int, color: Int?) {
+        val key = "home_tab_color_${vehicleId}_$tabId"
+        if (color == null) appPrefs.saveData(key, "") else appPrefs.saveData(key, String.format("#%08X", color))
+    }
+
+    private fun loadTabColor(vehicleId: String?, tabId: Int): Int? {
+        if (vehicleId.isNullOrBlank()) return null
+        val key = "home_tab_color_${vehicleId}_$tabId"
+        val s = appPrefs.getData(key, "") ?: return null
+        if (s.isBlank()) return null
+        return try { Color.parseColor(s) } catch (e: Exception) { null }
     }
 
     private fun isTabHidden(tabId: Int, vehicleId: String?): Boolean {
