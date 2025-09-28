@@ -267,6 +267,20 @@
     <string name="nhours">%d hours</string>
     <string name="nmins">%d mins</string>
     <string name="min1">1 min</string>
+    <!-- Localized duration parts for parked time -->
+    <plurals name="duration_minutes">
+        <item quantity="one">%d min</item>
+        <item quantity="other">%d min</item>
+    </plurals>
+    <plurals name="duration_hours">
+        <item quantity="one">%d h</item>
+        <item quantity="other">%d h</item>
+    </plurals>
+    <plurals name="duration_days">
+        <item quantity="one">%d d</item>
+        <item quantity="other">%d d</item>
+    </plurals>
+    <string name="duration_separator"> • </string>
     <string name="justnow">just now</string>
     <string name="last_seen">Last seen %s ago</string>
     <string name="mph">mph</string>
