@@ -28,8 +28,7 @@ object CarRenderingUtils {
             || carData.sel_vehicle_image.startsWith("car_i3_")
             || carData.sel_vehicle_image.startsWith("car_ampera_")
             || carData.sel_vehicle_image.startsWith("car_twizy_")
-            || carData.sel_vehicle_image.startsWith("car_kangoo_")
-            || carData.sel_vehicle_image.startsWith("car_nrjk") -> {
+            || carData.sel_vehicle_image.startsWith("car_kangoo_") -> {
                 // Mitsubishi i-MiEV: one ol image for all colors:
                 overlayResource = name_splitted.minus(name_splitted.last())
                     .joinToString("_")
@@ -38,6 +37,9 @@ object CarRenderingUtils {
             carData.sel_vehicle_image.startsWith("car_kianiro_") -> overlayResource = "car_kianiro_grey"
             carData.sel_vehicle_image.startsWith("car_smart_44") -> overlayResource = "car_vwup_silver" // Smart forfour share a single image
             carData.sel_vehicle_image.startsWith("car_smart_") -> overlayResource = "car_smart" // Smart fortwo share a single image
+            carData.sel_vehicle_image.startsWith("car_nrjkexperia") -> overlayResource = "car_nrjkexperia"
+            carData.sel_vehicle_image.startsWith("car_nrjk") -> overlayResource = "car_nrjk"
+            carData.sel_vehicle_image.startsWith("car_niu_mqi_gt") -> overlayResource = "car_niu_mqi_gt"
         }
 
         var otherResName = overlayResource.split("_").minus(name_splitted.last())

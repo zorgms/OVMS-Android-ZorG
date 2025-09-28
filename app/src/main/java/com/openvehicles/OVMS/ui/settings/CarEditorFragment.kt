@@ -415,7 +415,11 @@ class CarEditorFragment : BaseFragment() {
             "car_nrjkribelle_red",
             "car_nrjkexperia_black",
             "car_nrjkexperia_graybags",
-            "car_nrjkego_black"
+            "car_nrjkego_black",
+            "car_niu_mqi_gt_or",
+            "car_niu_mqi_gt_silver",
+            "car_niu_mqi_gt_white",
+            "car_niu_mqi_gt_black"
         )
     }
 

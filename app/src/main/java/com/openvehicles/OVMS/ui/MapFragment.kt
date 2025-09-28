@@ -474,6 +474,8 @@ class MapFragment : BaseFragment(), GoogleMap.OnInfoWindowClickListener, GetMapD
         else if (carData!!.sel_vehicle_image.startsWith("car_smart_")) R.drawable.map_car_smart // one map icon for all colors
         else if (carData!!.sel_vehicle_image.startsWith("car_kianiro_")) R.drawable.map_car_kianiro_grey // one map icon for all colors
         else if (carData!!.sel_vehicle_image.startsWith("car_kangoo_")) R.drawable.map_car_kangoo // one map icon for all colors
+        else if (carData!!.sel_vehicle_image.startsWith("car_nrjk")) R.drawable.map_car_nrjk
+        else if (carData!!.sel_vehicle_image.startsWith("car_niu_mqi_gt_")) R.drawable.map_car_nrjk
         else getDrawableIdentifier(activity, "map_" + carData!!.sel_vehicle_image)
         val drawable = ResourcesCompat.getDrawable(
             resources,
