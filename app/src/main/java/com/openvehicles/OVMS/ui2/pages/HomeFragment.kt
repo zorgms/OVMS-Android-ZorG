@@ -678,7 +678,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 parkTimeRunnable?.let { statusText.removeCallbacks(it) }
                 parkTimeRunnable = null
                 statusText.setCompoundDrawablesWithIntrinsicBounds(0,0,0,0)
-                // Charging Text wird unten gesetzt
+                // Charging Text is set below
             } else {
                 // Parked -> apply display mode (immediate toggle on click)
                 applyParkedStatus(statusText, carData)
