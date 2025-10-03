@@ -629,7 +629,9 @@ class CarFragment : BaseFragment(), View.OnClickListener, OnResultCommandListene
         } else if (carData.sel_vehicle_image.startsWith("car_nrjkexperia")) {
             iv.setImageResource(R.drawable.ol_car_nrjkexperia)
         } else if (carData.sel_vehicle_image.startsWith("car_nrjk")) {
-            iv.setImageResource(R.drawable.ol_car_nrjkexperia) // TODO: Ribelle top view
+            iv.setImageResource(R.drawable.ol_car_nrjk) // TODO: Ribelle top view
+        } else if (carData.sel_vehicle_image.startsWith("car_niu_mqi_gt")) {
+            iv.setImageResource(R.drawable.ol_car_nrjk)
         } else {
             iv.setImageResource(getDrawableIdentifier(activity, "ol_" + carData.sel_vehicle_image))
         }
@@ -1225,7 +1227,9 @@ class CarFragment : BaseFragment(), View.OnClickListener, OnResultCommandListene
                 )
             } else if (carData.sel_vehicle_image.startsWith("car_zoe_") ||
                 carData.sel_vehicle_image.startsWith("car_kangoo_") ||
-                carData.sel_vehicle_image.startsWith("car_smart_")
+                carData.sel_vehicle_image.startsWith("car_smart_") ||
+                carData.sel_vehicle_image.startsWith("car_nrjk") ||
+                carData.sel_vehicle_image.startsWith("car_niu_mqi_gt")
             ) {
                 // Renault ZOE/Kangoo/Smart EQ
                 when (carData.car_charge_state) {
@@ -1254,8 +1258,6 @@ class CarFragment : BaseFragment(), View.OnClickListener, OnResultCommandListene
                     )
                     else -> iv.setImageResource(R.drawable.ol_car_voltampera_chargeport_red)
                 }
-            } else if (carData.sel_vehicle_image.startsWith("car_nrjk")) {
-                // TODO
             } else {
                 // Tesla Roadster:
                 if (carData.car_charge_substate_i_raw == 0x07) {
