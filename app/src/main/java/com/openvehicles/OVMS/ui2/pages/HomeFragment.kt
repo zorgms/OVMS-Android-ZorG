@@ -142,6 +142,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
     private var tabsItemTouchHelper: ItemTouchHelper? = null
     private var longPressHintShown = false
     private var lastFullTabs: List<HomeTab> = emptyList()
+    private var parkTimeRunnable: Runnable? = null
     // Material-like tonal palettes (10 tones per base hue)
     private val tonalPalettes: List<Pair<String, IntArray>> by lazy {
         listOf(
@@ -202,6 +203,15 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
     ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home, container, false)
+    }
+
+    override fun onDestroyView() {
+        // Ensure we remove any pending callbacks to avoid leaks when view is destroyed
+        view?.findViewById<TextView>(R.id.carStatus)?.let { statusView ->
+            parkTimeRunnable?.let { statusView.removeCallbacks(it) }
+        }
+        parkTimeRunnable = null
+        super.onDestroyView()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -653,12 +663,28 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
         if (minutes == 0L) {
             statusProgressBar.visibility = View.GONE
-            // Car is online
-            statusText.setText(R.string.parked)
-            if (carData?.car_started == true) {
-                statusText.text = carData.car_speed
+            // ONLINE state: differentiate Driving / Charging / Parked
+            val isDriving = carData?.car_started == true
+            val isCharging = carData?.car_charging == true || carData?.car_charge_state_i_raw == 14
+
+            if (isDriving) {
+                // Ensure any pending parking runnable is removed
+                parkTimeRunnable?.let { statusText.removeCallbacks(it) }
+                parkTimeRunnable = null
+                statusText.text = carData?.car_speed
+                statusText.setCompoundDrawablesWithIntrinsicBounds(0,0,0,0)
+                statusText.setOnClickListener(null)
+            } else if (isCharging) {
+                parkTimeRunnable?.let { statusText.removeCallbacks(it) }
+                parkTimeRunnable = null
+                statusText.setCompoundDrawablesWithIntrinsicBounds(0,0,0,0)
+                // Charging Text is set below
+            } else {
+                // Parked -> apply display mode (immediate toggle on click)
+                applyParkedStatus(statusText, carData)
             }
-            if (carData?.car_charging == true || carData?.car_charge_state_i_raw == 14) {
+
+            if (isCharging) {
                 statusText.setText(R.string.state_charging_label)
 
                 val etrFull = carData?.car_chargefull_minsremaining ?: 0
@@ -668,8 +694,8 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 val etrSuffRange = carData?.car_chargelimit_minsremaining_range ?: 0
 
                 var pastTime = 0L
-                val chargeTime = carData.car_charge_duration_raw / 60
-                val timestampSec = carData.car_charge_timestamp_sec
+                val chargeTime = carData!!.car_charge_duration_raw / 60
+                val timestampSec = carData!!.car_charge_timestamp_sec
                 val currentTimeSec = now / 1000
 
                 if (timestampSec > 0) {
@@ -702,7 +728,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
 
                 var chargeStateInfo = 0
 
-                when (carData.car_charge_state_i_raw) {
+                when (carData!!.car_charge_state_i_raw) {
                     2 -> chargeStateInfo = R.string.state_topping_off_label
                     4 -> chargeStateInfo = R.string.state_done_label
                     14 -> chargeStateInfo = R.string.timedcharge
@@ -929,6 +955,74 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             image.setImageDrawable(
                 newDrawable
             )
+        }
+    }
+
+    // Helper to show parked status & toggle on click between simple label and duration display
+    private fun applyParkedStatus(statusText: TextView, carData: CarData?) {
+        val showDuration = appPrefs.getData("pref_show_parktime", "0") == "1"
+
+    // Remove any previous runnable if present
+    parkTimeRunnable?.let { statusText.removeCallbacks(it) }
+
+        if (!showDuration) {
+            // Show plain "parked" label only
+            statusText.setText(R.string.parked)
+            statusText.setCompoundDrawablesWithIntrinsicBounds(0,0,0,0)
+            statusText.compoundDrawablePadding = 0
+            parkTimeRunnable = null
+        } else {
+            // Show icon + duration
+            val icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_p_framed)
+            statusText.setCompoundDrawablesWithIntrinsicBounds(icon, null, null, null)
+            // Space between icon and text = width of two spaces
+            try {
+                val twoSpacesWidth = statusText.paint.measureText("  ") // two spaces
+                statusText.compoundDrawablePadding = twoSpacesWidth.toInt()
+            } catch (_: Exception) {
+                statusText.compoundDrawablePadding = (statusText.resources.displayMetrics.density * 8).toInt() // Fallback ~8dp
+            }
+
+            // Server-provided elapsed parking time in seconds (authoritative) -> convert to ms
+            val baseElapsedMs = (carData?.car_parking_timer_raw ?: 0L)
+
+            fun formatDuration(seconds: Long): String {
+                val totalMin = seconds / 60
+                val totalHours = totalMin / 60
+                val days = (totalHours / 24).toInt()
+                val hours = (totalHours % 24).toInt()
+                val minutes = (totalMin % 60).toInt()
+
+                return when {
+                    days > 0 -> {
+                        val dPart = resources.getQuantityString(R.plurals.duration_days, days, days)
+                        val hPart = if (hours > 0) " " + resources.getQuantityString(R.plurals.duration_hours, hours, hours) else ""
+                        val mPart = if (minutes > 0) " " + resources.getQuantityString(R.plurals.duration_minutes, minutes, minutes) else ""
+                        dPart + hPart + mPart
+                    }
+                    hours > 0 -> {
+                        val hPart = resources.getQuantityString(R.plurals.duration_hours, hours, hours)
+                        val mPart = if (minutes > 0) " " + resources.getQuantityString(R.plurals.duration_minutes, minutes, minutes) else ""
+                        hPart + mPart
+                    }
+                    else -> resources.getQuantityString(R.plurals.duration_minutes, minutes, minutes)
+                }
+            }
+
+            // Single update (no live ticking) – display exactly what server reports
+            val updateRunnable = Runnable {
+                statusText.text = formatDuration(baseElapsedMs)
+            }
+            parkTimeRunnable = updateRunnable
+            updateRunnable.run()
+        }
+
+    // Click toggles immediately & reapplies display
+        statusText.setOnClickListener {
+            val newVal = if (showDuration) "0" else "1"
+            appPrefs.saveData("pref_show_parktime", newVal)
+            // Reapply with new preference value
+            applyParkedStatus(statusText, carData)
         }
     }
 
