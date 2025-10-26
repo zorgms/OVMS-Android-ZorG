@@ -906,4 +906,19 @@
         <item>@string/IdealShort</item>
         <item>@string/EstimatedShort</item>
     </string-array>
+
+    <!-- Scheduled Command Widget -->
+    <string name="scheduled_command">Scheduled Command</string>
+    <string name="scheduled_widget_description">Execute a command at a specific time each day</string>
+    <string name="scheduled_widget_not_configured">Not configured</string>
+    <string name="scheduled_widget_next">Next execution</string>
+    <string name="scheduled_widget_next_in_hours">Next in %1$d hours %2$d minutes</string>
+    <string name="scheduled_widget_next_in_minutes">Next in %d minutes</string>
+    <string name="configure_scheduled_widget">Configure Scheduled Command</string>
+    <string name="select_execution_time">Select execution time:</string>
+    <string name="select_command_to_execute">Select command to execute:</string>
+    <string name="please_select_command">Please select a command</string>
+    <string name="command_selected">Selected: %s</string>
+    <string name="widget_configured_successfully">Widget configured successfully</string>
+
 </resources>
