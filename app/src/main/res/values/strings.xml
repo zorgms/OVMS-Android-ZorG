@@ -152,7 +152,7 @@
     <string name="lb_ft_rt_capacity_nom_ah">#%d: Battery nominal capacity (Ah)</string>
 
     <string name="lb_ft_sq_led_state">#%d: LED Online State</string>
-    <string name="lb_ft_sq_ios_tpms_fix">#%d: iOS TPMS fix</string>
+    <string name="lb_ft_sq_tpms_temp">#%d: TPMS temperatures</string>
     <string name="lb_ft_sq_reset_trip_charge">#%d: reset trip at charge = 1, at start = 0</string>
     <string name="lb_ft_sq_reset_kwh100">#%d: reset kWh/100km at start = 1</string>
     <string name="lb_ft_sq_boost_timer_on">#%d: Climate timer on = 1, off = 2</string>
@@ -915,10 +915,20 @@
     <string name="scheduled_widget_next_in_hours">Next in %1$d hours %2$d minutes</string>
     <string name="scheduled_widget_next_in_minutes">Next in %d minutes</string>
     <string name="configure_scheduled_widget">Configure Scheduled Command</string>
+    <string name="edit_scheduled_widget">Edit Scheduled Command</string>
     <string name="select_execution_time">Select execution time:</string>
+    <string name="select_days">Select days:</string>
     <string name="select_command_to_execute">Select command to execute:</string>
     <string name="please_select_command">Please select a command</string>
+    <string name="please_select_at_least_one_day">Please select at least one day</string>
     <string name="command_selected">Selected: %s</string>
     <string name="widget_configured_successfully">Widget configured successfully</string>
+    <string name="day_mon">Mo</string>
+    <string name="day_tue">Tu</string>
+    <string name="day_wed">We</string>
+    <string name="day_thu">Th</string>
+    <string name="day_fri">Fr</string>
+    <string name="day_sat">Sa</string>
+    <string name="day_sun">Su</string>
 
 </resources>

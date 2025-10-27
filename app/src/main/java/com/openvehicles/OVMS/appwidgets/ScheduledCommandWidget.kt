@@ -34,6 +34,7 @@ class ScheduledCommandWidget : AppWidgetProvider() {
         private const val PREF_TITLE = "_title"
         private const val PREF_HOUR = "_hour"
         private const val PREF_MINUTE = "_minute"
+        private const val PREF_DAYS = "_days"
         private const val PREF_ENABLED = "_enabled"
 
         fun saveWidgetConfig(
@@ -42,13 +43,15 @@ class ScheduledCommandWidget : AppWidgetProvider() {
             command: String,
             title: String,
             hour: Int,
-            minute: Int
+            minute: Int,
+            selectedDays: Int = 127 // Default: all days (1+2+4+8+16+32+64)
         ) {
             val prefs = AppPrefs(context, "ovms")
             prefs.saveData("$PREF_PREFIX$appWidgetId$PREF_COMMAND", command)
             prefs.saveData("$PREF_PREFIX$appWidgetId$PREF_TITLE", title)
             prefs.saveData("$PREF_PREFIX$appWidgetId$PREF_HOUR", hour.toString())
             prefs.saveData("$PREF_PREFIX$appWidgetId$PREF_MINUTE", minute.toString())
+            prefs.saveData("$PREF_PREFIX$appWidgetId$PREF_DAYS", selectedDays.toString())
             prefs.saveData("$PREF_PREFIX$appWidgetId$PREF_ENABLED", "1")
         }
 
@@ -58,6 +61,7 @@ class ScheduledCommandWidget : AppWidgetProvider() {
             prefs.saveData("$PREF_PREFIX$appWidgetId$PREF_TITLE", "")
             prefs.saveData("$PREF_PREFIX$appWidgetId$PREF_HOUR", "")
             prefs.saveData("$PREF_PREFIX$appWidgetId$PREF_MINUTE", "")
+            prefs.saveData("$PREF_PREFIX$appWidgetId$PREF_DAYS", "")
             prefs.saveData("$PREF_PREFIX$appWidgetId$PREF_ENABLED", "0")
         }
 
@@ -79,6 +83,11 @@ class ScheduledCommandWidget : AppWidgetProvider() {
         private fun getWidgetMinute(context: Context, appWidgetId: Int): Int {
             val prefs = AppPrefs(context, "ovms")
             return prefs.getData("$PREF_PREFIX$appWidgetId$PREF_MINUTE", "0")?.toIntOrNull() ?: 0
+        }
+
+        private fun getWidgetDays(context: Context, appWidgetId: Int): Int {
+            val prefs = AppPrefs(context, "ovms")
+            return prefs.getData("$PREF_PREFIX$appWidgetId$PREF_DAYS", "127")?.toIntOrNull() ?: 127
         }
 
         private fun isWidgetEnabled(context: Context, appWidgetId: Int): Boolean {
@@ -214,7 +223,8 @@ class ScheduledCommandWidget : AppWidgetProvider() {
                         
                         // Calculate next execution
                         try {
-                            val nextExecution = getNextExecutionTime(hour, minute)
+                            val selectedDays = getWidgetDays(context, appWidgetId)
+                            val nextExecution = getNextExecutionTime(hour, minute, selectedDays)
                             val now = Calendar.getInstance().timeInMillis
                             val totalMinutes = ((nextExecution - now) / (1000 * 60)).toInt()
                             val hoursUntil = totalMinutes / 60
@@ -234,20 +244,40 @@ class ScheduledCommandWidget : AppWidgetProvider() {
                             views.setTextViewText(R.id.widget_status, "ok")
                         }
                         
-                        // Set up manual trigger intent
+                        // Set up click intent - open configuration for editing
+                        try {
+                            val configIntent = Intent(context, ScheduledCommandWidgetConfigActivity::class.java).apply {
+                                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            }
+                            val configPendingIntent = PendingIntent.getActivity(
+                                context, 
+                                appWidgetId, 
+                                configIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                            )
+                            views.setOnClickPendingIntent(R.id.widget_container, configPendingIntent)
+                            Log.d(TAG, "updateAppWidget: Config intent set for editing")
+                        } catch (e: Exception) {
+                            Log.e(TAG, "updateAppWidget: Failed to set config intent", e)
+                        }
+                        
+                        // Set up execute button - manual trigger
                         try {
                             val triggerIntent = Intent(context, ScheduledCommandWidget::class.java).apply {
                                 action = ACTION_MANUAL_TRIGGER
                                 putExtra(EXTRA_WIDGET_ID, appWidgetId)
                             }
                             val triggerPendingIntent = PendingIntent.getBroadcast(
-                                context, appWidgetId, triggerIntent,
+                                context, 
+                                appWidgetId + 10000, // Different request code
+                                triggerIntent,
                                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                             )
-                            views.setOnClickPendingIntent(R.id.widget_container, triggerPendingIntent)
-                            Log.d(TAG, "updateAppWidget: Trigger intent set")
+                            views.setOnClickPendingIntent(R.id.widget_execute_btn, triggerPendingIntent)
+                            Log.d(TAG, "updateAppWidget: Execute button intent set")
                         } catch (e: Exception) {
-                            Log.e(TAG, "updateAppWidget: Failed to set trigger intent", e)
+                            Log.e(TAG, "updateAppWidget: Failed to set execute button intent", e)
                         }
                         
                         // Schedule alarm if not already scheduled
@@ -322,7 +352,7 @@ class ScheduledCommandWidget : AppWidgetProvider() {
         }
     }
 
-    private fun getNextExecutionTime(hour: Int, minute: Int): Long {
+    private fun getNextExecutionTime(hour: Int, minute: Int, selectedDays: Int): Long {
         val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
@@ -330,11 +360,39 @@ class ScheduledCommandWidget : AppWidgetProvider() {
             set(Calendar.MILLISECOND, 0)
         }
         
-        // If the time has passed today, schedule for tomorrow
+        // If the time has passed today, start checking from tomorrow
         if (calendar.timeInMillis <= System.currentTimeMillis()) {
             calendar.add(Calendar.DAY_OF_MONTH, 1)
         }
         
+        // Find the next day that matches selectedDays
+        // Monday=1, Tuesday=2, Wednesday=4, Thursday=8, Friday=16, Saturday=32, Sunday=64
+        var daysChecked = 0
+        while (daysChecked < 7) {
+            val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+            // Convert Calendar.DAY_OF_WEEK (1=Sunday, 2=Monday, ...) to our bitmask
+            val dayBit = when (dayOfWeek) {
+                Calendar.MONDAY -> 1
+                Calendar.TUESDAY -> 2
+                Calendar.WEDNESDAY -> 4
+                Calendar.THURSDAY -> 8
+                Calendar.FRIDAY -> 16
+                Calendar.SATURDAY -> 32
+                Calendar.SUNDAY -> 64
+                else -> 0
+            }
+            
+            if ((selectedDays and dayBit) != 0) {
+                // This day is selected, use it
+                return calendar.timeInMillis
+            }
+            
+            // Try next day
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
+            daysChecked++
+        }
+        
+        // Fallback: return next occurrence (shouldn't happen if at least one day is selected)
         return calendar.timeInMillis
     }
 
@@ -345,7 +403,8 @@ class ScheduledCommandWidget : AppWidgetProvider() {
         
         val hour = getWidgetHour(context, appWidgetId)
         val minute = getWidgetMinute(context, appWidgetId)
-        val nextExecutionTime = getNextExecutionTime(hour, minute)
+        val selectedDays = getWidgetDays(context, appWidgetId)
+        val nextExecutionTime = getNextExecutionTime(hour, minute, selectedDays)
         
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, ScheduledCommandWidget::class.java).apply {

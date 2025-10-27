@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.TimePicker
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -27,6 +28,13 @@ class ScheduledCommandWidgetConfigActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var btnSave: Button
     private lateinit var btnCancel: Button
+    private lateinit var checkboxMonday: CheckBox
+    private lateinit var checkboxTuesday: CheckBox
+    private lateinit var checkboxWednesday: CheckBox
+    private lateinit var checkboxThursday: CheckBox
+    private lateinit var checkboxFriday: CheckBox
+    private lateinit var checkboxSaturday: CheckBox
+    private lateinit var checkboxSunday: CheckBox
     
     private lateinit var database: Database
     private var storedCommands: List<StoredCommand> = emptyList()
@@ -57,6 +65,15 @@ class ScheduledCommandWidgetConfigActivity : AppCompatActivity() {
         timePicker = findViewById(R.id.time_picker)
         timePicker.setIs24HourView(true)
         
+        // Initialize day checkboxes
+        checkboxMonday = findViewById(R.id.checkbox_monday)
+        checkboxTuesday = findViewById(R.id.checkbox_tuesday)
+        checkboxWednesday = findViewById(R.id.checkbox_wednesday)
+        checkboxThursday = findViewById(R.id.checkbox_thursday)
+        checkboxFriday = findViewById(R.id.checkbox_friday)
+        checkboxSaturday = findViewById(R.id.checkbox_saturday)
+        checkboxSunday = findViewById(R.id.checkbox_sunday)
+        
         recyclerView = findViewById(R.id.command_list)
         btnSave = findViewById(R.id.btn_save)
         btnCancel = findViewById(R.id.btn_cancel)
@@ -64,6 +81,7 @@ class ScheduledCommandWidgetConfigActivity : AppCompatActivity() {
         loadStoredCommands()
         setupRecyclerView()
         setupButtons()
+        loadExistingConfiguration()
     }
 
     override fun onDestroy() {
@@ -73,6 +91,46 @@ class ScheduledCommandWidgetConfigActivity : AppCompatActivity() {
 
     private fun loadStoredCommands() {
         storedCommands = database.getStoredCommands()
+    }
+    
+    private fun loadExistingConfiguration() {
+        // Check if widget is already configured (editing mode)
+        val prefs = com.openvehicles.OVMS.utils.AppPrefs(this, "ovms")
+        val existingCommand = prefs.getData("scheduled_widget_${appWidgetId}_command", null)
+        
+        if (existingCommand != null) {
+            // Widget is being edited - load existing values
+            val existingTitle = prefs.getData("scheduled_widget_${appWidgetId}_title", null)
+            val existingHour = prefs.getData("scheduled_widget_${appWidgetId}_hour", "12")?.toIntOrNull() ?: 12
+            val existingMinute = prefs.getData("scheduled_widget_${appWidgetId}_minute", "0")?.toIntOrNull() ?: 0
+            val existingDays = prefs.getData("scheduled_widget_${appWidgetId}_days", "127")?.toIntOrNull() ?: 127
+            
+            // Set time picker
+            timePicker.hour = existingHour
+            timePicker.minute = existingMinute
+            
+            // Set day checkboxes
+            checkboxMonday.isChecked = (existingDays and 1) != 0
+            checkboxTuesday.isChecked = (existingDays and 2) != 0
+            checkboxWednesday.isChecked = (existingDays and 4) != 0
+            checkboxThursday.isChecked = (existingDays and 8) != 0
+            checkboxFriday.isChecked = (existingDays and 16) != 0
+            checkboxSaturday.isChecked = (existingDays and 32) != 0
+            checkboxSunday.isChecked = (existingDays and 64) != 0
+            
+            // Pre-select the command
+            storedCommands.find { it.command == existingCommand }?.let { command ->
+                selectedCommand = command
+                // Scroll to and highlight the command in the RecyclerView
+                val position = storedCommands.indexOf(command)
+                if (position >= 0) {
+                    recyclerView.scrollToPosition(position)
+                }
+            }
+            
+            // Change title to indicate editing
+            supportActionBar?.title = getString(R.string.edit_scheduled_widget)
+        }
     }
 
     private fun setupRecyclerView() {
@@ -109,6 +167,17 @@ class ScheduledCommandWidgetConfigActivity : AppCompatActivity() {
             return
         }
         
+        // Get selected days as bitmask (Monday=1, Tuesday=2, ..., Sunday=64)
+        val selectedDays = getSelectedDays()
+        if (selectedDays == 0) {
+            Toast.makeText(
+                this,
+                R.string.please_select_at_least_one_day,
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+        
         val hour = timePicker.hour
         val minute = timePicker.minute
         
@@ -120,7 +189,8 @@ class ScheduledCommandWidgetConfigActivity : AppCompatActivity() {
                 selectedCommand!!.command,
                 selectedCommand!!.title,
                 hour,
-                minute
+                minute,
+                selectedDays
             )
             
             // Directly update the widget
@@ -150,6 +220,18 @@ class ScheduledCommandWidgetConfigActivity : AppCompatActivity() {
                 Toast.LENGTH_LONG
             ).show()
         }
+    }
+    
+    private fun getSelectedDays(): Int {
+        var days = 0
+        if (checkboxMonday.isChecked) days = days or 1
+        if (checkboxTuesday.isChecked) days = days or 2
+        if (checkboxWednesday.isChecked) days = days or 4
+        if (checkboxThursday.isChecked) days = days or 8
+        if (checkboxFriday.isChecked) days = days or 16
+        if (checkboxSaturday.isChecked) days = days or 32
+        if (checkboxSunday.isChecked) days = days or 64
+        return days
     }
 
     /**
