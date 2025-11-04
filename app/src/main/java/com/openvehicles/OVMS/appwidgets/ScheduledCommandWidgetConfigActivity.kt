@@ -178,8 +178,37 @@ class ScheduledCommandWidgetConfigActivity : AppCompatActivity() {
             return
         }
         
+        // Check if background commands are enabled
+        val prefs = com.openvehicles.OVMS.utils.AppPrefs(this, "ovms")
+        val commandsEnabled = prefs.getData("option_commands_enabled", "0") == "1"
+        
+        if (!commandsEnabled) {
+            // Show warning and offer to enable
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle(R.string.background_commands_disabled_title)
+                .setMessage(R.string.background_commands_disabled_message)
+                .setPositiveButton(R.string.enable_and_save) { _, _ ->
+                    // Enable background commands
+                    prefs.saveData("option_commands_enabled", "1")
+                    // Continue with save
+                    performSave()
+                }
+                .setNegativeButton(R.string.save_anyway) { _, _ ->
+                    // Save without enabling
+                    performSave()
+                }
+                .setNeutralButton(android.R.string.cancel, null)
+                .show()
+            return
+        }
+        
+        performSave()
+    }
+    
+    private fun performSave() {
         val hour = timePicker.hour
         val minute = timePicker.minute
+        val selectedDays = getSelectedDays()
         
         try {
             // Save widget configuration
