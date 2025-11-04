@@ -230,7 +230,7 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
         // smart EQ
         private const val FEATURE_LED_STATE = 0x01 // LED Online State
         private const val FEATURE_IOS_TPMS_FIX = 0x02 // iOS TPMS fix
-        //private const val FEATURE_TPMS_TEMP = 0x02 // TPMS temperatures // TODO: remaned FEATURE_IOS_TPMS_FIX for new main firmware
+        //private const val FEATURE_TPMS_TEMP = 0x02 // TPMS temperatures // TODO: renamed FEATURE_IOS_TPMS_FIX for new main firmware
         private const val FEATURE_RESET_TRIP_CHARGE = 0x03 // reset trip at charge
         private const val FEATURE_BOOSTER_TIMER_ON = 0x04 // scheduled timer on/off
         private const val FEATURE_BOOSTER_TIME = 0x05 // scheduled time
@@ -372,7 +372,7 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
                         R.string.lb_ft_sq_ios_tpms_fix,
                         position
                     )
-                    /*FEATURE_TPMS_TEMP -> return context.getString( // TODO: remaned FEATURE_IOS_TPMS_FIX for new main firmware
+                    /*FEATURE_TPMS_TEMP -> return context.getString( // TODO: renamed FEATURE_IOS_TPMS_FIX for new main firmware
                         R.string.lb_ft_sq_tpms_temp,
                         position
                     )*/
