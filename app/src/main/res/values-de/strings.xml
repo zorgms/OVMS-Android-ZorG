@@ -830,4 +830,28 @@
         <item>&#160;Fre&#160;</item>
         <item>&#160;Sam&#160;</item>
     </string-array>
+
+    <!-- Scheduled Command Widget -->
+    <string name="scheduled_command">Geplanter Befehl</string>
+    <string name="scheduled_widget_description">Führt täglich zu einer bestimmten Zeit einen Befehl aus</string>
+    <string name="scheduled_widget_not_configured">Nicht konfiguriert</string>
+    <string name="scheduled_widget_next">Nächste Ausführung</string>
+    <string name="scheduled_widget_next_in_hours">In %1$d Stunden %2$d Minuten</string>
+    <string name="scheduled_widget_next_in_minutes">In %d Minuten</string>
+    <string name="configure_scheduled_widget">Geplanten Befehl konfigurieren</string>
+    <string name="edit_scheduled_widget">Geplanten Befehl bearbeiten</string>
+    <string name="select_execution_time">Ausführungszeit wählen:</string>
+    <string name="select_days">Tage auswählen:</string>
+    <string name="select_command_to_execute">Befehl auswählen:</string>
+    <string name="please_select_command">Bitte wählen Sie einen Befehl</string>
+    <string name="please_select_at_least_one_day">Bitte wählen Sie mindestens einen Tag</string>
+    <string name="command_selected">Ausgewählt: %s</string>
+    <string name="day_mon">Mo</string>
+    <string name="day_tue">Di</string>
+    <string name="day_wed">Mi</string>
+    <string name="day_thu">Do</string>
+    <string name="day_fri">Fr</string>
+    <string name="day_sat">Sa</string>
+    <string name="day_sun">So</string>
+
 </resources>
