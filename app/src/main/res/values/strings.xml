@@ -152,6 +152,7 @@
     <string name="lb_ft_rt_capacity_nom_ah">#%d: Battery nominal capacity (Ah)</string>
 
     <string name="lb_ft_sq_led_state">#%d: LED Online State</string>
+    <string name="lb_ft_sq_ios_tpms_fix">#%d: iOS TPMS fix</string>
     <string name="lb_ft_sq_tpms_temp">#%d: TPMS temperatures</string>
     <string name="lb_ft_sq_reset_trip_charge">#%d: reset trip at charge = 1, at start = 0</string>
     <string name="lb_ft_sq_reset_kwh100">#%d: reset kWh/100km at start = 1</string>
