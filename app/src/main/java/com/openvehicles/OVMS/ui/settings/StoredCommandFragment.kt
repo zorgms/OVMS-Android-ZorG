@@ -104,11 +104,28 @@ class StoredCommandFragment : BaseFragment(), OnItemClickListener {
                 val cmd = adapter.getItem(position)
                 cmd?.let { pinCommand(it) }
             }
+            R.id.btn_delete.toLong() -> {
+                val cmd = adapter.getItem(position)
+                cmd?.let { confirmDeleteCommand(it) }
+            }
             else -> {
                 val cmd = adapter.getItem(position)
                 cmd?.let { showItemEditor(it) }
             }
         }
+    }
+
+    private fun confirmDeleteCommand(cmd: StoredCommand) {
+        val context = context ?: return
+        
+        AlertDialog.Builder(context)
+            .setTitle(R.string.Delete)
+            .setMessage(getString(R.string.confirm_delete_stored_command, cmd.title))
+            .setNegativeButton(R.string.Cancel, null)
+            .setPositiveButton(R.string.Delete) { _, _ ->
+                deleteCommand(cmd)
+            }
+            .show()
     }
 
     private fun showItemEditor(cmd: StoredCommand?) {
@@ -139,7 +156,8 @@ class StoredCommandFragment : BaseFragment(), OnItemClickListener {
             val dialog = AlertDialog.Builder(context)
                 .setMessage(R.string.stored_commands_edit)
                 .setView(view)
-                .setNegativeButton(R.string.Delete) { dialog12: DialogInterface?, which: Int ->
+                .setNegativeButton(R.string.Cancel, null)
+                .setNeutralButton(R.string.Delete) { dialog12: DialogInterface?, which: Int ->
                     val cmd12 = view.tag as StoredCommand
                     deleteCommand(cmd12)
                 }
@@ -252,6 +270,7 @@ class StoredCommandFragment : BaseFragment(), OnItemClickListener {
             }
             setOnClick(view!!, R.id.linearLayout1, position, this, null)
             setOnClick(view, R.id.btn_select, position, this, null)
+            setOnClick(view, R.id.btn_delete, position, this, null)
             val btnPin = setOnClick(view, R.id.btn_pin, position, this, null)
             if (requestCode == REQUEST_SELECT_SHORTCUT) {
                 val icon = ResourcesCompat.getDrawable(

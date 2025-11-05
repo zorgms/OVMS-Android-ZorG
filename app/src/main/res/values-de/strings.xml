@@ -667,6 +667,7 @@
     <string name="stored_commands_add">Kommando zufügen</string>
     <string name="stored_commands_title">Gemerkte Kommandos</string>
     <string name="stored_commands_pin">Möchten Sie ein Icon für dieses Kommando auf Ihrem Startbildschirm erstellen?</string>
+    <string name="confirm_delete_stored_command">\"%s\" löschen?</string>
     <string name="lb_enter_title">Bezeichnung</string>
     <string name="lb_enter_command">Kommando</string>
 
