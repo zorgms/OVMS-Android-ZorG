@@ -924,6 +924,10 @@
     <string name="please_select_at_least_one_day">Please select at least one day</string>
     <string name="command_selected">Selected: %s</string>
     <string name="widget_configured_successfully">Widget configured successfully</string>
+    <string name="background_commands_disabled_title">Background Commands Disabled</string>
+    <string name="background_commands_disabled_message">Scheduled commands require background command execution to be enabled in Settings > Global Options.\n\nWould you like to enable it now?</string>
+    <string name="enable_and_save">Enable &amp; Save</string>
+    <string name="save_anyway">Save Anyway</string>
     <string name="day_mon">Mo</string>
     <string name="day_tue">Tu</string>
     <string name="day_wed">We</string>

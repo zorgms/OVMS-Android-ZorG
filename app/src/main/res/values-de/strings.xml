@@ -846,6 +846,10 @@
     <string name="please_select_command">Bitte wählen Sie einen Befehl</string>
     <string name="please_select_at_least_one_day">Bitte wählen Sie mindestens einen Tag</string>
     <string name="command_selected">Ausgewählt: %s</string>
+    <string name="background_commands_disabled_title">Hintergrundbefehle deaktiviert</string>
+    <string name="background_commands_disabled_message">Geplante Befehle benötigen aktivierte Hintergrund-Befehlsausführung in Einstellungen > Globale Optionen.\n\nMöchten Sie diese jetzt aktivieren?</string>
+    <string name="enable_and_save">Aktivieren &amp; Speichern</string>
+    <string name="save_anyway">Trotzdem speichern</string>
     <string name="day_mon">Mo</string>
     <string name="day_tue">Di</string>
     <string name="day_wed">Mi</string>
