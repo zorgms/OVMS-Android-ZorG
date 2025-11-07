@@ -700,6 +700,7 @@
     <string name="stored_commands_add">Add Command</string>
     <string name="stored_commands_edit">Edit Command</string>
     <string name="stored_commands_pin">Do you want to add an icon for this command to your home screen?</string>
+    <string name="confirm_delete_stored_command">Delete \"%s\"?</string>
     <string name="lb_enter_title">Title/name</string>
     <string name="lb_enter_command">Command</string>
 
