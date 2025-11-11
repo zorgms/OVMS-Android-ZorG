@@ -626,7 +626,6 @@ class CarData : Serializable {
     /**
      * Process status message ("S")
      */
-    @RequiresApi(Build.VERSION_CODES.O)
     fun processStatus(msgdata: String): Boolean {
         init()
         Log.d(TAG, "processStatus: $msgdata")
@@ -758,12 +757,12 @@ class CarData : Serializable {
                     car_charge_timestamp_sec = 0
                 } else {
                     val timestamp_formater = if (!dateFormat) {
-                        SimpleDateFormat("dd.MM.yy  HH:mm")
+                        SimpleDateFormat("dd.MM.yy  HH:mm", Locale.getDefault())
                     } else {
-                        SimpleDateFormat("MM/dd yy  HH:mm")
+                        SimpleDateFormat("MM/dd/yy  HH:mm", Locale.getDefault())
                     }
-                    car_charge_timestamp =
-                        timestamp_formater.format(Instant.ofEpochSecond(car_charge_timestamp_sec.toLong()))
+                    val date = Date(car_charge_timestamp_sec.toLong() * 1000)
+                    car_charge_timestamp = timestamp_formater.format(date)
                 }
             }
         } catch (e: Exception) {
