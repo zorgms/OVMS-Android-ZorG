@@ -719,7 +719,7 @@ class CarData : Serializable {
             if (dataParts.size >= 34) {
                 car_soh = dataParts[33].toFloat()
             }
-            if (dataParts.size >= 35) {
+            if (dataParts.size >= 36) {
                 car_charge_power_input_kw_raw = dataParts[34].toFloat()
                 car_charge_power_input_kw = String.format("%.1fkW", car_charge_power_input_kw_raw)
                 if (car_charge_power_kw_raw != 0.0) {
@@ -733,7 +733,7 @@ class CarData : Serializable {
                 }
                 car_charger_efficiency = dataParts[35].toFloat()
             }
-            if (dataParts.size >= 37) {
+            if (dataParts.size >= 38) {
                 car_battery_current_raw = dataParts[36].toDouble()
                 car_battery_rangespeed_raw = dataParts[37].toDouble()
                 car_battery_rangespeed = if (car_battery_rangespeed_raw != 0.0) {
@@ -745,7 +745,7 @@ class CarData : Serializable {
                     ""
                 }
             }
-            if (dataParts.size >= 41) {
+            if (dataParts.size >= 42) {
                 car_charge_kwh_grid = dataParts[38].toFloat()
                 car_charge_kwh_grid_total = dataParts[39].toFloat()
                 car_battery_capacity = dataParts[40].toFloat()
