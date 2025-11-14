@@ -174,10 +174,12 @@ class EnergyFragment : BaseFragment(), OnResultCommandListener, EnergyMetricsAda
             )
         }
 
-        energyMetricsAdapter.mData += EnergyMetric(
-            "${getString(R.string.textPEM)} ${getString(R.string.temp)}",
-            carData?.car_temp_pem
-        )
+        if(carData?.car_type !in listOf("SQ")) {
+            energyMetricsAdapter.mData += EnergyMetric(
+                "${getString(R.string.textPEM)} ${getString(R.string.temp)}",
+                carData?.car_temp_pem
+            )
+        }
 
         if(carData?.car_type !in listOf("SQ")) {
             energyMetricsAdapter.mData += EnergyMetric(

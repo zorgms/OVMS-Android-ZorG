@@ -937,4 +937,31 @@
     <string name="day_sat">Sa</string>
     <string name="day_sun">Su</string>
 
+    <!-- Climate Schedule Quick Action -->
+    <string name="lb_climate_schedule">Climate Schedule</string>
+    <string name="schedule_status_loading">Loading schedule status…</string>
+    <string name="schedule_enabled_status">Scheduled precondition is enabled</string>
+    <string name="schedule_disabled_status">Scheduled precondition is disabled</string>
+    <string name="schedule_loading">Loading schedules…</string>
+    <string name="schedule_no_schedules">No schedules configured</string>
+    <string name="schedule_enable">Enable scheduled precondition</string>
+    <string name="schedule_day">Select Day</string>
+    <string name="schedule_times">Times</string>
+    <string name="schedule_times_hint">07:30, 17:00/15</string>
+    <string name="schedule_times_help">Format: HH:MM or HH:MM/duration (minutes)</string>
+    <string name="schedule_advanced">Advanced Options</string>
+    <string name="schedule_list">List all schedules</string>
+    <string name="schedule_list_info">Schedule list will be shown in notifications</string>
+    <string name="schedule_clear_day">Clear day schedule</string>
+    <string name="schedule_clear_all">Clear all schedules</string>
+    <string name="schedule_clear_all_confirm">This will clear all configured schedules. Continue?</string>
+    <string name="schedule_copy">Copy schedule</string>
+    <string name="schedule_copy_source">Copy from day:</string>
+    <string name="schedule_copy_target">To days:</string>
+    <string name="schedule_copy_target_hint">tue-fri</string>
+    <string name="schedule_copy_target_help">Range (tue-fri) or list (sat,sun)</string>
+    <string name="Clear">Clear</string>
+    <string name="Copy">Copy</string>
+    <string name="more">More</string>
+
 </resources>
