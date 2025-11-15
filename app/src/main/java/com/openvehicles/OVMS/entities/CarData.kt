@@ -222,13 +222,6 @@ class CarData : Serializable {
     var car_temp_charger_raw = 0f
     var car_temp_ambient_raw = 0f
     var car_temp_cabin_raw = 0f
-    var car_ac_booster_metrics = false
-    var car_ac_booster_on = "no"
-    var car_ac_booster_weekly = "no"
-    var car_ac_booster_time = "0515"
-    var car_ac_booster_ds = 0
-    var car_ac_booster_de = 0
-    var car_ac_booster_bdt = 0
     @JvmField
     var car_tripmeter_raw = 0f
     @JvmField
@@ -1108,42 +1101,19 @@ class CarData : Serializable {
                 car_gen_state = dataParts[7]
                 car_gen_substate = dataParts[8]
                 car_gen_mode = dataParts[9]
-                if (dataParts[9] == "booster" && car_type in listOf("SQ") ) {
-                    car_ac_booster_metrics = true
-                    car_ac_booster_on = dataParts[10]
-                    car_ac_booster_weekly = dataParts[11]
-                    car_ac_booster_time = dataParts[12]
-                    car_ac_booster_ds = dataParts[13].toInt()
-                    car_ac_booster_de = dataParts[14].toInt()
-                    car_ac_booster_bdt = dataParts[15].toInt()
-                    car_gen_climit = dataParts[16].toFloat()
-                    car_gen_limit_range = dataParts[17].toFloat()
-                    car_gen_limit_soc = dataParts[18].toInt()  // << v.e.gear
-                    car_gen_kwh = dataParts[19].toFloat()
-                    car_gen_kwh_grid = dataParts[20].toFloat()
-                    car_gen_kwh_grid_total = dataParts[21].toFloat()
-                    car_gen_time = dataParts[22].toInt()
-                    car_gen_timermode = dataParts[23].toInt()
-                    car_gen_timerstart = dataParts[24].toInt()
-                    car_gen_duration_empty = dataParts[25].toInt()
-                    car_gen_duration_range = dataParts[26].toInt()
-                    car_gen_duration_soc = dataParts[27].toInt()
-                    car_gen_temp = dataParts[28].toFloat()
-                } else {
-                    car_gen_climit = dataParts[10].toFloat()
-                    car_gen_limit_range = dataParts[11].toFloat()
-                    car_gen_limit_soc = dataParts[12].toInt()
-                    car_gen_kwh = dataParts[13].toFloat()
-                    car_gen_kwh_grid = dataParts[14].toFloat()
-                    car_gen_kwh_grid_total = dataParts[15].toFloat()
-                    car_gen_time = dataParts[16].toInt()
-                    car_gen_timermode = dataParts[17].toInt()
-                    car_gen_timerstart = dataParts[18].toInt()
-                    car_gen_duration_empty = dataParts[19].toInt()
-                    car_gen_duration_range = dataParts[20].toInt()
-                    car_gen_duration_soc = dataParts[21].toInt()
-                    car_gen_temp = dataParts[22].toFloat()
-                }
+                car_gen_climit = dataParts[10].toFloat()
+                car_gen_limit_range = dataParts[11].toFloat()
+                car_gen_limit_soc = dataParts[12].toInt()
+                car_gen_kwh = dataParts[13].toFloat()
+                car_gen_kwh_grid = dataParts[14].toFloat()
+                car_gen_kwh_grid_total = dataParts[15].toFloat()
+                car_gen_time = dataParts[16].toInt()
+                car_gen_timermode = dataParts[17].toInt()
+                car_gen_timerstart = dataParts[18].toInt()
+                car_gen_duration_empty = dataParts[19].toInt()
+                car_gen_duration_range = dataParts[20].toInt()
+                car_gen_duration_soc = dataParts[21].toInt()
+                car_gen_temp = dataParts[22].toFloat()
             }
         } catch (e: Exception) {
             Log.e(TAG, "processGen: ERROR", e)
@@ -1293,15 +1263,6 @@ class CarData : Serializable {
             b.putDouble("car_12vline_voltage", car_12vline_voltage)
             b.putDouble("car_12vline_ref", car_12vline_ref)
             b.putDouble("car_12v_current", car_12v_current)
-
-            b.putBoolean("car_ac_booster_metrics", car_ac_booster_metrics)
-            b.putString("car_ac_booster_on", car_ac_booster_on)
-            b.putString("car_ac_booster_weekly", car_ac_booster_weekly)
-            b.putString("car_ac_booster_time", car_ac_booster_time)
-            b.putInt("car_ac_booster_ds", car_ac_booster_ds)
-            b.putInt("car_ac_booster_de", car_ac_booster_de)
-            b.putInt("car_ac_booster_bdt", car_ac_booster_bdt)
-
 
             //
             // Firmware (msgCode 'F')

@@ -1501,23 +1501,6 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                         carData.car_temp_ambient
                     )
                 }
-                if (carData?.car_type in listOf("SQ")) {
-                    if (carData?.car_ac_booster_on == "yes" && climateData != "") {
-                        val timeraw = carData.car_ac_booster_time.split("")
-                        val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
-                        val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
-                        climateData += String.format(
-                            "\nA/C: $time_h:$time_m h"
-                        )
-                    } else if (carData?.car_ac_booster_on == "yes") {
-                        val timeraw = carData.car_ac_booster_time.split("")
-                        val time_h = String.format("%s%s", timeraw.get(1), timeraw.get(2))
-                        val time_m = String.format("%s%s", timeraw.get(3), timeraw.get(4))
-                        climateData += String.format(
-                            "A/C: $time_h:$time_m h"
-                        )
-                    }
-                }
 
                 newTabsList.add(
                     HomeTab(

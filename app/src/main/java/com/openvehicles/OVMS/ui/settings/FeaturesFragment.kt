@@ -229,16 +229,15 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
 
         // smart EQ
         private const val FEATURE_LED_STATE = 0x01 // LED Online State
-        private const val FEATURE_IOS_TPMS_FIX = 0x02 // iOS TPMS fix
-        //private const val FEATURE_TPMS_TEMP = 0x02 // TPMS temperatures // TODO: renamed FEATURE_IOS_TPMS_FIX for new main firmware
+        private const val FEATURE_TPMS_TEMP = 0x02 // TPMS temperatures
         private const val FEATURE_RESET_TRIP_CHARGE = 0x03 // reset trip at charge
-        private const val FEATURE_BOOSTER_TIMER_ON = 0x04 // scheduled timer on/off
-        private const val FEATURE_BOOSTER_TIME = 0x05 // scheduled time
-        private const val FEATURE_BOOSTER_DOUBLE = 0x06 // booster 5/10/15 Minutes = set 0/1/2
-        private const val FEATURE_RESET_KWH100 = 0x07 // reset kWh/100km at start
+        private const val FEATURE_RESET_KWH100 = 0x04 // reset kWh/100km at start
+        private const val FEATURE_CHARGE12V = 0x05 // charge 12V
+        private const val FEATURE_DOORLOCK = 0x06 // # 6 activate Doorlock warning
+        private const val FEATURE_DOOROPEN = 0x07 // # 7 activate Dooropen warning
+        private const val FEATURE_CALCADC = 0x0B // # 11 calc adc on charging
         private const val FEATURE_BC_KWH100 = 0x0C // # 12 OCS kWh/100km value
         private const val FEATURE_FULL_KM = 0x0D // # 13 OCS kWh/100km value
-        private const val FEATURE_DOORLOCK = 0x10 // # 16 activate Doorlock warning
 
     }
 
@@ -368,36 +367,20 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
                         R.string.lb_ft_sq_led_state,
                         position
                     )
-                    FEATURE_IOS_TPMS_FIX -> return context.getString(
-                        R.string.lb_ft_sq_ios_tpms_fix,
-                        position
-                    )
-                    /*FEATURE_TPMS_TEMP -> return context.getString( // TODO: renamed FEATURE_IOS_TPMS_FIX for new main firmware
+                    FEATURE_TPMS_TEMP -> return context.getString(
                         R.string.lb_ft_sq_tpms_temp,
                         position
-                    )*/
+                    )
                     FEATURE_RESET_TRIP_CHARGE -> return context.getString(
                         R.string.lb_ft_sq_reset_trip_charge,
-                        position
-                    )
-                    FEATURE_BOOSTER_TIMER_ON -> return context.getString(
-                        R.string.lb_ft_sq_boost_timer_on,
-                        position
-                    )
-                    FEATURE_BOOSTER_TIME -> return context.getString(
-                        R.string.lb_ft_sq_boost_time,
-                        position
-                    )
-                    FEATURE_BOOSTER_DOUBLE -> return context.getString(
-                        R.string.lb_ft_sq_boost_double,
                         position
                     )
                     FEATURE_SUFFSOC -> return context.getString(
                         R.string.lb_ft_rt_suffsoc,
                         position
                     )
-                    FEATURE_SUFFRANGE -> return context.getString(
-                        R.string.lb_ft_rt_suffrange,
+                    FEATURE_CHARGE12V -> return context.getString(
+                        R.string.lb_ft_sq_charge12v,
                         position
                     )
                     FEATURE_RESET_KWH100 -> return context.getString(
@@ -414,6 +397,14 @@ class FeaturesFragment : BaseFragment(), OnResultCommandListener, OnItemClickLis
                     )
                     FEATURE_DOORLOCK -> return context.getString(
                         R.string.lb_ft_sq_doorlock,
+                        position
+                    )
+                    FEATURE_DOOROPEN -> return context.getString(
+                        R.string.lb_ft_sq_dooropen,
+                        position
+                    )
+                    FEATURE_CALCADC -> return context.getString(
+                        R.string.lb_ft_sq_calcadc,
                         position
                     )
                     else -> {}
