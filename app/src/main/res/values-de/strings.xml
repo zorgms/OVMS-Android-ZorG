@@ -869,7 +869,7 @@
     <string name="schedule_enable">Geplante Vorkonditionierung aktivieren</string>
     <string name="schedule_day">Tag auswählen</string>
     <string name="schedule_times">Zeiten</string>
-    <string name="schedule_times_hint">07:30, 17:00/15</string>
+    <string name="schedule_times_hint">z.B. 07:30, 17:00/15</string>
     <string name="schedule_times_help">Format: HH:MM oder HH:MM/Dauer (Minuten)</string>
     <string name="schedule_advanced">Erweiterte Optionen</string>
     <string name="schedule_list">Alle Zeitpläne anzeigen</string>

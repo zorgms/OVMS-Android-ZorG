@@ -2,6 +2,7 @@ package com.openvehicles.OVMS.ui2.components.quickactions
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -24,20 +25,36 @@ class ClimateScheduleQuickAction(
     ACTION_ID,
     R.drawable.heat_cool_w,
     apiServiceGetter,
-    actionOnTint = R.color.colorDarkgreen,
-    actionOffTint = R.attr.colorSecondaryContainer,
+    actionOnTint = R.attr.colorSecondaryContainer,
+    actionOffTint = R.color.cardview_dark_background,
     label = context?.getString(R.string.lb_climate_schedule)
 ) {
     companion object {
         const val ACTION_ID = "climateschedule"
         val DAYS = arrayOf("mon", "tue", "wed", "thu", "fri", "sat", "sun")
         val DAY_LABELS_EN = arrayOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+        
+        // Map full day names to abbreviations
+        private val DAY_NAME_MAP = mapOf(
+            "monday" to "mon",
+            "tuesday" to "tue",
+            "wednesday" to "wed",
+            "thursday" to "thu",
+            "friday" to "fri",
+            "saturday" to "sat",
+            "sunday" to "sun"
+        )
     }
 
     // Temporary references for status parsing
     private var dialogStatusText: TextView? = null
     private var dialogEnableSwitch: SwitchMaterial? = null
     private var dialogContext: Context? = null
+    
+    // Schedule data per day
+    private var scheduleData: MutableMap<String, String> = mutableMapOf()
+    private var dialogTimesInput: TextInputEditText? = null
+    private var dialogDaySpinner: Spinner? = null
 
     override fun onAction() {
         val context = context ?: return
@@ -51,8 +68,66 @@ class ClimateScheduleQuickAction(
         if (command.contains("schedule status", ignoreCase = true) && details != null) {
             parseStatusResponse(details)
         }
+        
+        // Parse schedule list response to populate existing schedules
+        if (command.contains("schedule list", ignoreCase = true) && details != null) {
+            parseScheduleListResponse(details)
+        }
     }
 
+    private fun parseScheduleListResponse(response: String) {
+        Log.d("ClimateSchedule", "Received schedule list response: $response")
+        
+        val timesInput = dialogTimesInput ?: return
+        val daySpinner = dialogDaySpinner ?: return
+        
+        // Clear existing data
+        scheduleData.clear()
+        
+        // Parse response line by line
+        // Expected format: "Monday    : 7:35/8" or "mon: 07:30, 17:00/15"
+        response.lines().forEach { line ->
+            val trimmed = line.trim()
+            if (trimmed.contains(":") && !trimmed.startsWith("=")) {
+                val parts = trimmed.split(":", limit = 2)
+                if (parts.size == 2) {
+                    val dayRaw = parts[0].trim().lowercase()
+                    val times = parts[1].trim()
+                    
+                    // Convert full day name to abbreviation if needed
+                    val day = DAY_NAME_MAP[dayRaw] ?: dayRaw
+                    
+                    Log.d("ClimateSchedule", "Parsed line - dayRaw: '$dayRaw', day: '$day', times: '$times'")
+                    
+                    // Only store if it's a valid day and has actual schedule data
+                    if (DAYS.contains(day) && 
+                        times.isNotEmpty() && 
+                        !times.contains("(none)") && 
+                        times != "-" &&
+                        !times.contains("DISABLED", ignoreCase = true)) {
+                        scheduleData[day] = times
+                        Log.d("ClimateSchedule", "Stored schedule for $day: $times")
+                    }
+                }
+            }
+        }
+        
+        Log.d("ClimateSchedule", "Total schedules loaded: ${scheduleData.size}")
+        
+        // Update input field with current day's schedule on UI thread
+        timesInput.post {
+            val selectedPosition = daySpinner.selectedItemPosition
+            if (selectedPosition >= 0 && selectedPosition < DAYS.size) {
+                val currentDay = DAYS[selectedPosition]
+                val existingSchedule = scheduleData[currentDay] ?: ""
+                Log.d("ClimateSchedule", "Updating UI for day $currentDay with: '$existingSchedule'")
+                if (timesInput.text.toString() != existingSchedule) {
+                    timesInput.setText(existingSchedule)
+                }
+            }
+        }
+    }
+    
     private fun parseStatusResponse(response: String) {
         val ctx = dialogContext ?: return
         val statusText = dialogStatusText ?: return
@@ -103,6 +178,9 @@ class ClimateScheduleQuickAction(
         val vehicleId = getCarData()?.sel_vehicleid ?: return
         val appPrefs = AppPrefs(context, "ovms")
         appPrefs.saveData("climate_schedule_enabled_$vehicleId", if (enabled) "yes" else "no")
+        
+        // Update button state
+        setActionState(enabled)
     }
 
     private fun isScheduleEnabled(context: Context): Boolean {
@@ -119,10 +197,12 @@ class ClimateScheduleQuickAction(
         val enableSwitch = dialogView.findViewById<SwitchMaterial>(R.id.enable_switch)
         val statusText = dialogView.findViewById<TextView>(R.id.status_text)
         
-        // Store references for status parsing
+        // Store references for status parsing and schedule loading
         dialogContext = context
         dialogStatusText = statusText
         dialogEnableSwitch = enableSwitch
+        dialogTimesInput = timesInput
+        dialogDaySpinner = daySpinner
         
         // Initialize switch with saved state
         enableSwitch.isChecked = isScheduleEnabled(context)
@@ -137,7 +217,20 @@ class ClimateScheduleQuickAction(
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         daySpinner.adapter = adapter
         
-        // Set current day as default
+        // Add listener to update times input when day changes
+        daySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                val selectedDay = DAYS[position]
+                val existingTimes = scheduleData[selectedDay] ?: ""
+                timesInput.setText(existingTimes)
+            }
+            
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // Do nothing
+            }
+        }
+        
+        // Set current day as default (after listener is set)
         val calendar = Calendar.getInstance()
         val currentDay = (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7 // Convert to mon=0
         daySpinner.setSelection(currentDay)
@@ -163,8 +256,9 @@ class ClimateScheduleQuickAction(
         // Setup enable/disable switch listener
         setupEnableSwitchListener(context, statusText, enableSwitch)
         
-        // Request status from vehicle
+        // Request status and schedule list from vehicle
         sendCommand("7,climatecontrol schedule status")
+        sendCommand("7,climatecontrol schedule list")
     }
 
     private fun showAdvancedOptions(context: Context) {
@@ -255,7 +349,16 @@ class ClimateScheduleQuickAction(
     }
 
     override fun getStateFromCarData(): Boolean {
-        return getCarData()?.car_hvac_on == true
+        // Try to get context, fallback to false if not available
+        val ctx = context ?: return false
+        val vehicleId = getCarData()?.sel_vehicleid ?: return false
+        
+        return try {
+            val appPrefs = AppPrefs(ctx, "ovms")
+            appPrefs.getData("climate_schedule_enabled_$vehicleId", "no") == "yes"
+        } catch (e: Exception) {
+            false
+        }
     }
 
 
