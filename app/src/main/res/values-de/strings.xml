@@ -859,4 +859,31 @@
     <string name="day_sat">Sa</string>
     <string name="day_sun">So</string>
 
+    <!-- Climate Schedule Quick Action -->
+    <string name="lb_climate_schedule">Klimazeitplan</string>
+    <string name="schedule_status_loading">Lade Zeitplanstatus…</string>
+    <string name="schedule_enabled_status">Geplante Vorkonditionierung ist aktiviert</string>
+    <string name="schedule_disabled_status">Geplante Vorkonditionierung ist deaktiviert</string>
+    <string name="schedule_loading">Lade Zeitpläne…</string>
+    <string name="schedule_no_schedules">Keine Zeitpläne konfiguriert</string>
+    <string name="schedule_enable">Geplante Vorkonditionierung aktivieren</string>
+    <string name="schedule_day">Tag auswählen</string>
+    <string name="schedule_times">Zeiten</string>
+    <string name="schedule_times_hint">07:30, 17:00/15</string>
+    <string name="schedule_times_help">Format: HH:MM oder HH:MM/Dauer (Minuten)</string>
+    <string name="schedule_advanced">Erweiterte Optionen</string>
+    <string name="schedule_list">Alle Zeitpläne anzeigen</string>
+    <string name="schedule_list_info">Zeitplan-Liste wird in Benachrichtigungen angezeigt</string>
+    <string name="schedule_clear_day">Tageszeitplan löschen</string>
+    <string name="schedule_clear_all">Alle Zeitpläne löschen</string>
+    <string name="schedule_clear_all_confirm">Dies löscht alle konfigurierten Zeitpläne. Fortfahren?</string>
+    <string name="schedule_copy">Zeitplan kopieren</string>
+    <string name="schedule_copy_source">Kopieren von Tag:</string>
+    <string name="schedule_copy_target">Zu Tagen:</string>
+    <string name="schedule_copy_target_hint">tue-fri</string>
+    <string name="schedule_copy_target_help">Bereich (tue-fri) oder Liste (sat,sun)</string>
+    <string name="Clear">Löschen</string>
+    <string name="Copy">Kopieren</string>
+    <string name="more">Mehr</string>
+
 </resources>
