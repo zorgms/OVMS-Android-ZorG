@@ -947,7 +947,7 @@
     <string name="schedule_enable">Enable scheduled precondition</string>
     <string name="schedule_day">Select Day</string>
     <string name="schedule_times">Times</string>
-    <string name="schedule_times_hint">07:30, 17:00/15</string>
+    <string name="schedule_times_hint">e.g. 07:30, 17:00/15</string>
     <string name="schedule_times_help">Format: HH:MM or HH:MM/duration (minutes)</string>
     <string name="schedule_advanced">Advanced Options</string>
     <string name="schedule_list">List all schedules</string>
