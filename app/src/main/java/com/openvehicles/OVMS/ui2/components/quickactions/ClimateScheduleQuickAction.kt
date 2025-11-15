@@ -84,9 +84,12 @@ class ClimateScheduleQuickAction(
         // Clear existing data
         scheduleData.clear()
         
+        // V2 protocol replaces commas with semicolons - convert back
+        val normalizedResponse = response.replace(';', ',')
+        
         // Parse response line by line
         // Expected format: "Monday    : 7:35/8" or "mon: 07:30, 17:00/15"
-        response.lines().forEach { line ->
+        normalizedResponse.lines().forEach { line ->
             val trimmed = line.trim()
             if (trimmed.contains(":") && !trimmed.startsWith("=")) {
                 val parts = trimmed.split(":", limit = 2)
