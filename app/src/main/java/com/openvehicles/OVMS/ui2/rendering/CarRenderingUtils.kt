@@ -29,7 +29,7 @@ object CarRenderingUtils {
             || carData.sel_vehicle_image.startsWith("car_ampera_")
             || carData.sel_vehicle_image.startsWith("car_twizy_")
             || carData.sel_vehicle_image.startsWith("car_kangoo_") -> {
-                // Mitsubishi i-MiEV: one ol image for all colors:
+                // one ol image for all colors:
                 overlayResource = name_splitted.minus(name_splitted.last())
                     .joinToString("_")
             }
@@ -49,121 +49,118 @@ object CarRenderingUtils {
         if (carData.car_type.startsWith("VA"))
             otherResName = "voltampera"
 
+        // Base image:
         layers = layers.plus(
             ContextCompat.getDrawable(context, Ui.getDrawableIdentifier(
                 context,
                 "ol_"+overlayResource
             ))!!)
 
+        // Mode overlays:
         if (climate) {
-            val modeResource = Ui.getDrawableIdentifier(
-                context,
-                otherResName +"_topview_int"
+            val modeResource = Ui.getDrawableIdentifier(context,
+                otherResName + "_topview_int"
             )
             if (modeResource > 0)
                 layers = layers.plus(ContextCompat.getDrawable(context, modeResource)!!)
         }
 
         if (carData.car_headlights_on == true) {
-            val modeResource = Ui.getDrawableIdentifier(
-                context,
-                otherResName +"_topview_hd"
+            var modeResource = Ui.getDrawableIdentifier(context,
+                otherResName + "_topview_hd"
             )
+            if (modeResource == 0) {
+                modeResource = Ui.getDrawableIdentifier(context,
+                    otherResName + "_carlights")
+            }
             if (modeResource > 0)
                 layers = layers.plus(ContextCompat.getDrawable(context, modeResource)!!)
         }
 
         if (carData.car_frontrightdoor_open == true) {
-            val modeResource = Ui.getDrawableIdentifier(
-                context,
-                otherBodyResName+"_topview_frd"
+            var modeResource = Ui.getDrawableIdentifier(context,
+                otherBodyResName + "_topview_frd"
             )
+            if (modeResource == 0) {
+                modeResource = Ui.getDrawableIdentifier(context,
+                    otherResName + "_outline_rd")
+            }
             if (modeResource > 0)
                 layers = layers.plus(ContextCompat.getDrawable(context, modeResource)!!)
         }
 
         if (carData.car_frontleftdoor_open == true) {
-            val modeResource = Ui.getDrawableIdentifier(
-                context,
-                otherBodyResName+"_topview_fld"
+            var modeResource = Ui.getDrawableIdentifier(context,
+                otherBodyResName + "_topview_fld"
             )
+            if (modeResource == 0) {
+                modeResource = Ui.getDrawableIdentifier(context,
+                    otherResName + "_outline_ld")
+            }
             if (modeResource > 0)
                 layers = layers.plus(ContextCompat.getDrawable(context, modeResource)!!)
         }
 
-        if (carData?.car_rearrightdoor_open == true) {
-            val modeResource = Ui.getDrawableIdentifier(
-                context,
-                otherBodyResName+"_topview_rrd"
+        if (carData.car_rearrightdoor_open == true) {
+            var modeResource = Ui.getDrawableIdentifier(context,
+                otherBodyResName + "_topview_rrd"
             )
+            if (modeResource == 0) {
+                modeResource = Ui.getDrawableIdentifier(context,
+                    otherResName + "_outline_rrd")
+            }
             if (modeResource > 0)
                 layers = layers.plus(ContextCompat.getDrawable(context, modeResource)!!)
         }
 
-        if (carData?.car_rearleftdoor_open == true) {
-            val modeResource = Ui.getDrawableIdentifier(
-                context,
-                otherBodyResName+"_topview_rld"
+        if (carData.car_rearleftdoor_open == true) {
+            var modeResource = Ui.getDrawableIdentifier(context,
+                otherBodyResName + "_topview_rld"
             )
+            if (modeResource == 0) {
+                modeResource = Ui.getDrawableIdentifier(context,
+                    otherResName + "_outline_rld")
+            }
             if (modeResource > 0)
                 layers = layers.plus(ContextCompat.getDrawable(context, modeResource)!!)
         }
 
 
         if (carData.car_trunk_open == true) {
-            val modeResource = Ui.getDrawableIdentifier(
-                context,
-                otherBodyResName+"_topview_t"
+            var modeResource = Ui.getDrawableIdentifier(context,
+                otherBodyResName + "_topview_t"
             )
+            if (modeResource == 0) {
+                modeResource = Ui.getDrawableIdentifier(context,
+                    otherResName + "_topview_t")
+            }
+            if (modeResource == 0) {
+                modeResource = Ui.getDrawableIdentifier(context,
+                    otherResName + "_outline_tr")
+            }
             if (modeResource > 0)
                 layers = layers.plus(ContextCompat.getDrawable(context, modeResource)!!)
-            else {
-                val modeResource = Ui.getDrawableIdentifier(
-                    context,
-                    otherResName+"_topview_t"
-                )
-                if (modeResource > 0)
-                    layers = layers.plus(ContextCompat.getDrawable(context, modeResource)!!)
-                else {
-                    val modeResource = Ui.getDrawableIdentifier(
-                        context,
-                        otherResName+"_outline_tr"
-                    )
-                    if (modeResource > 0)
-                        layers = layers.plus(ContextCompat.getDrawable(context, modeResource)!!)
-                }
-            }
         }
 
         if (carData.car_bonnet_open == true) {
-            val modeResource = Ui.getDrawableIdentifier(
-                context,
-                otherBodyResName+"_topview_b"
+            var modeResource = Ui.getDrawableIdentifier(context,
+                otherBodyResName + "_topview_b"
             )
+            if (modeResource == 0) {
+                modeResource = Ui.getDrawableIdentifier(context,
+                    otherResName + "_topview_b")
+            }
+            if (modeResource == 0) {
+                modeResource = Ui.getDrawableIdentifier(context,
+                    otherResName + "_outline_hd")
+            }
             if (modeResource > 0)
                 layers = layers.plus(ContextCompat.getDrawable(context, modeResource)!!)
-            else {
-                val modeResource = Ui.getDrawableIdentifier(
-                    context,
-                    otherResName+"_topview_b"
-                )
-                if (modeResource > 0)
-                    layers = layers.plus(ContextCompat.getDrawable(context, modeResource)!!)
-                else {
-                    val modeResource = Ui.getDrawableIdentifier(
-                        context,
-                        otherResName+"_outline_hd"
-                    )
-                    if (modeResource > 0)
-                        layers = layers.plus(ContextCompat.getDrawable(context, modeResource)!!)
-                }
-            }
         }
 
         if (carData.car_chargeport_open) {
-            val modeResource = Ui.getDrawableIdentifier(
-                context,
-                otherResName +"_topview_cp"
+            val modeResource = Ui.getDrawableIdentifier(context,
+                otherResName + "_topview_cp"
             )
             if (modeResource > 0)
                 layers = layers.plus(ContextCompat.getDrawable(context, modeResource)!!)
