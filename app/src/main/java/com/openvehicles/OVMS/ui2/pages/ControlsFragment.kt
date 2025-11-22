@@ -268,7 +268,7 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                 .setPositiveButton(R.string.fl_set_tpms) { _, _ ->
                     val vehicleId = getLastSelectedCarId()
                     if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
-                        sendCommand(R.string.fl_set_tpms, "7,config set x$carType TPMS_FL $checkedItem", this@ControlsFragment)
+                        sendCommand(R.string.fl_set_tpms, "7,config set vehicle tpms.fl $checkedItem", this@ControlsFragment)
                     } else {
                         appPrefs.saveData("tpms_fl_$vehicleId", "$checkedItem")
                     }
@@ -288,7 +288,7 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                 .setPositiveButton(R.string.fr_set_tpms) { _, _ ->
                     val vehicleId = getLastSelectedCarId()
                     if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
-                        sendCommand(R.string.fr_set_tpms, "7,config set x$carType TPMS_FR $checkedItem", this@ControlsFragment)
+                        sendCommand(R.string.fr_set_tpms, "7,config set vehicle tpms.fr $checkedItem", this@ControlsFragment)
                     } else {
                         appPrefs.saveData("tpms_fr_$vehicleId", "$checkedItem")
                     }
@@ -308,7 +308,7 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                 .setPositiveButton(R.string.rl_set_tpms) { _, _ ->
                     val vehicleId = getLastSelectedCarId()
                     if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
-                        sendCommand(R.string.rl_set_tpms, "7,config set x$carType TPMS_RL $checkedItem", this@ControlsFragment)
+                        sendCommand(R.string.rl_set_tpms, "7,config set vehicle tpms.rl $checkedItem", this@ControlsFragment)
                     } else {
                         appPrefs.saveData("tpms_rl_$vehicleId", "$checkedItem")
                     }
@@ -328,7 +328,7 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                 .setPositiveButton(R.string.rr_set_tpms) { _, _ ->
                     val vehicleId = getLastSelectedCarId()
                     if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
-                        sendCommand(R.string.rr_set_tpms, "7,config set x$carType TPMS_RR $checkedItem", this@ControlsFragment)
+                        sendCommand(R.string.rr_set_tpms, "7,config set vehicle tpms.rr $checkedItem", this@ControlsFragment)
                     } else {
                         appPrefs.saveData("tpms_rr_$vehicleId", "$checkedItem")
                     }
