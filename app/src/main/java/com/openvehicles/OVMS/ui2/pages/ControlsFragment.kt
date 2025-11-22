@@ -244,7 +244,6 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         }
 
         // Get TPMS data from firmware
-        val carType = carData?.car_type?.lowercase() // config xsq = defined smart EQ config path in the Firmware
         var tpms_fl = getString(R.string.tpms_fl) + " " + val1?.get(0)
         var tpms_fr = getString(R.string.tpms_fr) + " " + val1?.get(1)
         var tpms_rl = getString(R.string.tpms_rl) + " " + val1?.get(2)
