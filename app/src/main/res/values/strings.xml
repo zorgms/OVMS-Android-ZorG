@@ -857,6 +857,7 @@
     <string name="tpms_fr">front right</string>
     <string name="tpms_rl">rear left</string>
     <string name="tpms_rr">rear right</string>
+    <string name="tpms_mapping">TPMS Mapping</string>
     <string name="mi_car_sort_tpms">sort TPMS value by Firmware</string>
     <string name="tpms_settings">TPMS Settings</string>
     <string name="mi_car_tpms_wheelname">TPMS Wheel name by App</string>

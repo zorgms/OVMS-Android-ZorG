@@ -1,6 +1,7 @@
 package com.openvehicles.OVMS.ui2.pages
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.openvehicles.OVMS.R
+import com.openvehicles.OVMS.api.CommandActivity
 import com.openvehicles.OVMS.api.OnResultCommandListener
 import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.entities.CarData.DataStale
@@ -83,10 +85,29 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         mainActionsRecyclerView.adapter = centerActionsAdapter
 
         updateServiceInfo(carData)
+        setupTPMSMappingButton()
         updateTPMSData(carData)
         initialiseSideActions(carData)
         initialiseMainActions(carData)
         initialiseCarRendering(carData)
+    }
+
+    /**
+     * Setup TPMS mapping button to query and display mapping list.
+     */
+    private fun setupTPMSMappingButton() {
+        val tpmsMappingButton = findViewById(R.id.tpmsMappingButton) as com.google.android.material.floatingactionbutton.FloatingActionButton
+        
+        tpmsMappingButton.setOnClickListener {
+            // Use CommandActivity to show TPMS mapping result in a list
+            val intent = Intent(requireContext(), CommandActivity::class.java).apply {
+                action = "com.openvehicles.OVMS.action.COMMAND"
+                putExtra("apikey", appPrefs.getData("APIKey"))
+                putExtra("command", "tpms mapping")
+                putExtra("title", getString(R.string.tpms_mapping))
+            }
+            startActivity(intent)
+        }
     }
 
     private fun updateServiceInfo(carData: CarData?) {

@@ -792,6 +792,7 @@
     <string name="tpms_fr">vorne rechts</string>
     <string name="tpms_rl">hinten links</string>
     <string name="tpms_rr">hinten rechts</string>
+    <string name="tpms_mapping">TPMS Zuordnung</string>
     <string name="mi_car_sort_tpms">sortiere TPMS Werte per Firmware</string>
     <string name="tpms_settings">TPMS Einstellungen</string>
     <string name="mi_car_tpms_wheelname">TPMS Radnamen per App</string>
