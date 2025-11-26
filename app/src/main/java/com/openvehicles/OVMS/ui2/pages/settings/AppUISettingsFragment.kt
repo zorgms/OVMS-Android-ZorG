@@ -129,7 +129,7 @@ class AppUISettingsFragment: PreferenceFragmentCompat() {
         val tpmsSortByFirmwarePreference = findPreference<SwitchPreferenceCompat>("sort_tpms_by_firmware")
         // TODO: option only for supported Cars visible or enable?
         // tpmsSortByFirmwarePreference?.isVisible = carData?.car_type in listOf("SQ")
-        tpmsSortByFirmwarePreference?.isEnabled = carData?.car_type !in listOf("RT", "EN", "NRJK")
+        tpmsSortByFirmwarePreference?.isEnabled = carData?.car_type !in listOf("RT", "EN", "NRJK", "SQ")
         tpmsSortByFirmwarePreference?.isChecked = appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on"
         tpmsSortByFirmwarePreference?.onPreferenceChangeListener =
             OnPreferenceChangeListener { preference, newValue ->
