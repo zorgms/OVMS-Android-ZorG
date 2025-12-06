@@ -1,6 +1,7 @@
 package com.openvehicles.OVMS.ui2.pages
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.openvehicles.OVMS.R
+import com.openvehicles.OVMS.api.CommandActivity
 import com.openvehicles.OVMS.api.OnResultCommandListener
 import com.openvehicles.OVMS.entities.CarData
 import com.openvehicles.OVMS.entities.CarData.DataStale
@@ -83,10 +85,29 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         mainActionsRecyclerView.adapter = centerActionsAdapter
 
         updateServiceInfo(carData)
+        setupTPMSMappingButton()
         updateTPMSData(carData)
         initialiseSideActions(carData)
         initialiseMainActions(carData)
         initialiseCarRendering(carData)
+    }
+
+    /**
+     * Setup TPMS mapping button to query and display mapping list.
+     */
+    private fun setupTPMSMappingButton() {
+        val tpmsMappingButton = findViewById(R.id.tpmsMappingButton) as com.google.android.material.floatingactionbutton.FloatingActionButton
+        
+        tpmsMappingButton.setOnClickListener {
+            // Use CommandActivity to show TPMS mapping result in a list
+            val intent = Intent(requireContext(), CommandActivity::class.java).apply {
+                action = "com.openvehicles.OVMS.action.COMMAND"
+                putExtra("apikey", appPrefs.getData("APIKey"))
+                putExtra("command", "tpms map status")
+                putExtra("title", getString(R.string.tpms_mapping))
+            }
+            startActivity(intent)
+        }
     }
 
     private fun updateServiceInfo(carData: CarData?) {
@@ -134,11 +155,13 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         val rlTPMS = findViewById(R.id.tpmsRL) as TextView
         val staleTPMS = findViewById(R.id.tpmsStale) as TextView
         val tpmsFAB = findViewById(R.id.tpmsToggle) as ExtendedFloatingActionButton
+        val tpmsMappingButton = findViewById(R.id.tpmsMappingButton) as com.google.android.material.floatingactionbutton.FloatingActionButton
 
         // Disable TPMS for vehicles not supporting any:
         if (carData?.car_type in listOf("RT", "EN", "NRJK")) {
             tpmsFAB.isEnabled = false
             tpmsFAB.visibility = View.INVISIBLE
+            tpmsMappingButton.hide()
             return
         }
 
@@ -155,295 +178,281 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                 if (staleTPMS.visibility == View.VISIBLE) View.INVISIBLE else View.VISIBLE
         }
 
-        // check TPMS size and fill up with "---" if needed to 4 values
-        fun checkTPMSsize(result: Array<String?>?, value: String = "pressure"): Array<String?> {
+        val vehicleId = getLastSelectedCarId()
+        
+        // Check if new TPMS data (msg code 'Y') is available
+        val hasNewTPMS = carData?.car_tpms_wheelname != null && carData.car_tpms_wheelname!!.isNotEmpty()
+        
+        // Get wheel count from available data
+        val wheelCount = carData?.car_tpms_wheelname?.size ?: 4
+        
+        // Check if firmware mapping is available and valid
+        val hasMapping = carData?.stale_tpms_mapping != DataStale.NoValue && 
+                         carData?.car_tpms_mapping_raw != null && 
+                         carData.car_tpms_mapping_raw!!.isNotEmpty()
+        
+        // Use firmware mapping if available, otherwise use app prefs or defaults
+        val byfirmware = appPrefs.getData("tpms_firmware_$vehicleId", "off") == "on" || hasMapping
+        
+        // Get mapping indices for each wheel position (FL=0, FR=1, RL=2, RR=3)
+        fun getMapping(wheelPos: Int): Int {
             return when {
-                result == null -> {
-                    when (value) {
-                        "wheelname" -> arrayOf(getString(R.string.fl_tpms), getString(R.string.fr_tpms), getString(R.string.rl_tpms), getString(R.string.rr_tpms))
-                        "alert" -> arrayOf("0", "0", "0", "0")
-                        else -> arrayOf("---", "---", "---", "---")
-                    }
-                }
-                result.size < 4 && value == "alert" -> {
-                    result + Array(4 - result.size) { "0" } // Fill with "0"
-                }
-                else -> {
-                    result + Array(4 - result.size) { "---" } // Fill with "---"
-                }
+                hasMapping -> carData?.car_tpms_mapping_raw?.getOrNull(wheelPos) ?: wheelPos
+                else -> appPrefs.getData("tpms_${arrayOf("fl","fr","rl","rr")[wheelPos]}_$vehicleId", "$wheelPos")?.toIntOrNull() ?: wheelPos
             }
         }
-
-        // Determine primary and (if available) secondary TPMS values:
-        var stale1 = DataStale.NoValue
-        var stale2 = DataStale.NoValue
-        var val1 = carData?.car_tpms_wheelname
-        var val2: Array<String?>? = null
-        var alert: IntArray? = intArrayOf(0, 0, 0, 0)
-
-        if (carData?.car_tpms_wheelname != null && carData.car_tpms_wheelname!!.isNotEmpty()) {
-            // New data (msg code 'Y'):
-            if (carData.stale_tpms_pressure != CarData.DataStale.NoValue && carData.car_tpms_pressure!!.isNotEmpty()) {
-                stale1 = carData.stale_tpms_pressure
-                val1 = checkTPMSsize(carData.car_tpms_pressure, "pressure")  // size check and fill up with "---" for pressure
+        
+        // Default wheel names
+        val defaultWheelNames = arrayOf(
+            getString(R.string.fl_tpms), 
+            getString(R.string.fr_tpms), 
+            getString(R.string.rl_tpms), 
+            getString(R.string.rr_tpms)
+        )
+        
+        // Get wheel name for display position
+        val useAppWheelnames = appPrefs.getData("tpms_wheelname_app", "off") == "on"
+        fun getWheelName(displayPos: Int): String {
+            return if (useAppWheelnames) {
+                defaultWheelNames.getOrNull(displayPos) ?: "Wheel $displayPos"
+            } else {
+                carData?.car_tpms_wheelname?.getOrNull(displayPos) ?: defaultWheelNames.getOrNull(displayPos) ?: "Wheel $displayPos"
             }
-            if (carData.stale_tpms_temp != CarData.DataStale.NoValue && carData.car_tpms_temp!!.isNotEmpty()) {
-                stale2 = carData.stale_tpms_temp
-                val2 = checkTPMSsize(carData.car_tpms_temp, "temp")          // size check and fill up with "---" for temperatures
-            }
-            if (carData.stale_tpms_health != CarData.DataStale.NoValue && carData.car_tpms_health!!.isNotEmpty()) {
-                if (stale1 == CarData.DataStale.NoValue) {
-                    stale1 = carData.stale_tpms_health
-                    val1 = checkTPMSsize(carData.car_tpms_health, "health") // size check and fill up with "---" for health
+        }
+        
+        // Build TPMS display string for a wheel position
+        fun buildTPMSDisplay(displayPos: Int): String {
+            val sensorIdx = getMapping(displayPos)
+            val parts = mutableListOf<String>()
+            
+            // Wheel name
+            parts.add(getWheelName(displayPos))
+            
+            if (hasNewTPMS) {
+                // New TPMS data (msg code 'Y') - show all available values
+                // Pressure
+                if (carData?.stale_tpms_pressure != DataStale.NoValue) {
+                    val pressure = carData?.car_tpms_pressure?.getOrNull(sensorIdx) ?: "---"
+                    parts.add(pressure)
                 }
-            }
-            if (carData.stale_tpms_alert != CarData.DataStale.NoValue && carData.car_tpms_alert!!.isNotEmpty()) {
-                alert = carData.car_tpms_alert_raw
-                if (alert == null) {
-                    alert = intArrayOf(0, 0, 0, 0)
-                } else if (alert.size < 4) {
-                    while (alert.size < 4)
-                        alert +=  0 // Fill with "0"
+                // Temperature
+                if (carData?.stale_tpms_temp != DataStale.NoValue) {
+                    val temp = carData?.car_tpms_temp?.getOrNull(sensorIdx) ?: "---"
+                    parts.add(temp)
                 }
-                if (stale1 == CarData.DataStale.NoValue) {
-                    stale1 = carData.stale_tpms_alert
-                    val1 = checkTPMSsize(carData.car_tpms_alert, "alert") // size check and fill up with "0" for alert
+                // Health
+                if (carData?.stale_tpms_health != DataStale.NoValue) {
+                    val health = carData?.car_tpms_health?.getOrNull(sensorIdx) ?: "---"
+                    parts.add(health)
+                }
+                // Alert symbol
+                if (carData?.stale_tpms_alert != DataStale.NoValue) {
+                    val alert = carData?.car_tpms_alert?.getOrNull(sensorIdx) ?: "✔"
+                    parts.add(alert)
+                }
+            } else if (carData != null) {
+                // Legacy TPMS data (msg code 'W') - only pressure and temperature
+                val legacyPressure = arrayOf(
+                    carData.car_tpms_fl_p,
+                    carData.car_tpms_fr_p,
+                    carData.car_tpms_rl_p,
+                    carData.car_tpms_rr_p
+                )
+                val legacyTemp = arrayOf(
+                    carData.car_tpms_fl_t,
+                    carData.car_tpms_fr_t,
+                    carData.car_tpms_rl_t,
+                    carData.car_tpms_rr_t
+                )
+                parts.add(legacyPressure.getOrNull(sensorIdx) ?: "---")
+                // Check if temperature data is available
+                val hasTemp = carData.car_tpms_fl_t_raw != 0.0 || carData.car_tpms_fr_t_raw != 0.0 || 
+                              carData.car_tpms_rl_t_raw != 0.0 || carData.car_tpms_rr_t_raw != 0.0
+                if (hasTemp) {
+                    parts.add(legacyTemp.getOrNull(sensorIdx) ?: "---")
                 }
             } else {
-                alert = intArrayOf(0, 0, 0, 0)
+                parts.add("---")
             }
-        } else if (carData != null) {
-            // Legacy data (msg code 'W'): only pressures & temperatures available
-            val1 = arrayOf(
-                carData.car_tpms_fl_p,
-                carData.car_tpms_fr_p,
-                carData.car_tpms_rl_p,
-                carData.car_tpms_rr_p
-            )
-            stale1 = carData.stale_tpms
-            val2 = arrayOf(
-                carData.car_tpms_fl_t,
-                carData.car_tpms_fr_t,
-                carData.car_tpms_rl_t,
-                carData.car_tpms_rr_t
-            )
-            // Legacy 'W' message had no distinct temperature meta data, guess availability from values:
-            if (carData.car_tpms_fl_t_raw != 0.0 || carData.car_tpms_fr_t_raw != 0.0 || carData.car_tpms_rl_t_raw != 0.0 || carData.car_tpms_rr_t_raw != 0.0) {
-                stale2 = carData.stale_tpms
+            
+            return parts.joinToString("\n")
+        }
+        
+        // Get alert level for a wheel position (0=ok, 1=warning, 2=alert)
+        fun getAlertLevel(displayPos: Int): Int {
+            val sensorIdx = getMapping(displayPos)
+            return if (hasNewTPMS && carData?.stale_tpms_alert != DataStale.NoValue) {
+                carData?.car_tpms_alert_raw?.getOrNull(sensorIdx) ?: 0
+            } else {
+                0
             }
-            checkTPMSsize(val1, "pressure")  // size check and fill up with "---" for pressure
-            checkTPMSsize(val2, "temp")      // size check and fill up with "---" for temperatures
-            alert = intArrayOf(0, 0, 0, 0)
         }
-
-        val vehicleId = getLastSelectedCarId()
-        val appwheelname = if (appPrefs.getData("tpms_wheelname_app", "off") == "on") {
-            arrayOf(getString(R.string.fl_tpms),getString(R.string.fr_tpms),getString(R.string.rl_tpms),getString(R.string.rr_tpms))
-        } else {
-            checkTPMSsize(carData?.car_tpms_wheelname, "wheelname")  // size check and fill up with "---" for wheelnames
-        }
-
-        // Get TPMS data from firmware
-        var tpms_fl = getString(R.string.tpms_fl) + " " + val1?.get(0)
-        var tpms_fr = getString(R.string.tpms_fr) + " " + val1?.get(1)
-        var tpms_rl = getString(R.string.tpms_rl) + " " + val1?.get(2)
-        var tpms_rr = getString(R.string.tpms_rr) + " " + val1?.get(3)
-        if (stale2 != DataStale.NoValue) {
-            tpms_fl += "/" + val2?.get(0)
-            tpms_fr += "/" + val2?.get(1)
-            tpms_rl += "/" + val2?.get(2)
-            tpms_rr += "/" + val2?.get(3)
-        }
-        val options = arrayOf(tpms_fl,tpms_fr,tpms_rl,tpms_rr)
-
-        flTPMS.setOnClickListener {
-            var checkedItem = 0
-            AlertDialog.Builder(requireActivity())
-                .setTitle(R.string.fl_get_tpms)
-                .setSingleChoiceItems(options, checkedItem) { _, which ->
-                    checkedItem = which // Update the selected item index
-                }
-                .setNegativeButton(R.string.Close, null)
-                .setPositiveButton(R.string.fl_set_tpms) { _, _ ->
-                    val vehicleId = getLastSelectedCarId()
-                    if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
-                        sendCommand(R.string.fl_set_tpms, "7,config set vehicle tpms.fl $checkedItem", this@ControlsFragment)
-                    } else {
-                        appPrefs.saveData("tpms_fl_$vehicleId", "$checkedItem")
+        
+        // Build options list for mapping dialog (show all sensors with their values)
+        fun buildSensorOptions(): Array<String> {
+            val options = mutableListOf<String>()
+            val sensorCount = carData?.car_tpms_wheelname?.size ?: 4
+            
+            for (i in 0 until sensorCount) {
+                val parts = mutableListOf<String>()
+                
+                // Sensor wheel name from firmware
+                val wheelName = carData?.car_tpms_wheelname?.getOrNull(i) ?: "Sensor $i"
+                parts.add(wheelName)
+                
+                if (hasNewTPMS) {
+                    // Add pressure if available
+                    if (carData?.stale_tpms_pressure != DataStale.NoValue) {
+                        parts.add(carData?.car_tpms_pressure?.getOrNull(i) ?: "---")
                     }
-                    updateTPMSData(carData)
-                }
-                .show()
-        }
-
-        frTPMS.setOnClickListener {
-            var checkedItem = 1
-            AlertDialog.Builder(requireActivity())
-                .setTitle(R.string.fr_get_tpms)
-                .setSingleChoiceItems(options, checkedItem) { _, which ->
-                    checkedItem = which // Update the selected item index
-                }
-                .setNegativeButton(R.string.Close, null)
-                .setPositiveButton(R.string.fr_set_tpms) { _, _ ->
-                    val vehicleId = getLastSelectedCarId()
-                    if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
-                        sendCommand(R.string.fr_set_tpms, "7,config set vehicle tpms.fr $checkedItem", this@ControlsFragment)
-                    } else {
-                        appPrefs.saveData("tpms_fr_$vehicleId", "$checkedItem")
+                    // Add temperature if available
+                    if (carData?.stale_tpms_temp != DataStale.NoValue) {
+                        parts.add(carData?.car_tpms_temp?.getOrNull(i) ?: "---")
                     }
-                    updateTPMSData(carData)
+                } else if (carData != null) {
+                    // Legacy data
+                    val legacyPressure = arrayOf(carData.car_tpms_fl_p, carData.car_tpms_fr_p, carData.car_tpms_rl_p, carData.car_tpms_rr_p)
+                    val legacyTemp = arrayOf(carData.car_tpms_fl_t, carData.car_tpms_fr_t, carData.car_tpms_rl_t, carData.car_tpms_rr_t)
+                    parts.add(legacyPressure.getOrNull(i) ?: "---")
+                    parts.add(legacyTemp.getOrNull(i) ?: "---")
                 }
-                .show()
+                
+                options.add(parts.joinToString(" "))
+            }
+            return options.toTypedArray()
         }
-
-        rlTPMS.setOnClickListener {
-            var checkedItem = 2
-            AlertDialog.Builder(requireActivity())
-                .setTitle(R.string.rl_get_tpms)
-                .setSingleChoiceItems(options, checkedItem) { _, which ->
-                    checkedItem = which // Update the selected item index
-                }
-                .setNegativeButton(R.string.Close, null)
-                .setPositiveButton(R.string.rl_set_tpms) { _, _ ->
-                    val vehicleId = getLastSelectedCarId()
-                    if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
-                        sendCommand(R.string.rl_set_tpms, "7,config set vehicle tpms.rl $checkedItem", this@ControlsFragment)
-                    } else {
-                        appPrefs.saveData("tpms_rl_$vehicleId", "$checkedItem")
+        
+        val options = buildSensorOptions()
+        val wheelKeys = arrayOf("fl", "fr", "rl", "rr")
+        val wheelTitles = arrayOf(R.string.fl_get_tpms, R.string.fr_get_tpms, R.string.rl_get_tpms, R.string.rr_get_tpms)
+        val wheelSetTitles = arrayOf(R.string.fl_set_tpms, R.string.fr_set_tpms, R.string.rl_set_tpms, R.string.rr_set_tpms)
+        
+        // Get sensor wheel names for mapping command (e.g., "fl", "fr", "rl", "rr")
+        fun getSensorWheelKey(sensorIdx: Int): String {
+            // Get the wheel name from firmware and convert to key (fl, fr, rl, rr)
+            val wheelName = carData?.car_tpms_wheelname?.getOrNull(sensorIdx)?.lowercase() ?: ""
+            return when {
+                wheelName.contains("fl") || wheelName.contains("front") && wheelName.contains("left") -> "fl"
+                wheelName.contains("fr") || wheelName.contains("front") && wheelName.contains("right") -> "fr"
+                wheelName.contains("rl") || wheelName.contains("rear") && wheelName.contains("left") -> "rl"
+                wheelName.contains("rr") || wheelName.contains("rear") && wheelName.contains("right") -> "rr"
+                else -> wheelKeys.getOrNull(sensorIdx) ?: "fl"
+            }
+        }
+        
+        // Setup click listeners for wheel mapping dialogs
+        fun setupWheelClickListener(textView: TextView, wheelPos: Int) {
+            textView.setOnClickListener {
+                var checkedItem = getMapping(wheelPos)
+                AlertDialog.Builder(requireActivity())
+                    .setTitle(wheelTitles[wheelPos])
+                    .setSingleChoiceItems(options, checkedItem) { _, which ->
+                        checkedItem = which
                     }
-                    updateTPMSData(carData)
-                }
-                .show()
-        }
-
-        rrTPMS.setOnClickListener {
-            var checkedItem = 3
-            AlertDialog.Builder(requireActivity())
-                .setTitle(R.string.rr_get_tpms)
-                .setSingleChoiceItems(options, checkedItem) { _, which ->
-                    checkedItem = which // Update the selected item index
-                }
-                .setNegativeButton(R.string.Close, null)
-                .setPositiveButton(R.string.rr_set_tpms) { _, _ ->
-                    val vehicleId = getLastSelectedCarId()
-                    if (appPrefs.getData("tmps_firmware_$vehicleId", "off") == "on") {
-                        sendCommand(R.string.rr_set_tpms, "7,config set vehicle tpms.rr $checkedItem", this@ControlsFragment)
-                    } else {
-                        appPrefs.saveData("tpms_rr_$vehicleId", "$checkedItem")
+                    .setNeutralButton(R.string.reset) { _, _ ->
+                        if (byfirmware) {
+                            // Reset all mappings in firmware
+                            sendCommand(R.string.reset, "7,tpms map reset", this@ControlsFragment)
+                        } else {
+                            // Reset all app preferences to defaults
+                            for (i in 0..3) {
+                                appPrefs.saveData("tpms_${wheelKeys[i]}_$vehicleId", "$i")
+                            }
+                        }
+                        updateTPMSData(carData)
                     }
-                    updateTPMSData(carData)
-                }
-                .show()
+                    .setNegativeButton(R.string.Close, null)
+                    .setPositiveButton(wheelSetTitles[wheelPos]) { _, _ ->
+                        if (byfirmware && hasMapping) {
+                            // Send command to firmware: tpms map set source=target (e.g., fl=fr)
+                            val sourceWheel = getSensorWheelKey(checkedItem)
+                            val targetWheel = wheelKeys[wheelPos]
+                            sendCommand(wheelSetTitles[wheelPos], 
+                                "7,tpms map set $targetWheel=$sourceWheel",
+                                this@ControlsFragment)
+                        } else {
+                            // Save to app preferences
+                            appPrefs.saveData("tpms_${wheelKeys[wheelPos]}_$vehicleId", "$checkedItem")
+                        }
+                        updateTPMSData(carData)
+                    }
+                    .show()
+            }
+        }
+        
+        setupWheelClickListener(flTPMS, 0)
+        setupWheelClickListener(frTPMS, 1)
+        setupWheelClickListener(rlTPMS, 2)
+        setupWheelClickListener(rrTPMS, 3)
+
+        // Display TPMS wheel values
+        flTPMS.text = buildTPMSDisplay(0)
+        frTPMS.text = buildTPMSDisplay(1)
+        rlTPMS.text = buildTPMSDisplay(2)
+        rrTPMS.text = buildTPMSDisplay(3)
+        
+        // Apply alert colors
+        val alertColors = intArrayOf(Color.WHITE, Color.YELLOW, Color.RED)
+        val defaultColor = context?.resources?.getColor(R.color.colorAccent) ?: Color.WHITE
+        
+        flTPMS.setTextColor(if (getAlertLevel(0) > 0) alertColors[getAlertLevel(0)] else defaultColor)
+        frTPMS.setTextColor(if (getAlertLevel(1) > 0) alertColors[getAlertLevel(1)] else defaultColor)
+        rlTPMS.setTextColor(if (getAlertLevel(2) > 0) alertColors[getAlertLevel(2)] else defaultColor)
+        rrTPMS.setTextColor(if (getAlertLevel(3) > 0) alertColors[getAlertLevel(3)] else defaultColor)
+
+        // Determine overall staleness (use best available)
+        val stale1 = when {
+            hasNewTPMS && carData?.stale_tpms_pressure != DataStale.NoValue -> carData!!.stale_tpms_pressure
+            hasNewTPMS && carData?.stale_tpms_temp != DataStale.NoValue -> carData!!.stale_tpms_temp
+            hasNewTPMS && carData?.stale_tpms_health != DataStale.NoValue -> carData!!.stale_tpms_health
+            hasNewTPMS && carData?.stale_tpms_alert != DataStale.NoValue -> carData!!.stale_tpms_alert
+            carData != null -> carData.stale_tpms
+            else -> DataStale.NoValue
         }
 
-        // Display TPMS wheel values:
-        if (stale2 == DataStale.NoValue) {
-            // No secondary value available, show only primary value:
-            flTPMS.text = String.format(
-                "%s\n%s",
-                appwheelname?.get(0),
-                val1?.get((appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())) ?: "---"
-            )
-            frTPMS.text = String.format(
-                "%s\n%s",
-                appwheelname?.get(1),
-                val1?.get((appPrefs.getData("tpms_fr_$vehicleId", "1")!!.toInt())) ?: "---"
-            )
-            rlTPMS.text = String.format(
-                "%s\n%s",
-                appwheelname?.get(2),
-                val1?.get((appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())) ?: "---"
-            )
-            rrTPMS.text = String.format(
-                "%s\n%s",
-                appwheelname?.get(3),
-                val1?.get((appPrefs.getData("tpms_rr_$vehicleId", "3")!!.toInt())) ?: "---"
-            )
-        } else {
-            // Show primary and secondary values:
-            flTPMS.text = String.format(
-                "%s\n%s\n%s",
-                appwheelname?.get(0),
-                val1?.get((appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())) ?: "---",
-                val2?.get((appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())) ?: "---"
-            )
-            frTPMS.text = String.format(
-                "%s\n%s\n%s",
-                appwheelname?.get(1),
-                val1?.get((appPrefs.getData("tpms_fr_$vehicleId", "1")!!.toInt())) ?: "---",
-                val2?.get((appPrefs.getData("tpms_fr_$vehicleId", "1")!!.toInt())) ?: "---"
-            )
-            rlTPMS.text = String.format(
-                "%s\n%s\n%s",
-                appwheelname?.get(2),
-                val1?.get((appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())) ?: "---",
-                val2?.get((appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())) ?: "---"
-            )
-            rrTPMS.text = String.format(
-                "%s\n%s\n%s",
-                appwheelname?.get(3),
-                val1?.get((appPrefs.getData("tpms_rr_$vehicleId", "3")!!.toInt())) ?: "---",
-                val2?.get((appPrefs.getData("tpms_rr_$vehicleId", "3")!!.toInt())) ?: "---"
-            )
+        when (stale1) {
+            DataStale.NoValue -> {
+                staleTPMS.setTextColor(Color.RED)
+                staleTPMS.text = getString(R.string.no_data).lowercase()
+            }
+            DataStale.Stale -> {
+                staleTPMS.setTextColor(Color.YELLOW)
+                staleTPMS.text = getString(R.string.stale_data).lowercase()
+            }
+            DataStale.Good -> {
+                context?.resources?.getColor(R.color.colorAccent)?.let { staleTPMS.setTextColor(it) }
+                staleTPMS.text = getString(R.string.latest_data).lowercase()
+            }
         }
 
-        val alertcol = intArrayOf(0xFFFFFF, Color.YELLOW, Color.RED)
-        if ((alert?.get(0) ?: 0) != 0)
-            flTPMS.setTextColor(alertcol[alert!![(appPrefs.getData("tpms_fl_$vehicleId", "0")!!.toInt())]])
-        if ((alert?.get(1) ?: 0) != 0)
-            frTPMS.setTextColor(alertcol[alert!![(appPrefs.getData("tpms_fl_$vehicleId", "1")!!.toInt())]])
-        if ((alert?.get(2) ?: 0) != 0)
-            rlTPMS.setTextColor(alertcol[alert!![(appPrefs.getData("tpms_rl_$vehicleId", "2")!!.toInt())]])
-        if ((alert?.get(3) ?: 0) != 0)
-            rrTPMS.setTextColor(alertcol[alert!![(appPrefs.getData("tpms_rr_$vehicleId", "3")!!.toInt())]])
-
-        if (stale1 == CarData.DataStale.NoValue) {
-            staleTPMS.setTextColor(Color.RED)
-            staleTPMS.text = getString(R.string.no_data).lowercase()
-        }
-
-        if (stale1 == CarData.DataStale.Stale) {
-            staleTPMS.setTextColor(Color.YELLOW)
-            staleTPMS.text = getString(R.string.stale_data).lowercase()
-        }
-
-        if (stale1 == CarData.DataStale.Good) {
-            context?.resources?.getColor(R.color.colorAccent)?.let { staleTPMS.setTextColor(it) }
-            staleTPMS.text = getString(R.string.latest_data).lowercase()
-        }
-
+        // Show time since last update
         val now = System.currentTimeMillis()
-        var seconds = (now - (carData?.car_lastupdated?.time ?: 0)) / 1000
-        var minutes = seconds / 60
-        var hours = minutes / 60
-        var days = minutes / (60 * 24)
-
+        val seconds = (now - (carData?.car_lastupdated?.time ?: 0)) / 1000
+        val minutes = seconds / 60
+        val hours = minutes / 60
+        val days = minutes / (60 * 24)
 
         if (minutes > 0L) {
             staleTPMS.setTextColor(Color.YELLOW)
-            var periodText: String
-            if (minutes == 1L) {
-                periodText = getText(R.string.min1).toString()
-            } else if (days > 1) {
-                periodText = String.format(getText(R.string.ndays).toString(), days)
-            } else if (hours > 1) {
-                periodText = String.format(getText(R.string.nhours).toString(), hours)
-            } else if (minutes > 60) {
-                periodText = String.format(
-                    getText(R.string.nmins).toString(),
-                    minutes
-                )
-            } else {
-                periodText = String.format(
-                    getText(R.string.nmins).toString(),
-                    minutes
-                )
+            val periodText = when {
+                minutes == 1L -> getText(R.string.min1).toString()
+                days > 1 -> String.format(getText(R.string.ndays).toString(), days)
+                hours > 1 -> String.format(getText(R.string.nhours).toString(), hours)
+                else -> String.format(getText(R.string.nmins).toString(), minutes)
             }
             staleTPMS.text = periodText
         }
 
-        if ((alert?.find { it > 0 } ?: 0) > 0) {
+        // Auto-expand TPMS display if any alert is active
+        if ((0..3).any { getAlertLevel(it) > 0 }) {
             tpmsFAB.toggle()
+        }
+        
+        // Show/hide TPMS mapping button based on data availability
+        if (stale1 != DataStale.NoValue) {
+            tpmsMappingButton.show()
+        } else {
+            tpmsMappingButton.hide()
         }
     }
 

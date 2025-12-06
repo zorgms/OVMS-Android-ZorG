@@ -355,6 +355,12 @@ class CarData : Serializable {
     var car_tpms_alert: Array<String?>? = null
     @JvmField
     var stale_tpms_alert = DataStale.NoValue
+    
+    // Car TPMS Mapping (sensor index for each wheel position)
+    @JvmField
+    var car_tpms_mapping_raw: IntArray? = null
+    @JvmField
+    var stale_tpms_mapping = DataStale.NoValue
 
     // Car Capabilities Message "V"
     var car_capabilities = ""
@@ -1063,6 +1069,33 @@ class CarData : Serializable {
                 stale_tpms_alert =
                     if (valid < 0) DataStale.NoValue else if (valid == 0) DataStale.Stale else DataStale.Good
             }
+
+            // Process sensor mappings (sensor index for each wheel position):
+            if (i < dataParts.size) {
+                cnt = dataParts[i++].toInt()
+                if (cnt > 0) {
+                    if (car_tpms_mapping_raw == null || car_tpms_mapping_raw!!.size != cnt) {
+                        car_tpms_mapping_raw = IntArray(cnt)
+                    }
+                    j = 0
+                    end = i + cnt
+                    while (i < end && i < dataParts.size) {
+                        ival = dataParts[i].toInt()
+                        car_tpms_mapping_raw!![j] = ival
+                        i++
+                        j++
+                    }
+                    if (i < dataParts.size) {
+                        valid = dataParts[i++].toInt()
+                        stale_tpms_mapping =
+                            if (valid < 0) DataStale.NoValue else if (valid == 0) DataStale.Stale else DataStale.Good
+                    }
+                } else {
+                    // Mapping count is 0 = not supported
+                    car_tpms_mapping_raw = null
+                    stale_tpms_mapping = DataStale.NoValue
+                }
+            }
             Log.d(TAG, "processNewTPMS: processed $i parts")
         } catch (e: Exception) {
             Log.e(TAG, "processNewTPMS: ERROR", e)
@@ -1075,6 +1108,7 @@ class CarData : Serializable {
             stale_tpms_temp = DataStale.NoValue
             stale_tpms_health = DataStale.NoValue
             stale_tpms_alert = DataStale.NoValue
+            stale_tpms_mapping = DataStale.NoValue
         }
         recalc()
         return true
@@ -1286,6 +1320,7 @@ class CarData : Serializable {
             b.putDoubleArray("car_tpms_temp", car_tpms_temp_raw)
             b.putDoubleArray("car_tpms_health", car_tpms_health_raw)
             b.putIntArray("car_tpms_alert", car_tpms_alert_raw)
+            b.putIntArray("car_tpms_mapping", car_tpms_mapping_raw)
 
             //
             // TPMS old fixed four wheel layout values

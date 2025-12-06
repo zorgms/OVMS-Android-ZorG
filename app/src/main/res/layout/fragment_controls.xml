@@ -63,10 +63,11 @@
         android:id="@+id/sideActions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="-100dp"
         android:layout_marginEnd="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tpmsToggle" />
+        app:layout_constraintTop_toBottomOf="@+id/tpmsMappingButton" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/mainActions"
@@ -170,5 +171,22 @@
         app:layout_constraintTop_toBottomOf="@+id/tpmsToggle"
         tools:text="44 min"
         tools:visibility="visible" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/tpmsMappingButton"
+        style="@style/ThemeOverlay.Material3.FloatingActionButton.Secondary"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="8dp"
+        android:clickable="true"
+        android:contentDescription="@string/tpms_mapping"
+        android:src="@android:drawable/ic_menu_sort_by_size"
+        app:fabCustomSize="50dp"
+        app:fabSize="normal"
+        app:maxImageSize="30dp"
+        app:useCompatPadding="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tpmsFR" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
