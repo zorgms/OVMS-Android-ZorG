@@ -85,6 +85,7 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         mainActionsRecyclerView.adapter = centerActionsAdapter
 
         updateServiceInfo(carData)
+        updateTPMSData(carData)
         initialiseSideActions(carData)
         initialiseMainActions(carData)
         initialiseCarRendering(carData)
