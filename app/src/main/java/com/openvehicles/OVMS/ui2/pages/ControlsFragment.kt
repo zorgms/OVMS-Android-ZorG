@@ -85,29 +85,10 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         mainActionsRecyclerView.adapter = centerActionsAdapter
 
         updateServiceInfo(carData)
-        setupTPMSMappingButton()
         updateTPMSData(carData)
         initialiseSideActions(carData)
         initialiseMainActions(carData)
         initialiseCarRendering(carData)
-    }
-
-    /**
-     * Setup TPMS mapping button to query and display mapping list.
-     */
-    private fun setupTPMSMappingButton() {
-        val tpmsMappingButton = findViewById(R.id.tpmsMappingButton) as com.google.android.material.floatingactionbutton.FloatingActionButton
-        
-        tpmsMappingButton.setOnClickListener {
-            // Use CommandActivity to show TPMS mapping result in a list
-            val intent = Intent(requireContext(), CommandActivity::class.java).apply {
-                action = "com.openvehicles.OVMS.action.COMMAND"
-                putExtra("apikey", appPrefs.getData("APIKey"))
-                putExtra("command", "tpms map status")
-                putExtra("title", getString(R.string.tpms_mapping))
-            }
-            startActivity(intent)
-        }
     }
 
     private fun updateServiceInfo(carData: CarData?) {
@@ -143,8 +124,23 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         }
 
         serviceBtn.setOnClickListener {
+            // Toggle visibility
             serviceTextView.visibility =
                 if (serviceTextView.visibility == View.VISIBLE) View.INVISIBLE else View.VISIBLE
+        }
+
+        if(carData.car_type == "SQ") {
+            // Long click to open service details via CommandActivity
+            serviceBtn.setOnLongClickListener {
+                val intent = Intent(requireContext(), CommandActivity::class.java).apply {
+                    action = "com.openvehicles.OVMS.action.COMMAND"
+                    putExtra("apikey", appPrefs.getData("APIKey"))
+                    putExtra("command", "xsq mtdata")
+                    putExtra("title", getString(R.string.Service))
+                }
+                startActivity(intent)
+                true
+            }
         }
     }
 
@@ -155,13 +151,11 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         val rlTPMS = findViewById(R.id.tpmsRL) as TextView
         val staleTPMS = findViewById(R.id.tpmsStale) as TextView
         val tpmsFAB = findViewById(R.id.tpmsToggle) as ExtendedFloatingActionButton
-        val tpmsMappingButton = findViewById(R.id.tpmsMappingButton) as com.google.android.material.floatingactionbutton.FloatingActionButton
 
         // Disable TPMS for vehicles not supporting any:
         if (carData?.car_type in listOf("RT", "EN", "NRJK")) {
             tpmsFAB.isEnabled = false
             tpmsFAB.visibility = View.INVISIBLE
-            tpmsMappingButton.hide()
             return
         }
 
@@ -176,6 +170,18 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                 if (rlTPMS.visibility == View.VISIBLE) View.INVISIBLE else View.VISIBLE
             staleTPMS.visibility =
                 if (staleTPMS.visibility == View.VISIBLE) View.INVISIBLE else View.VISIBLE
+        }
+
+        // Long click to open TPMS details via CommandActivity
+        tpmsFAB.setOnLongClickListener {
+            val intent = Intent(requireContext(), CommandActivity::class.java).apply {
+                action = "com.openvehicles.OVMS.action.COMMAND"
+                putExtra("apikey", appPrefs.getData("APIKey"))
+                putExtra("command", "tpms map status")
+                putExtra("title", getString(R.string.Service))
+            }
+            startActivity(intent)
+            true
         }
 
         val vehicleId = getLastSelectedCarId()
@@ -446,13 +452,6 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         // Auto-expand TPMS display if any alert is active
         if ((0..3).any { getAlertLevel(it) > 0 }) {
             tpmsFAB.toggle()
-        }
-        
-        // Show/hide TPMS mapping button based on data availability
-        if (stale1 != DataStale.NoValue) {
-            tpmsMappingButton.show()
-        } else {
-            tpmsMappingButton.hide()
         }
     }
 
