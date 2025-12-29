@@ -67,7 +67,7 @@
         android:layout_marginEnd="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tpmsMappingButton" />
+        app:layout_constraintTop_toBottomOf="@+id/tpmsFR" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/mainActions"
