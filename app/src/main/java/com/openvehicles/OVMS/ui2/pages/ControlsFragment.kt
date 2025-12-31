@@ -228,7 +228,6 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         
         // Build TPMS display string for a wheel position
         fun buildTPMSDisplay(displayPos: Int): String {
-            val sensorIdx = getMapping(displayPos)
             val parts = mutableListOf<String>()
             
             // Wheel name
@@ -238,22 +237,22 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                 // New TPMS data (msg code 'Y') - show all available values
                 // Pressure
                 if (carData?.stale_tpms_pressure != DataStale.NoValue) {
-                    val pressure = carData?.car_tpms_pressure?.getOrNull(sensorIdx) ?: "---"
+                    val pressure = carData?.car_tpms_pressure?.getOrNull(displayPos) ?: "---"
                     parts.add(pressure)
                 }
                 // Temperature
                 if (carData?.stale_tpms_temp != DataStale.NoValue) {
-                    val temp = carData?.car_tpms_temp?.getOrNull(sensorIdx) ?: "---"
+                    val temp = carData?.car_tpms_temp?.getOrNull(displayPos) ?: "---"
                     parts.add(temp)
                 }
                 // Health
                 if (carData?.stale_tpms_health != DataStale.NoValue) {
-                    val health = carData?.car_tpms_health?.getOrNull(sensorIdx) ?: "---"
+                    val health = carData?.car_tpms_health?.getOrNull(displayPos) ?: "---"
                     parts.add(health)
                 }
                 // Alert symbol
                 if (carData?.stale_tpms_alert != DataStale.NoValue) {
-                    val alert = carData?.car_tpms_alert?.getOrNull(sensorIdx) ?: "✔"
+                    val alert = carData?.car_tpms_alert?.getOrNull(displayPos) ?: "✔"
                     parts.add(alert)
                 }
             } else if (carData != null) {
@@ -270,12 +269,12 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                     carData.car_tpms_rl_t,
                     carData.car_tpms_rr_t
                 )
-                parts.add(legacyPressure.getOrNull(sensorIdx) ?: "---")
+                parts.add(legacyPressure.getOrNull(displayPos) ?: "---")
                 // Check if temperature data is available
                 val hasTemp = carData.car_tpms_fl_t_raw != 0.0 || carData.car_tpms_fr_t_raw != 0.0 || 
                               carData.car_tpms_rl_t_raw != 0.0 || carData.car_tpms_rr_t_raw != 0.0
                 if (hasTemp) {
-                    parts.add(legacyTemp.getOrNull(sensorIdx) ?: "---")
+                    parts.add(legacyTemp.getOrNull(displayPos) ?: "---")
                 }
             } else {
                 parts.add("---")
@@ -286,9 +285,8 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
         
         // Get alert level for a wheel position (0=ok, 1=warning, 2=alert)
         fun getAlertLevel(displayPos: Int): Int {
-            val sensorIdx = getMapping(displayPos)
             return if (hasNewTPMS && carData?.stale_tpms_alert != DataStale.NoValue) {
-                carData?.car_tpms_alert_raw?.getOrNull(sensorIdx) ?: 0
+                carData?.car_tpms_alert_raw?.getOrNull(displayPos) ?: 0
             } else {
                 0
             }
