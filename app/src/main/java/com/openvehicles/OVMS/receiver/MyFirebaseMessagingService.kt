@@ -72,10 +72,21 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         if (timeStamp == null) timeStamp = Date()
 
         // identify the vehicle:
-        val car = CarsStorage.getCarById(contentTitle)
+        // Note: Use case-insensitive lookup to handle inconsistent casing between
+        // server-sent notifications and locally stored vehicle IDs
+        var car = CarsStorage.getCarById(contentTitle)
         if (car == null) {
-            Log.w(TAG, "vehicle ID '$contentTitle' not found => drop message")
-            return
+            // Retry with case-insensitive search if direct match fails
+            car = CarsStorage.getStoredCars().find { 
+                it.sel_vehicleid.equals(contentTitle, ignoreCase = true) 
+            }
+            if (car == null) {
+                Log.w(TAG, "vehicle ID '$contentTitle' not found (tried case-insensitive) => drop message")
+                return
+            } else {
+                Log.i(TAG, "vehicle ID '$contentTitle' matched case-insensitively with '${car.sel_vehicleid}'")
+                contentTitle = car.sel_vehicleid
+            }
         }
 
         // add vehicle label to title:
