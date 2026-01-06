@@ -451,9 +451,10 @@ class MainActivityUI2 : ApiActivity() {
             // Subscribe at OVMS server:
             Log.d(tag, "subscribing vehicle ID $vehicleId to FCM token $token")
             // MP-0 p<appid>,<pushtype>,<pushkeytype>{,<vehicleid>,<netpass>,<pushkeyvalue>}
+            // Note: Normalize vehicle ID to uppercase to ensure consistent matching with server notifications
             val cmd = String.format(
                 "MP-0 p%s,gcm,production,%s,%s,%s",
-                uuid, carData.sel_vehicleid, carData.sel_server_password, token
+                uuid, carData.sel_vehicleid.uppercase(), carData.sel_server_password, token
             )
             if (!service.sendCommand(cmd, null)) {
                 Log.w(tag, "FCM server push subscription failed, scheduling retry")
