@@ -73,6 +73,7 @@ import com.openvehicles.OVMS.ui2.components.hometabs.HomeTabsAdapter
 import com.openvehicles.OVMS.ui2.components.quickactions.ChargingQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.ClimateQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.ClimateScheduleQuickAction
+import com.openvehicles.OVMS.ui2.components.quickactions.DDT4allQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.CustomCommandQuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.Homelink1QuickAction
 import com.openvehicles.OVMS.ui2.components.quickactions.Homelink2QuickAction
@@ -184,6 +185,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 TwizyDriveMode2QuickAction({null}, context),
                 TwizyDriveMode3QuickAction({null}, context),
                 ClimateScheduleQuickAction({null}, context),
+                DDT4allQuickAction({null}, context),
                 CustomCommandQuickAction("custom", AppCompatResources.getDrawable(context, R.drawable.ic_custom_command)!!, "", {null}, context.getString(R.string.custom_command)),
                 )
         }
@@ -1284,25 +1286,10 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             Log.d(TAG, "initialiseQuickActions: loaded config for ${carData?.sel_vehicleid}: ${savedQuickActionConfig.contentDeepToString()}")
             if (savedQuickActionConfig.isEmpty()) {
                 // Get default config and save most optimised version for the vehicle
-                val defaultIdConfig: Array<String> = when (carData?.sel_vehicleid) {
+                val defaultIdConfig: Array<String> = when (carData?.car_type) {
                     "RT" -> arrayOf("charging", "valet", "rt_profile_-1", "rt_profile_0", "rt_profile_1", "rt_profile_2")
-                    "SQ" -> arrayOf(
-                        LockQuickAction({null}),
-                        ClimateQuickAction({null}),
-                        ClimateScheduleQuickAction({null}),
-                        Homelink1QuickAction({null}),
-                        Homelink2QuickAction({null}),
-                        Homelink3QuickAction({null})
-                    ).filter { it.commandsAvailable() }.map { it.id }.take(6).toTypedArray()
-                    else -> arrayOf(
-                        LockQuickAction({null}),
-                        ChargingQuickAction({null}),
-                        ValetQuickAction({null}),
-                        WakeupQuickAction({null}),
-                        Homelink1QuickAction({null}),
-                        Homelink2QuickAction({null}),
-                        Homelink3QuickAction({null})
-                    ).filter { it.commandsAvailable() }.map { it.id }.take(6).toTypedArray()
+                    "SQ" -> arrayOf("lock", "climate", "climateschedule", "wakeup", "ddt4all")
+                    else -> arrayOf("lock", "charging", "valet", "wakeup", "hl_1", "hl_2", "hl_3")
                 }
                 Log.d(TAG, "initialiseQuickActions: init config for ${carData?.sel_vehicleid}: ${defaultIdConfig.contentDeepToString()}")
                 saveQuickActions(null, defaultIdConfig)
@@ -1330,6 +1317,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             ValetQuickAction.ACTION_ID -> ValetQuickAction(apiServiceGetter)
             WakeupQuickAction.ACTION_ID -> WakeupQuickAction(apiServiceGetter)
             ClimateScheduleQuickAction.ACTION_ID -> ClimateScheduleQuickAction(apiServiceGetter)
+            DDT4allQuickAction.ACTION_ID -> DDT4allQuickAction(apiServiceGetter)
             else -> {
                 if (id.startsWith("rt_profile_")) {
                     return when (id) {

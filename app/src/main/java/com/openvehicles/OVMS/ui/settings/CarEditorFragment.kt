@@ -150,7 +150,6 @@ class CarEditorFragment : BaseFragment() {
             }
             .show()
     }
-
     private fun save() {
         val rootView = view
         if (carData == null) {
@@ -170,14 +169,15 @@ class CarEditorFragment : BaseFragment() {
                         )
                         val mAllCars: List<CarData> = getStoredCars()
                         val count = mAllCars.size
+                        val valueUpperCase = value.toString().uppercase()
                         for (i in 0 until count) {
-                            if (mAllCars[i].sel_vehicleid == value && i != editPosition) {
+                            if (mAllCars[i].sel_vehicleid.equals(valueUpperCase, ignoreCase = true) && i != editPosition) {
                                 return false
                             }
                         }
                         return true
                     }
-                })
+                }).uppercase()
             carData!!.sel_vehicle_label =
                 getValidValue(rootView, R.id.txt_vehicle_label, StringValidator())
             carData!!.sel_server_password =
