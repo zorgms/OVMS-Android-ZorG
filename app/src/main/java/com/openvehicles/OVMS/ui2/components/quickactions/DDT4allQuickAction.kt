@@ -13,7 +13,7 @@ class DDT4allQuickAction(apiServiceGetter: () -> ApiService?, context: Context? 
     QuickAction(ACTION_ID, R.drawable.ic_controls_tab, apiServiceGetter,
         actionOnTint = R.attr.colorSecondaryContainer,
         actionOffTint = R.attr.colorTertiaryContainer,
-        label = context?.getString(R.string.service_notification_title)) {
+        label = context?.getString(R.string.select_ddt4all_action)) {
 
     companion object {
         const val ACTION_ID = "ddt4all"
