@@ -63,6 +63,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:defaultValue="false"
+            android:title="@string/lb_options_periodic_poll_cb"
+            app:key="communication_periodic_poll"
+            app:summary="@string/lb_options_periodic_poll_info" />
+        <ListPreference
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="30"
+            android:dependency="communication_periodic_poll"
+            android:title="@string/lb_options_periodic_poll_interval"
+            app:entries="@array/periodic_poll_interval_labels"
+            app:entryValues="@array/periodic_poll_interval_values"
+            app:key="communication_periodic_poll_interval"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreferenceCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="false"
             android:title="@string/lb_options_broadcast_cb"
             app:key="communication_broadcast" />
         <SwitchPreferenceCompat

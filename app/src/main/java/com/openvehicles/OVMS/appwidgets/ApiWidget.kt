@@ -14,7 +14,7 @@ import com.openvehicles.OVMS.utils.AppPrefs
  * ApiWidget: use this as the base class for an application widget
  * processing vehicle data updates.
  *
- * ApiWidget takes care of enabling the ApiService and listening to ApiEvent broadcasts.
+ * ApiWidget listens to ApiEvent broadcasts and updates widget instances.
  *
  * The subclass only needs to define the actual widget rendering by implementing the
  * updateWidget() method. See InfoWidget for an example.
@@ -28,41 +28,15 @@ open class ApiWidget<T>(
 
 ) : AppWidgetProvider() {
 
-    // First widget instance added: should we enable the ApiService for the user?
     override fun onEnabled(context: Context) {
         Log.d(TAG, "onEnabled")
         super.onEnabled(context)
-
-        val appPrefs = AppPrefs(context, "ovms")
-        if (appPrefs.getData("option_service_enabled", "0") == "0") {
-            Log.i(TAG, "Enabling & starting ApiService")
-            appPrefs.saveData("option_service_enabled", "1")
-            try {
-                context.startService(Intent(context, ApiService::class.java))
-                context.sendBroadcast(Intent(ApiService.ACTION_ENABLE))
-                serviceEnabledByUs = true
-            } catch (e: Exception) {
-                Log.e(TAG, "Can't start ApiService: ERROR", e)
-            }
-        }
+        // Note: Persistent background ApiService is not enabled automatically without user consent.
+        // User can enable persistent background connection or periodic polling in settings.
     }
 
-    // Last widget instance removed: should we disable the ApiService for the user?
     override fun onDisabled(context: Context) {
         Log.d(TAG, "onDisabled")
-        if (serviceEnabledByUs) {
-            Log.i(TAG, "Disabling & stopping ApiService")
-            val appPrefs = AppPrefs(context, "ovms")
-            appPrefs.saveData("option_service_enabled", "0")
-            try {
-                context.sendBroadcast(Intent(ApiService.ACTION_DISABLE))
-                context.stopService(Intent(context, ApiService::class.java))
-                serviceEnabledByUs = false
-            } catch (e: Exception) {
-                Log.e(TAG, "Can't stop ApiService: ERROR", e)
-            }
-        }
-
         super.onDisabled(context)
     }
 
@@ -144,8 +118,5 @@ open class ApiWidget<T>(
         // mOnline reflects both the ApiService and the connection status:
         var isServiceOnline = false
             private set
-
-        // Remember if we enabled the service for the user:
-        private var serviceEnabledByUs = false
     }
 }

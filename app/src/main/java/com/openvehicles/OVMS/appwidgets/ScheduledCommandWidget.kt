@@ -14,6 +14,7 @@ import android.widget.RemoteViews
 import com.openvehicles.OVMS.R
 import com.openvehicles.OVMS.utils.AppPrefs
 import com.openvehicles.OVMS.ui2.misc.ThemeMode
+import com.openvehicles.OVMS.work.WorkManagerScheduler
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -362,25 +363,8 @@ class ScheduledCommandWidget : ApiWidget<ScheduledCommandWidget>(ScheduledComman
             return
         }
         
-        Log.i(TAG, "executeCommand: Executing command for widget $appWidgetId: $command")
-        
-        // Get API key for authentication
-        val appPrefs = AppPrefs(context, "ovms")
-        val apikey = appPrefs.getData("APIKey")
-        
-        // Send command directly to ApiService (works in background)
-        val intent = Intent("com.openvehicles.OVMS.SendCommand").apply {
-            setPackage(context.packageName)
-            putExtra("command", command)
-            putExtra("apikey", apikey)  // Required for authentication
-        }
-        
-        try {
-            context.sendBroadcast(intent)
-            Log.i(TAG, "executeCommand: Command broadcast sent successfully with apikey")
-        } catch (e: Exception) {
-            Log.e(TAG, "executeCommand: Failed to send command broadcast", e)
-        }
+        Log.i(TAG, "executeCommand: Enqueueing command for widget $appWidgetId: $command ($title)")
+        WorkManagerScheduler.enqueueCommand(context, command, appWidgetId, title)
     }
 
     private fun getNextExecutionTime(hour: Int, minute: Int, selectedDays: Int): Long {

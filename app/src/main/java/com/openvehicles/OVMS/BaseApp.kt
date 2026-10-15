@@ -9,6 +9,7 @@ import com.openvehicles.OVMS.ui2.misc.ThemeMode
 import android.content.Intent
 import android.content.res.Configuration
 import com.openvehicles.OVMS.api.ApiService
+import com.openvehicles.OVMS.work.WorkManagerScheduler
 
 class BaseApp : Application() {
 
@@ -23,6 +24,9 @@ class BaseApp : Application() {
         ThemeMode.apply(this)
 
         loadIconPack()
+
+        // Setup periodic poll if enabled by user:
+        WorkManagerScheduler.setupPeriodicPoll(this)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

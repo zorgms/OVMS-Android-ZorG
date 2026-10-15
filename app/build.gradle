@@ -78,6 +78,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.10.1'
     implementation 'androidx.navigation:navigation-ui-ktx:2.10.1'
     implementation 'androidx.preference:preference-ktx:1.2.1'
+    implementation 'androidx.work:work-runtime-ktx:2.10.0'
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
     implementation "com.maltaisn:icondialog:3.3.0"
     implementation "com.maltaisn:iconpack-default:1.1.0"

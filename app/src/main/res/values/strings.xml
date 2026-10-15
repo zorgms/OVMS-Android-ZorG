@@ -38,7 +38,7 @@
     <string name="ChargerPlug">Charger Plug</string>
     <string name="DefaultCharging">00A/000V</string>
     <string name="DefaultChargingPower">000.0kW</string>
-    <string name="DefaultChargingPowerLoss">➘ 0.0kW</string>
+    <string name="DefaultChargingPowerLoss">➾ 0.0kW</string>
     <string name="DefaultSlidetoCharge">SLIDE TO\nCHARGE</string>
     <string name="DefaultMode">STANDARD</string>
     <string name="ChargingOverlay">Charging</string>
@@ -149,7 +149,7 @@
     <string name="lb_ft_rt_suffsoc">#%d: Sufficient SOC</string>
     <string name="lb_ft_rt_suffrange">#%d: Sufficient range</string>
     <string name="lb_ft_rt_maxrange">#%d: Max ideal range</string>
-    <string name="lb_ft_rt_capacity">#%d: Battery measured capacity (CAP%%)</string>
+    <string name="lb_ft_rt_capacity">#%d: Battery measured capacity (CAP%)</string>
     <string name="lb_ft_rt_capacity_nom_ah">#%d: Battery nominal capacity (Ah)</string>
 
     <string name="lb_ft_sq_led_state">#%d: LED Online State</string>
@@ -253,7 +253,7 @@
     <string name="err_param_not_editable">Sorry, this parameter is not editable!</string>
     <string name="err_command_auth_failed">Command authorization failed</string>
     <string name="err_offline">Network offline or blocked</string>
-    <string name="err_vehicle_unknown">Vehicle ID "%1$s" unknown</string>
+    <string name="err_vehicle_unknown">Vehicle ID \"%1$s\" unknown</string>
 
     <string name="msg_retrieving_data">Retrieving data&#8230;</string>
     <string name="msg_processing_data">Processing data&#8230;</string>
@@ -498,7 +498,6 @@
 
     ]]></string>
 
-
     <string name="battery_title">Battery history</string>
     <string name="battery_menu">Options</string>
     <string name="battery_btn_get_data">Get data</string>
@@ -554,7 +553,7 @@
 		the smallest value measured (<tt>volt_min</tt> / <tt>temp_min</tt>) within the
 		current usage section.</p>
 		<p>The candle height reflects the <b>maximum deviation</b> measured.
-		A filled candle is used to display a "bad" deviation, i.e. higher
+		A filled candle is used to display a \"bad\" deviation, i.e. higher
 		<b>voltage breakdown</b> or higher <b>temperature rise</b>.</p>
 		<p><u><b>Hint</b></u>: to compare voltage details, select a cell and zoom in vertically
 		until you can clearly read the deviations of the other cells from the selection marker.</p>
@@ -694,6 +693,17 @@
     <string name="lb_options_service">Service:</string>
     <string name="lb_options_service_cb">Enable background connection</string>
     <string name="lb_options_service_info">Allows the server connection to stay alive when the App is not running.</string>
+    <string name="lb_options_periodic_poll_cb">Periodic background updates</string>
+    <string name="lb_options_periodic_poll_info">Periodically connects briefly to fetch car data and update widgets without keeping a permanent connection.</string>
+    <string name="lb_options_periodic_poll_interval">Update interval</string>
+    <string name="poll_interval_15m">Every 15 minutes</string>
+    <string name="poll_interval_30m">Every 30 minutes</string>
+    <string name="poll_interval_1h">Every hour</string>
+    <string name="poll_interval_2h">Every 2 hours</string>
+    <string name="poll_interval_4h">Every 4 hours</string>
+    <string name="command_executed_success">Command \"%s\" executed successfully</string>
+    <string name="command_execution_failed">Execution of \"%s\" failed</string>
+    <string name="executing_command">Executing %s…</string>
     <string name="lb_options_broadcast">Broadcast:</string>
     <string name="lb_options_broadcast_cb">Enable data broadcasts to other Apps</string>
     <string name="lb_options_broadcast_codes">Enter code letters</string>

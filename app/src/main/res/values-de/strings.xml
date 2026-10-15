@@ -235,7 +235,7 @@
     <string name="err_param_not_editable">Sorry, dieser Parameter ist nicht editierbar!</string>
     <string name="err_command_auth_failed">Kommando-Autorisierung fehlgeschlagen</string>
     <string name="err_offline">Keine oder gesperrte Netzwerkverbindung</string>
-    <string name="err_vehicle_unknown">Fahrzeug-ID "%1$s" unbekannt</string>
+    <string name="err_vehicle_unknown">Fahrzeug-ID \"%1$s\" unbekannt</string>
 
     <string name="msg_retrieving_data">Rufe Daten ab&#8230;</string>
     <string name="msg_processing_data">Verarbeite Daten&#8230;</string>
@@ -464,46 +464,46 @@
         <h1>Akku-Statistik</h1>
 
         <h2>Grundlage</h2>
-        <p>Die installierte <b>Firmware-Version</b> muss den <b>Batteriemonitor</b> enthalten.
-        Datenbasis sind die vom Batteriemonitor an den Server gesendeten Datensätze
-        <tt>RT-BAT-P</tt> und <tt>RT-BAT-C</tt> (siehe Manual). Die Haltezeit
-        der Daten auf dem Server beträgt <b>24h</b>.</p>
-        <p>Die <b>Messauflösung</b> beträgt 5 mV bei der Spannung und 1 °C bei der Temperatur.
-        Der Twizy hat einen Akku mit 42 Zellen im Layout 14S3P, verteilt auf 7 Module.
-        Systembedingt stehen nur die Spannungen der 14 3er-Bündel und die Temperaturen
-        der 7 Module einzeln zur Verfügung.</p>
+        <p>Die installierte <b>Firmware-Version</b> muss den <b>Batteriemonitor</b> enthalten.\
+        Datenbasis sind die vom Batteriemonitor an den Server gesendeten Datensätze\
+        <tt>RT-BAT-P</tt> und <tt>RT-BAT-C</tt> (siehe Manual). Die Haltezeit\
+        der Daten auf dem Server beträgt <b>24h</b>.</p>\
+        <p>Die <b>Messauflösung</b> beträgt 5 mV bei der Spannung und 1 °C bei der Temperatur.\
+        Der Twizy hat einen Akku mit 42 Zellen im Layout 14S3P, verteilt auf 7 Module.\
+        Systembedingt stehen nur die Spannungen der 14 3er-Bündel und die Temperaturen\
+        der 7 Module einzeln zur Verfügung.</p>\
 
-        <h2>Paketverlauf</h2>
-        <p>Der Paketverlauf zeigt nur die Zeitpunkte mit Daten an, also nicht die reinen
-        Parkzeiten.</p>
-        <p>Das Modul sendet während der Fahrt und beim Laden alle ca. <b>60 Sekunden</b>
-        ein Update an den Server (sofern eine Datenverbindung besteht). Die Extremwerte und
-        Maximal-Abweichungen werden laufend gesammelt, die aktuellen Werte sind der Stand
-        beim Senden des Updates.</p>
-        <p>Jeweils beim <b>Einschalten</b> des Twizy und beim Start der <b>Ladung</b> werden
-        die Sammelwerte zurückgesetzt, zum Ende eines Nutzungsabschnitts entsprechen diese
-        also den insgesamt darin aufgetretenen Extremwerten.</p>
-        <p><u><b>Tipp</b></u>: um den Verlauf der Minimalspannung zu verfolgen klick die Linie im
-        Paket-Chart an und verwende dann den Schieberegler um die Markierung auf der Linie
-        zu verschieben.</p>
+        <h2>Paketverlauf</h2>\
+        <p>Der Paketverlauf zeigt nur die Zeitpunkte mit Daten an, also nicht die reinen\
+        Parkzeiten.</p>\
+        <p>Das Modul sendet während der Fahrt und beim Laden alle ca. <b>60 Sekunden</b>\
+        ein Update an den Server (sofern eine Datenverbindung besteht). Die Extremwerte und\
+        Maximal-Abweichungen werden laufend gesammelt, die aktuellen Werte sind der Stand\
+        beim Senden des Updates.</p>\
+        <p>Jeweils beim <b>Einschalten</b> des Twizy und beim Start der <b>Ladung</b> werden\
+        die Sammelwerte zurückgesetzt, zum Ende eines Nutzungsabschnitts entsprechen diese\
+        also den insgesamt darin aufgetretenen Extremwerten.</p>\
+        <p><u><b>Tipp</b></u>: um den Verlauf der Minimalspannung zu verfolgen klick die Linie im\
+        Paket-Chart an und verwende dann den Schieberegler um die Markierung auf der Linie\
+        zu verschieben.</p>\
 
-        <h2>Zellenstatus</h2>
-        <p>
-        &nbsp;&bull; unteres Ende = Minimalwert<br>
-        &nbsp;&bull; oberes Ende = aktueller Wert (+Text)<br>
-        &nbsp;&bull; gefüllter Kasten = schlecht<br>
-        &nbsp;&bull; größerer Kasten = stärkere Abweichung
-        </p>
-        <p>Das Chart ist ein Kerzendiagramm. Der dargestellte <b>Maximalwert</b> ist der
-        aktuelle Wert (<tt>volt_act</tt> / <tt>temp_act</tt>), der <b>Minimalwert</b> der
-        kleinste gemessene Wert (<tt>volt_min</tt> / <tt>temp_min</tt>) im aktuellen
-        Nutzungsabschnitt.</p>
-        <p>Die Höhe der Kerze stellt die maximale gemessene <b>Standardabweichung</b> dar.
-        Eine gefüllte Kerze bedeutet eine "schlechte" Abweichung, d.h. stärkerer
-        <b>Spannungseinbruch</b> oder stärkere <b>Erwärmung</b>.</p>
-        <p><u><b>Tipp</b></u>: die Spannungslagen kann man gut im Detail vergleichen wenn man
-        eine Zelle anwählt und den vertikalen Zoom so weit hochzieht, dass man die
-        Abweichungen der anderen Zellen von der Auswahl-Markierung ablesen kann.</p>
+        <h2>Zellenstatus</h2>\
+        <p>\
+        &nbsp;&bull; unteres Ende = Minimalwert<br>\
+        &nbsp;&bull; oberes Ende = aktueller Wert (+Text)<br>\
+        &nbsp;&bull; gefüllter Kasten = schlecht<br>\
+        &nbsp;&bull; größerer Kasten = stärkere Abweichung\
+        </p>\
+        <p>Das Chart ist ein Kerzendiagramm. Der dargestellte <b>Maximalwert</b> ist der\
+        aktuelle Wert (<tt>volt_act</tt> / <tt>temp_act</tt>), der <b>Minimalwert</b> der\
+        kleinste gemessene Wert (<tt>volt_min</tt> / <tt>temp_min</tt>) im aktuellen\
+        Nutzungsabschnitt.</p>\
+        <p>Die Höhe der Kerze stellt die maximale gemessene <b>Standardabweichung</b> dar.\
+        Eine gefüllte Kerze bedeutet eine \"schlechte\" Abweichung, d.h. stärkerer\
+        <b>Spannungseinbruch</b> oder stärkere <b>Erwärmung</b>.</p>\
+        <p><u><b>Tipp</b></u>: die Spannungslagen kann man gut im Detail vergleichen wenn man\
+        eine Zelle anwählt und den vertikalen Zoom so weit hochzieht, dass man die\
+        Abweichungen der anderen Zellen von der Auswahl-Markierung ablesen kann.</p>\
     ]]></string>
 
     <string name="aux_battery_menulabel">12V-Verlauf</string>
@@ -650,6 +650,17 @@
     <string name="lb_options_service">Service:</string>
     <string name="lb_options_service_cb">Verbindung offen halten</string>
     <string name="lb_options_service_info">Die Serververbindung bleibt auch bestehen wenn die App nicht geöffnet ist.</string>
+    <string name="lb_options_periodic_poll_cb">Periodische Hintergrundabfrage</string>
+    <string name="lb_options_periodic_poll_info">Stellt regelmäßig kurz eine Verbindung her, um Fahrzeugdaten und Widgets zu aktualisieren, ohne dauerhafte Verbindung.</string>
+    <string name="lb_options_periodic_poll_interval">Abfrageintervall</string>
+    <string name="poll_interval_15m">Alle 15 Minuten</string>
+    <string name="poll_interval_30m">Alle 30 Minuten</string>
+    <string name="poll_interval_1h">Jede Stunde</string>
+    <string name="poll_interval_2h">Alle 2 Stunden</string>
+    <string name="poll_interval_4h">Alle 4 Stunden</string>
+    <string name="command_executed_success">Befehl „%s“ erfolgreich ausgeführt</string>
+    <string name="command_execution_failed">Ausführung von „%s“ fehlgeschlagen</string>
+    <string name="executing_command">Führe %s aus…</string>
     <string name="lb_options_broadcast">Weitergabe:</string>
     <string name="lb_options_broadcast_cb">Daten an andere Apps weiterleiten</string>
     <string name="lb_options_broadcast_codes">Codes eingeben</string>
@@ -789,7 +800,7 @@
     <string name="rl_tpms">HL</string>
     <string name="rr_tpms">HR</string>
     <string name="front_tpms">Vorne</string>
-    <string name="rear_tpms">Hinten"</string>
+    <string name="rear_tpms">Hinten\"</string>
     <string name="fl_get_tpms">setze VL von TPMS Wert:</string>
     <string name="fr_get_tpms">setze VR von TPMS Wert:</string>
     <string name="rl_get_tpms">setze HL von TPMS Wert:</string>
@@ -859,6 +870,7 @@
     <string name="please_select_command">Bitte wählen Sie einen Befehl</string>
     <string name="please_select_at_least_one_day">Bitte wählen Sie mindestens einen Tag</string>
     <string name="command_selected">Ausgewählt: %s</string>
+    <string name="widget_configured_successfully">Widget erfolgreich konfiguriert</string>
     <string name="background_commands_disabled_title">Hintergrundbefehle deaktiviert</string>
     <string name="background_commands_disabled_message">Geplante Befehle benötigen aktivierte Hintergrund-Befehlsausführung in Einstellungen > Globale Optionen.\n\nMöchten Sie diese jetzt aktivieren?</string>
     <string name="enable_and_save">Aktivieren &amp; Speichern</string>

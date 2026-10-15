@@ -21,6 +21,7 @@ import com.openvehicles.OVMS.ui.MainActivity
 import com.openvehicles.OVMS.utils.CarsStorage
 import com.openvehicles.OVMS.utils.Sys
 import com.openvehicles.OVMS.utils.CarsStorage.getLastSelectedCarId
+import com.openvehicles.OVMS.work.WorkManagerScheduler
 
 /**
  * UI Settings
@@ -101,6 +102,26 @@ class AppUISettingsFragment: PreferenceFragmentCompat() {
                     Intent(if (newValue) ApiService.ACTION_ENABLE else ApiService.ACTION_DISABLE)
                 Log.d(TAG, "backgroundConnectionPreference: sending intent $intent")
                 requireContext().sendBroadcast(intent)
+                true
+            }
+
+        val periodicPollPreference = findPreference<SwitchPreferenceCompat>("communication_periodic_poll")
+        periodicPollPreference?.isChecked = appPrefs.getData("option_periodic_poll_enabled", "0") == "1"
+        periodicPollPreference?.onPreferenceChangeListener =
+            OnPreferenceChangeListener { preference, newValue ->
+                val enabled = newValue as Boolean
+                appPrefs.saveData("option_periodic_poll_enabled", if (enabled) "1" else "0")
+                WorkManagerScheduler.setupPeriodicPoll(requireContext())
+                true
+            }
+
+        val periodicPollIntervalPreference = findPreference<ListPreference>("communication_periodic_poll_interval")
+        periodicPollIntervalPreference?.value = appPrefs.getData("option_periodic_poll_interval", "30")
+        periodicPollIntervalPreference?.onPreferenceChangeListener =
+            OnPreferenceChangeListener { preference, newValue ->
+                val interval = newValue as String
+                appPrefs.saveData("option_periodic_poll_interval", interval)
+                WorkManagerScheduler.setupPeriodicPoll(requireContext())
                 true
             }
 

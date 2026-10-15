@@ -6,6 +6,7 @@ import android.content.Intent
 import android.util.Log
 import com.openvehicles.OVMS.api.ApiService
 import com.openvehicles.OVMS.utils.AppPrefs
+import com.openvehicles.OVMS.work.WorkManagerScheduler
 
 /**
  * Created by balzer on 04.12.16.
@@ -22,6 +23,13 @@ class AutoStart : BroadcastReceiver() {
             } catch (e: Exception) {
                 Log.e(TAG, "Can't start ApiService: ERROR", e)
             }
+        }
+
+        // Ensure WorkManager periodic poll is configured if enabled
+        val periodicPollEnabled = appPrefs.getData("option_periodic_poll_enabled", "0") == "1"
+        if (periodicPollEnabled) {
+            Log.i(TAG, "Setting up WorkManager periodic poll")
+            WorkManagerScheduler.setupPeriodicPoll(context)
         }
     }
 
