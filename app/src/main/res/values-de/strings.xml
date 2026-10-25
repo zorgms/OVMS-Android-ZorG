@@ -939,4 +939,14 @@
     <string name="tpms_config_title">RDKS-Konfiguration (%s)</string>
     <string name="tpms_config_dialog_title">RDKS-Konfiguration (%s)</string>
 
+    <!-- Metrics -->
+    <string name="metrics_tab_label">Metriken</string>
+    <string name="metrics_title">Fahrzeug-Metriken</string>
+    <string name="metrics_search_hint">Metriken filtern…</string>
+    <string name="metrics_no_entries">Keine Metriken für „%s“ gefunden</string>
+    <string name="metrics_edit_title">Metrik bearbeiten</string>
+    <string name="metrics_edit_hint">Neuer Wert für %s</string>
+    <string name="metrics_key_label">Metrik-Schlüssel</string>
+    <string name="metrics_value_label">Metrik-Wert</string>
+
 </resources>

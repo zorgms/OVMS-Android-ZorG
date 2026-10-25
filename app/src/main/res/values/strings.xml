@@ -1029,4 +1029,14 @@
     <string name="tpms_config_title">TPMS Configuration (%s)</string>
     <string name="tpms_config_dialog_title">TPMS Config (%s)</string>
 
+    <!-- Metrics -->
+    <string name="metrics_tab_label">Metrics</string>
+    <string name="metrics_title">Vehicle Metrics</string>
+    <string name="metrics_search_hint">Filter metrics…</string>
+    <string name="metrics_no_entries">No metrics found matching \"%s\"</string>
+    <string name="metrics_edit_title">Edit Metric</string>
+    <string name="metrics_edit_hint">New value for %s</string>
+    <string name="metrics_key_label">Metric Key</string>
+    <string name="metrics_value_label">Metric Value</string>
+
 </resources>
