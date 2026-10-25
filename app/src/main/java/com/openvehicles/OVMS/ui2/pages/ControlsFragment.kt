@@ -173,11 +173,11 @@ class ControlsFragment : BaseFragment(), OnResultCommandListener {
                 result: Array<String>
             ) {
                 isLoadingConfig = false
-                if (result.size > 2 && result[1] == "0") {
-                    parseTPMSConfig(result[2])
+                if (returnCode == 0 && returnData.isNotEmpty()) {
+                    parseTPMSConfig(returnData)
                     updateTPMSConfigUI()
                 } else {
-                    Log.w("ControlsFragment", "TPMS Config load failed with code ${result.getOrNull(1)}")
+                    Log.w("ControlsFragment", "TPMS Config load failed with code $returnCode")
                 }
             }
         })

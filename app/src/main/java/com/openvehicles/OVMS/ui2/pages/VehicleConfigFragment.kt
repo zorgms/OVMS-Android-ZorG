@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -41,6 +42,7 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
             "modem",
             "network",
             "ota",
+            "power",
             "server.v2",
             "server.v3"
         )
@@ -69,6 +71,7 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
 
     private var currentRubrikId: String = ""
     private val cachedConfigs = mutableMapOf<String, List<VehicleConfigParam>>()
+    private val discoveredRubriken = mutableSetOf<String>()
     private var isLoading = false
 
     override fun onCreateView(
@@ -104,8 +107,7 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
         rvConfigList.adapter = adapter
 
         swipeRefresh.setOnRefreshListener {
-            cachedConfigs.remove(currentRubrikId)
-            loadVehicleConfig(showProgress = false, forceReload = true)
+            loadAllConfigs(showProgress = false)
         }
 
         btnChangePrefix.setOnClickListener {
@@ -135,7 +137,7 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
 
     override fun onServiceAvailable(service: ApiService) {
         if (adapter.getAllCount() == 0 && !isLoading) {
-            loadVehicleConfig(showProgress = true)
+            loadAllConfigs(showProgress = true)
         }
     }
 
@@ -153,7 +155,12 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
         this.carData = carData
         if (carChanged) {
             cachedConfigs.clear()
+            discoveredRubriken.clear()
+            currentRubrikId = ""
             setupRubrikenTabs()
+            if (isAdded) {
+                loadAllConfigs(showProgress = true)
+            }
         }
     }
 
@@ -162,17 +169,29 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
         val vehiclePrefix = VehicleConfigHelper.getConfigPrefix(appPrefs, car)
         val list = mutableListOf<ConfigRubrik>()
 
-        // 1. Fahrzeugspezifische Rubrik (first in list)
-        list.add(
-            ConfigRubrik(
-                id = vehiclePrefix,
-                displayName = getString(R.string.vehicle_config_rubrik_vehicle, vehiclePrefix),
-                isVehicleSpecific = true
+        // 1. Vehicle-specific Rubrik (first in list)
+        if (vehiclePrefix.isNotBlank()) {
+            list.add(
+                ConfigRubrik(
+                    id = vehiclePrefix,
+                    displayName = getString(R.string.vehicle_config_rubrik_vehicle, vehiclePrefix),
+                    isVehicleSpecific = true
+                )
             )
-        )
+        }
 
-        // 2. Standard Rubriken
-        for (name in STANDARD_RUBRIKEN) {
+        // 2. Discovered or fallback Standard Rubriken (filtering out vehiclePrefix)
+        val baseRubriken = if (discoveredRubriken.isNotEmpty()) {
+            discoveredRubriken
+        } else {
+            STANDARD_RUBRIKEN
+        }
+
+        val filteredRubriken = baseRubriken
+            .filter { !it.equals(vehiclePrefix, ignoreCase = true) }
+            .sortedWith(String.CASE_INSENSITIVE_ORDER)
+
+        for (name in filteredRubriken) {
             list.add(
                 ConfigRubrik(
                     id = name,
@@ -182,6 +201,7 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
             )
         }
 
+        Log.d(TAG, "getRubrikenList: vehiclePrefix=$vehiclePrefix, totalRubriken=${list.size}")
         return list
     }
 
@@ -203,7 +223,12 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
             }
         }
 
-        tabLayoutRubriken.selectTab(tabLayoutRubriken.getTabAt(selectedIndex))
+        Log.d(TAG, "setupRubrikenTabs: created ${tabLayoutRubriken.tabCount} tabs, selectedIndex=$selectedIndex, currentRubrikId=$currentRubrikId")
+
+        if (tabLayoutRubriken.tabCount > 0) {
+            tabLayoutRubriken.selectTab(tabLayoutRubriken.getTabAt(selectedIndex))
+        }
+
         tabLayoutRubriken.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 val rubrikId = tab?.tag as? String ?: return
@@ -211,11 +236,9 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {
-                loadVehicleConfig(showProgress = false, forceReload = true)
+                loadVehicleConfig(rubrikId = currentRubrikId, showProgress = false)
             }
         })
-
-        onRubrikSelected(currentRubrikId)
     }
 
     private fun onRubrikSelected(rubrikId: String) {
@@ -223,11 +246,13 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
         etSearchConfig.text?.clear()
         updateHeaderUI()
 
+        Log.d(TAG, "onRubrikSelected: rubrikId=$rubrikId, cached=${cachedConfigs.containsKey(rubrikId)}")
+
         if (cachedConfigs.containsKey(rubrikId)) {
             adapter.setItems(cachedConfigs[rubrikId] ?: emptyList())
             updateEmptyState()
         } else {
-            loadVehicleConfig(showProgress = true, forceReload = false)
+            loadVehicleConfig(rubrikId = rubrikId, showProgress = true)
         }
     }
 
@@ -250,18 +275,10 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
         }
     }
 
-    private fun loadVehicleConfig(showProgress: Boolean, forceReload: Boolean = false) {
+    private fun loadAllConfigs(showProgress: Boolean) {
         val car = carData
         val vid = car?.sel_vehicleid
         if (vid == null) {
-            swipeRefresh.isRefreshing = false
-            pbLoading.visibility = View.GONE
-            updateEmptyState()
-            return
-        }
-
-        val rubrik = currentRubrikId
-        if (rubrik.isBlank()) {
             swipeRefresh.isRefreshing = false
             pbLoading.visibility = View.GONE
             updateEmptyState()
@@ -273,7 +290,9 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
         }
         isLoading = true
 
-        sendCommand("", "7,config list $rubrik", object : OnResultCommandListener {
+        Log.d(TAG, "loadAllConfigs: sending '7,config list'")
+
+        sendCommand("", "7,config list", object : OnResultCommandListener {
             override fun onResultCommand(
                 commandCode: Int,
                 returnCode: Int,
@@ -284,17 +303,82 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
                 swipeRefresh.isRefreshing = false
                 pbLoading.visibility = View.GONE
 
-                if (result.size > 2 && result[1] == "0") {
-                    val items = parseConfigList(result[2])
-                    cachedConfigs[rubrik] = items
-                    if (currentRubrikId == rubrik) {
+                Log.d(TAG, "loadAllConfigs response: returnCode=$returnCode, dataLength=${returnData.length}")
+
+                if (returnCode == 0 && returnData.isNotEmpty()) {
+                    parseAndStoreRubriken(returnData)
+                    setupRubrikenTabs()
+                    if (currentRubrikId.isNotEmpty()) {
+                        onRubrikSelected(currentRubrikId)
+                    }
+                } else {
+                    Log.w(TAG, "Rubriken list load failed with returnCode: $returnCode")
+                    updateEmptyState()
+                }
+            }
+        })
+    }
+
+    private fun parseAndStoreRubriken(output: String) {
+        discoveredRubriken.clear()
+        val lines = output.split("\r\n", "\n", "\r")
+
+        for (line in lines) {
+            val rawLine = line.trim()
+            if (rawLine.isEmpty()) continue
+            val parts = rawLine.split("\\s+".toRegex(), limit = 2)
+            if (parts.isNotEmpty()) {
+                val rubrikId = parts[0].trim().lowercase(Locale.ROOT)
+                if (rubrikId.isNotEmpty()) {
+                    discoveredRubriken.add(rubrikId)
+                }
+            }
+        }
+
+        Log.d(TAG, "parseAndStoreRubriken: discovered ${discoveredRubriken.size} rubriken: $discoveredRubriken")
+    }
+
+    private fun loadVehicleConfig(rubrikId: String, showProgress: Boolean) {
+        val car = carData
+        val vid = car?.sel_vehicleid
+        if (vid == null || rubrikId.isBlank()) {
+            swipeRefresh.isRefreshing = false
+            pbLoading.visibility = View.GONE
+            updateEmptyState()
+            return
+        }
+
+        if (showProgress) {
+            pbLoading.visibility = View.VISIBLE
+        }
+        isLoading = true
+
+        Log.d(TAG, "loadVehicleConfig: sending '7,config list $rubrikId'")
+
+        sendCommand("", "7,config list $rubrikId", object : OnResultCommandListener {
+            override fun onResultCommand(
+                commandCode: Int,
+                returnCode: Int,
+                returnData: String,
+                result: Array<String>
+            ) {
+                isLoading = false
+                swipeRefresh.isRefreshing = false
+                pbLoading.visibility = View.GONE
+
+                Log.d(TAG, "loadVehicleConfig response for $rubrikId: returnCode=$returnCode, dataLength=${returnData.length}")
+
+                if (returnCode == 0 && returnData.isNotEmpty()) {
+                    val items = parseConfigList(returnData)
+                    cachedConfigs[rubrikId] = items
+                    if (currentRubrikId == rubrikId) {
                         adapter.setItems(items)
                         updateEmptyState()
                     }
                 } else {
-                    Log.w(TAG, "Config load for '$rubrik' failed with code: ${result.getOrNull(1)}")
-                    if (currentRubrikId == rubrik) {
-                        cachedConfigs[rubrik] = emptyList()
+                    Log.w(TAG, "Config load for '$rubrikId' failed with returnCode: $returnCode")
+                    if (currentRubrikId == rubrikId) {
+                        cachedConfigs[rubrikId] = emptyList()
                         adapter.setItems(emptyList())
                         updateEmptyState()
                     }
@@ -305,13 +389,14 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
 
     private fun parseConfigList(output: String): List<VehicleConfigParam> {
         val items = mutableListOf<VehicleConfigParam>()
-        val lines = output.lines()
+        val lines = output.split("\r\n", "\n", "\r")
         for (line in lines) {
-            val rawLine = line.trimEnd('\r', '\n')
+            val rawLine = line.trim()
+            if (rawLine.isEmpty()) continue
             val parts = rawLine.split(":", limit = 2)
             if (parts.size == 2) {
                 val key = parts[0].trim()
-                val value = parts[1]
+                val value = parts[1].removePrefix(" ")
                 if (key.isNotEmpty()) {
                     items.add(VehicleConfigParam(key, value))
                 }
@@ -365,7 +450,7 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
                             cachedConfigs.remove(targetRubrik)
                             view?.postDelayed({
                                 if (isAdded && view != null) {
-                                    loadVehicleConfig(showProgress = false, forceReload = true)
+                                    loadVehicleConfig(targetRubrik, showProgress = false)
                                 }
                             }, 1000)
                         }
@@ -386,39 +471,43 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
 
         val targetRubrik = currentRubrikId
 
-        MaterialAlertDialogBuilder(requireContext())
+        val dialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.vehicle_config_add_param)
             .setMessage(getString(R.string.vehicle_config_current_rubrik, targetRubrik))
             .setView(dialogView)
-            .setPositiveButton(R.string.Save) { _, _ ->
-                val newKey = etKey.text?.toString()?.trim() ?: ""
-                val newValue = etValue.text?.toString() ?: ""
-                if (newKey.isBlank()) {
-                    Toast.makeText(requireContext(), "Key cannot be empty", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
-                sendCommand(
-                    "Saving...",
-                    formatConfigSetCommand(targetRubrik, newKey, newValue),
-                    object : OnResultCommandListener {
-                        override fun onResultCommand(
-                            commandCode: Int,
-                            returnCode: Int,
-                            returnData: String,
-                            result: Array<String>
-                        ) {
-                            cachedConfigs.remove(targetRubrik)
-                            view?.postDelayed({
-                                if (isAdded && view != null) {
-                                    loadVehicleConfig(showProgress = false, forceReload = true)
-                                }
-                            }, 1000)
-                        }
-                    }
-                )
-            }
+            .setPositiveButton(R.string.Save, null)
             .setNegativeButton(R.string.Cancel, null)
-            .show()
+            .create()
+
+        dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val newKey = etKey.text?.toString()?.trim() ?: ""
+            val newValue = etValue.text?.toString() ?: ""
+            if (newKey.isBlank()) {
+                Toast.makeText(requireContext(), "Key cannot be empty", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            sendCommand(
+                "Saving...",
+                formatConfigSetCommand(targetRubrik, newKey, newValue),
+                object : OnResultCommandListener {
+                    override fun onResultCommand(
+                        commandCode: Int,
+                        returnCode: Int,
+                        returnData: String,
+                        result: Array<String>
+                    ) {
+                        cachedConfigs.remove(targetRubrik)
+                        view?.postDelayed({
+                            if (isAdded && view != null) {
+                                loadVehicleConfig(targetRubrik, showProgress = false)
+                            }
+                        }, 1000)
+                    }
+                }
+            )
+            dialog.dismiss()
+        }
     }
 
     private fun confirmDeleteParam(param: VehicleConfigParam) {
@@ -440,7 +529,7 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
                             cachedConfigs.remove(targetRubrik)
                             view?.postDelayed({
                                 if (isAdded && view != null) {
-                                    loadVehicleConfig(showProgress = false, forceReload = true)
+                                    loadVehicleConfig(targetRubrik, showProgress = false)
                                 }
                             }, 1000)
                         }
@@ -473,7 +562,6 @@ class VehicleConfigFragment : BaseFragment(), OnResultCommandListener {
                 val vid = carData?.sel_vehicleid
                 VehicleConfigHelper.setConfigPrefix(appPrefs, vid, newPrefix)
 
-                cachedConfigs.remove(currentPrefix)
                 currentRubrikId = newPrefix
                 setupRubrikenTabs()
             }
