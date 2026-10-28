@@ -1828,7 +1828,15 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         if (hasNetInfo) {
             if (baseInfoBuilder.isNotEmpty()) baseInfoBuilder.append("\n")
 
-            networkName = carData?.car_gsmlock
+            val displayNetwork = if (!carData?.car_gsmlock.isNullOrBlank()) {
+                carData!!.car_gsmlock
+            } else if (activeNetType == "WIFI") {
+                "WIFI"
+            } else if (activeNetType.isNotBlank()) {
+                activeNetType
+            } else {
+                "Cellular"
+            }
 
             val modeValue = when {
                 activeNetType == "WIFI" -> "WIFI"
@@ -1841,9 +1849,9 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
             val modeLine = if (signalStr.isNotEmpty()) "$modeValue $signalStr".trim() else modeValue
 
             if (modeLine.isNotEmpty()) {
-                baseInfoBuilder.append("Network: ${networkName} \nMode: $modeLine")
+                baseInfoBuilder.append("Network: $displayNetwork \nMode: $modeLine")
             } else {
-                baseInfoBuilder.append("Network: ${networkName} ")
+                baseInfoBuilder.append("Network: $displayNetwork")
             }
         }
 
@@ -1857,15 +1865,14 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         applyFooterVisibility()
     }
 
-    private var networkName: String? = null
     private var netType: String? = null
+    private var lastGsmLock: String? = null
     private var isLoadingNetType = false
 
     private fun loadNetType() {
         val vid = carData?.sel_vehicleid
-        if (isLoadingNetType || vid.isNullOrBlank()) return
+        if (isLoadingNetType || vid.isNullOrBlank() || netType != null) return
         isLoadingNetType = true
-        networkName = carData?.car_gsmlock
 
         sendCommand("", "7,metrics get m.net.type", object : OnResultCommandListener {
             override fun onResultCommand(
@@ -1874,6 +1881,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                 returnData: String,
                 result: Array<String>
             ) {
+                isLoadingNetType = false
                 if (returnCode == 0 && returnData.isNotBlank()) {
                     val rawNet = returnData.trim().uppercase(Locale.ROOT)
                     if (rawNet.isNotEmpty()) {
@@ -1882,7 +1890,6 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
                         initialiseBottomInfo(carData)
                     }
                 }
-                isLoadingNetType = false
             }
         })
     }
@@ -1928,9 +1935,11 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
     override fun update(carData: CarData?) {
         Log.d(TAG, "update: lastupdated=" + carData?.car_lastupdated)
         val carChanged = this.carData?.sel_vehicleid != carData?.sel_vehicleid
+        val gsmLockChanged = carData?.car_gsmlock != null && carData.car_gsmlock != lastGsmLock
         this.carData = carData
-        if (carChanged) {
-            networkName = null
+        lastGsmLock = carData?.car_gsmlock
+
+        if (carChanged || gsmLockChanged) {
             netType = null
             isLoadingNetType = false
         }
@@ -1942,7 +1951,7 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         initialiseCarDropDown()
         gsmicon(carData)
         gpsicon(carData)
-        if (networkName != carData?.car_gsmlock || (netType == null && !isLoadingNetType)) {
+        if (netType == null && !isLoadingNetType) {
             loadNetType()
         }
     }
