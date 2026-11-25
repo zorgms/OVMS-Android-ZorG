@@ -2004,8 +2004,17 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         lastGsmLock = carData?.car_gsmlock
         lastMdmMode = carData?.car_mdm_mode
 
+        val vid = carData?.sel_vehicleid
+        val nativeNetType = carData?.car_net_type?.trim()?.uppercase(Locale.ROOT)
+        if (!nativeNetType.isNullOrEmpty()) {
+            netType = nativeNetType
+            if (!vid.isNullOrBlank()) {
+                appPrefs.saveData("pref_net_type_$vid", nativeNetType)
+            }
+        }
+
         val shouldForceReload = carChanged || gsmLockChanged || mdmModeChanged
-        if (shouldForceReload) {
+        if (shouldForceReload && nativeNetType.isNullOrEmpty()) {
             netType = null
             isLoadingNetType = false
         }
@@ -2017,7 +2026,9 @@ class HomeFragment : BaseFragment(), OnResultCommandListener, HomeTabsAdapter.It
         initialiseCarDropDown()
         gsmicon(carData)
         gpsicon(carData)
-        loadNetType(force = shouldForceReload)
+        if (nativeNetType.isNullOrEmpty()) {
+            loadNetType(force = shouldForceReload)
+        }
     }
 
     override fun onServiceLoggedIn(service: ApiService?, isLoggedIn: Boolean) {

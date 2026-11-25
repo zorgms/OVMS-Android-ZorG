@@ -941,10 +941,10 @@ class CarData : Serializable {
             }
             if (dataParts.size >= 10) {
                 car_mdm_mode = dataParts[9].split(";")[0].toString()
-            }/*
+            }
             if (dataParts.size >= 11) {
                 car_net_type = dataParts[10].trim()
-            }*/
+            }
         } catch (e: Exception) {
             Log.e(TAG, "processFirmware: ERROR", e)
             return false
@@ -1349,6 +1349,7 @@ class CarData : Serializable {
             b.putInt("car_servicedays", car_servicetime)
             b.putInt("car_servicedist", car_servicerange)
             b.putString("car_mdm_mode", car_mdm_mode)
+            b.putString("car_net_type", car_net_type)
 
             //
             // TPMS new flexible wheel layout (msgCode 'Y')
